@@ -1,0 +1,23 @@
+{% macro render_field_with_errors(field) %}
+    <p>
+        {% if field.type == 'BooleanField' %}
+            {{ field.label }} {{ field(**kwargs)|safe }}
+        {% elif field.type == 'SubmitField' %}
+            {{ field.label }} {{ field(class='btn btn-primary',**kwargs)|safe }}
+        {% else %}
+            {{ field.label }} {{ field(class='form-control',**kwargs)|safe }}
+        {% endif %}
+
+        {% if field.errors %}
+            <ul>
+                {% for error in field.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </p>
+{% endmacro %}
+
+{% macro render_field(field) %}
+    <p>{{ field(**kwargs)|safe }}</p>
+{% endmacro %}

@@ -1,0 +1,27 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<section id="features" class="section">
+    <div class="container">
+        <div class="row">
+            <div class="strike-through-header">
+                <h3>Features</h3>
+            </div>
+            <div class="col-md-8 text-center col-md-offset-2">
+             <ul class="list-unstyled">
+                    <li> Flask based</li>
+                    <li> User registration and authentication</li>
+                    <li> Memory caching via Redis</li>
+                    <li> Command line scripting via Flask Script</li>
+                    <li><a href="http://jasny.github.io/bootstrap/">Jasny Bootstrap</a> on the frontend</li>
+                    <li> Automatic assets bundling and minification via Flask assets</li>
+                    <li> Mongodb and Mongoengine ORM</li>
+                    <li> Background tasks via Celery</li>
+                    <li> Email integration via Flask Mail</li>
+                </ul>
+                </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

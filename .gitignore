@@ -1,0 +1,8 @@
+*.pyc
+.webassets-cache
+.idea
+celerybeat-schedule
+env
+local_settings.py
+static/css/common.css
+static/js/common.js

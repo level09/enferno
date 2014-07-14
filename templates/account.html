@@ -1,0 +1,9 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container">
+    <h3>User Account</h3>
+
+    <p>Welcome, {{ g.user.email }}</p>
+    <p>Last login at: {{ g.user.last_login_at }}</p>
+</div>
+{% endblock %}

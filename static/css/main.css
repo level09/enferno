@@ -1,0 +1,144 @@
+
+body {
+    padding-top: 96px;
+    font-family: 'Open Sans', sans-serif;
+    background: #fff;
+}
+
+.navbar-nav > li > a {
+    padding: 40px 40px 35px;
+}
+
+.logo {
+    padding-top: 14px;
+    display: block;
+
+}
+
+.navbar-nav > li > a {
+    text-transform: uppercase;
+    font-weight: 400;
+    transition: all 0.5s;
+
+}
+
+.hero {
+    height: 300px;
+    background: #98140c;
+    background: url(/static/img/hero.jpg) 50% 50% no-repeat;
+}
+
+.hero h2 {
+    color: #fff;
+    text-align: center;
+    padding: 75px 10px 20px;
+    margin: 0;
+}
+
+.hero .btn {
+    background: none;
+    border: 1px solid #fff;
+    border-radius: 0;
+}
+
+.hero .btn:hover{
+    background: #c61a0e;
+
+}
+
+
+.hero p {
+    padding: 10px;
+    color: #fff;
+    text-align: center;
+}
+
+.section {
+    position: relative;
+    width: 100%;
+    display: block;
+
+}
+footer {
+    width: 100%;
+    text-align: center;
+}
+
+.strike-through-header {
+    height: 74px;
+    position: relative;
+    text-align: center;
+    max-width: 940px;
+    margin: 35px auto 0px auto;
+}
+
+.strike-through-header h2, .strike-through-header h3 {
+    color: #444;
+    font-weight: normal;
+    display: inline-block;
+    background: #fff;
+    padding: 0 12px;
+    position: relative;
+    z-index: 2;
+    text-transform: uppercase;
+}
+
+.strike-through-header:after {
+    content: "";
+    width: 100%;
+    position: absolute;
+    top: 38px;
+    left: 0;
+    z-index: 1;
+    height: 1px;
+    background: rgba(68, 68, 68, 0.1);
+}
+
+/* responsive overrides */
+
+@media only screen and (min-width: 768px) {
+    .navbar-offcanvas {
+        border: none;
+    }
+}
+
+/* Medium Devices, Desktops */
+@media only screen and (min-width: 992px) {
+
+}
+
+/* Large Devices, Wide Screens */
+@media only screen and (min-width: 1200px) {
+
+}
+
+/*==========  Non-Mobile First Method  ==========*/
+
+/* Large Devices, Wide Screens */
+@media only screen and (max-width: 1200px) {
+
+}
+
+/* Medium Devices, Desktops */
+@media only screen and (max-width: 992px) {
+
+}
+
+/* Small Devices, Tablets */
+@media only screen and (max-width: 768px) {
+
+}
+
+/* Extra Small Devices, Phones */
+@media only screen and (max-width: 480px) {
+
+}
+
+/* Custom, iPhone Retina */
+@media only screen and (max-width: 320px) {
+
+}
+
+
+
+
