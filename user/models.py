@@ -24,19 +24,8 @@ class User(UserMixin, db.Document):
     current_login_ip = db.StringField()
     login_count = db.IntField()
 
-    def is_active(self):
-        return True
-
     def __unicode__(self):
         return '%s' % self.id
-
-    def set_password(self, password):
-        print '----------------- setting ---------------------'
-        self.password = bcrypt.generate_password_hash(password)
-
-
-    def check_password(self, password):
-        return bcrypt.check_password_hash(self.password, password)
 
     def __repr__(self):
         return "%s %s %s" % (self.username, self.id, self.email)
