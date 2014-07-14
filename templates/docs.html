@@ -10,7 +10,6 @@
                 <div class="col-md-10 col-md-offset-1">
 
 
-
                     <h2>Prerequisites</h2>
 
                     <p>You will need Mongodb and Redis installed.</p>
@@ -19,25 +18,32 @@
 
 
 
-<pre><code>$ git clone git@github.com:level09/enferno.git
+<pre>
+    <code>
+        $ git clone git@github.com:level09/enferno.git
 
-    $ cd enferno
+        $ cd enferno
 
-    $ virtualenv env --distribute --no-site-packages
+        $ virtualenv env --distribute --no-site-packages
 
-    $ source env/bin/activate
+        $ source env/bin/activate
 
-    $ pip install -r requirements.txt
-</code></pre>
+        $ pip install -r requirements.txt
+    </code>
+</pre>
 
-                    <p>Edit the settings.py and change the settings to suit your needs, sepcifically you can change
+                    <p>Edit the settings.py and change the settings to suit your needs, specifically you can change
                         Flask security settings, security keys, Mongodb settings,and Flask mail.</p>
 
                     <p>to run the system, you can use a management command:
                     </p>
 
-<pre><code>$ ./manage.py server
-</code></pre>
+<pre>
+    <code>$ ./manage.py server
+    </code>
+</pre>
+
+
 
                     <h2>Features</h2>
 
@@ -54,22 +60,6 @@
                         <li>Background tasks via Celery</li>
                         <li>Email integration via Flask Mail</li>
                         <li>Best practices by utilizing Flask blueprints and development/production configuration</li>
-                    </ul>
-
-
-                    <h2>Inspiration &amp; Credits</h2>
-
-                    <ul>
-                        <li><code>Cookiecutter Flask &lt;https://github.com/sloria/cookiecutter-flask&gt;</code>_</li>
-                        <li><code>Flask Security &lt;https://pythonhosted.org/Flask-Security/&gt;</code>_</li>
-                        <li><code>Mongoengine &lt;http://mongoengine.org/&gt;</code>_</li>
-                        <li><code>Jasny Bootstrap &lt;http://jasny.github.io/bootstrap/&gt;</code>_</li>
-                        <li><code>Flask WTF &lt;https://flask-wtf.readthedocs.org/en/latest/&gt;</code>_</li>
-                        <li><code>Celery Task Queue &lt;http://www.celeryproject.org/&gt;</code>_</li>
-                        <li><code>Redis &lt;http://redis.io/&gt;</code>_</li>
-                        <li><code>Flask Mail &lt;https://pythonhosted.org/flask-mail/&gt;</code>_</li>
-                        <li><code>Flask Documentation &lt;http://flask.pocoo.org/docs/&gt;</code>_</li>
-                        <li><code>Celery Task Queue &lt;http://www.celeryproject.org/&gt;</code>_</li>
                     </ul>
 
 

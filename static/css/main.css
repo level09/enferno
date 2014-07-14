@@ -108,6 +108,10 @@ footer {
     border: none;
 }
 
+#messages .row {
+    padding: 20px;
+}
+
 footer {
     margin-top: 35px;
     background: #f2f2f2;
