@@ -12,7 +12,7 @@ You will need Mongodb and Redis installed.
 
 Quickstart
 ----------
-::
+    ::
     $ git clone git@github.com:level09/enferno.git
     $ cd enferno
     $ virtualenv env --distribute --no-site-packages
