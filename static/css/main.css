@@ -146,12 +146,16 @@ footer {
 
 /* Medium Devices, Desktops */
 @media only screen and (max-width: 992px) {
-
+.navbar-nav>li>a {
+    padding: 40px 25px 35px;
+}
 }
 
 /* Small Devices, Tablets */
 @media only screen and (max-width: 768px) {
-
+.navbar-toggle {
+    margin-top: 25px;
+}
 }
 
 /* Extra Small Devices, Phones */
