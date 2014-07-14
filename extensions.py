@@ -9,6 +9,11 @@ db = MongoEngine()
 from flask.ext.cache import Cache
 cache = Cache()
 
+from flask_admin import Admin
+admin = Admin(name='Project Enferno :: Administration')
+
+
+
 from flask.ext.mail import Mail
 mail = Mail()
 

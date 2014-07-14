@@ -5,9 +5,11 @@ from settings import ProdConfig
 from assets import assets
 from flask.ext.security import Security, MongoEngineUserDatastore
 from user.models import User, Role
+from admin.views import UserView
 from user.forms import ExtendedRegisterForm
 from extensions import (
     cache,
+    admin,
     db,
     mail,
     debug_toolbar,
@@ -29,6 +31,8 @@ def register_extensions(app):
     assets.init_app(app)
     cache.init_app(app)
     db.init_app(app)
+    admin.init_app(app)
+    register_admin_views(admin)
     user_datastore = MongoEngineUserDatastore(db, User, Role)
     security = Security(app, user_datastore, confirm_register_form=ExtendedRegisterForm)
     mail.init_app(app)
@@ -40,6 +44,10 @@ def register_extensions(app):
 def register_blueprints(app):
     app.register_blueprint(bp_public)
     app.register_blueprint(bp_user)
+    return None
+
+def register_admin_views(admin):
+    admin.add_view(UserView(User))
     return None
 
 
