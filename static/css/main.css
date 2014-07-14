@@ -31,7 +31,7 @@ body {
 .hero h2 {
     color: #fff;
     text-align: center;
-    padding: 75px 10px 20px;
+    padding: 45px 10px 20px;
     margin: 0;
 }
 
@@ -48,8 +48,9 @@ body {
 
 
 .hero p {
-    padding: 10px;
+    padding: 0px 400px;
     color: #fff;
+    margin-bottom: 20px;
     text-align: center;
 }
 
