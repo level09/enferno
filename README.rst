@@ -19,7 +19,6 @@ Quickstart
     $ source env/bin/activate
     $ pip install -r requirements.txt
 
-
 Edit the settings.py and change the settings to suit your needs, sepcifically you can change Flask security settings, security keys, Mongodb settings,and Flask mail.
 
 to run the system, you can use a management command:
@@ -28,7 +27,6 @@ to run the system, you can use a management command:
 
 Features
 --------
-
 - Flask based
 - Jasny Bootstrap on the frontend
 - Fully working user registration and authentication + user roles via Flask security and Flask Principal
