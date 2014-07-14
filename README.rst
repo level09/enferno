@@ -12,23 +12,27 @@ You will need Mongodb and Redis installed.
 
 Quickstart
 ----------
-    ::
-    $ git clone git@github.com:level09/enferno.git
-    $ cd enferno
-    $ virtualenv env --distribute --no-site-packages
-    $ source env/bin/activate
-    $ pip install -r requirements.txt
+::
 
+    $ git clone git@github.com:level09/enferno.git
+    
+    $ cd enferno 
+    
+    $ virtualenv env --distribute --no-site-packages 
+    
+    $ source env/bin/activate 
+    
+    $ pip install -r requirements.txt 
 
 Edit the settings.py and change the settings to suit your needs, sepcifically you can change Flask security settings, security keys, Mongodb settings,and Flask mail.
 
 to run the system, you can use a management command:
 ::
+
     $ ./manage.py server
 
 Features
 --------
-
 - Flask based
 - Jasny Bootstrap on the frontend
 - Fully working user registration and authentication + user roles via Flask security and Flask Principal
