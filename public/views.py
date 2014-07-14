@@ -10,3 +10,7 @@ bp_public = Blueprint('public',__name__, static_folder='../static')
 def index():
     return render_template('index.html')
 
+
+@bp_public.route('/docs')
+def docs():
+    return render_template('docs.html')
