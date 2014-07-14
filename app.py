@@ -7,10 +7,8 @@ from flask.ext.security import Security, MongoEngineUserDatastore
 from user.models import User, Role
 from user.forms import ExtendedRegisterForm
 from extensions import (
-    bcrypt,
     cache,
     db,
-
     mail,
     debug_toolbar,
 )
@@ -29,7 +27,6 @@ def create_app(config_object=ProdConfig):
 
 def register_extensions(app):
     assets.init_app(app)
-    bcrypt.init_app(app)
     cache.init_app(app)
     db.init_app(app)
     user_datastore = MongoEngineUserDatastore(db, User, Role)

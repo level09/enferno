@@ -1,6 +1,5 @@
 from extensions import db
 from flask.ext.security import UserMixin, RoleMixin
-from extensions import bcrypt
 import datetime
 
 

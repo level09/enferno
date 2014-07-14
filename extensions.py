@@ -3,15 +3,8 @@
 in app.py
 """
 
-from flask.ext.bcrypt import Bcrypt
-bcrypt = Bcrypt()
-
-
-
-
 from flask.ext.mongoengine import MongoEngine
 db = MongoEngine()
-
 
 from flask.ext.cache import Cache
 cache = Cache()
