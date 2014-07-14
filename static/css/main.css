@@ -94,6 +94,26 @@ footer {
     background: rgba(68, 68, 68, 0.1);
 }
 
+
+#features ul {
+
+}
+#features ul li {
+    padding: 15px 0;
+    font-size: 16px;
+    border-bottom: 1px dotted #ddd;
+}
+
+#features ul li:last-child {
+    border: none;
+}
+
+footer {
+    margin-top: 35px;
+    background: #f2f2f2;
+    padding: 35px 0;
+    border-top: 1px solid #ddd;
+}
 /* responsive overrides */
 
 @media only screen and (min-width: 768px) {
