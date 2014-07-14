@@ -37,7 +37,8 @@ Features
 - Jasny Bootstrap on the frontend
 - Fully working user registration and authentication + user roles via Flask security and Flask Principal
 - Memory caching via Redis and Flask cache
-- Command line scripting via Flask Script
+- Simple admin backend via Flask Admin
+- Command line scripting via Flask Script (will be replaced by "click" in the next release)
 - Automatic assets bundling and minification via Flask assets
 - Mongodb and Mongoengine ORM
 - Background tasks via Celery
@@ -54,6 +55,7 @@ Inspiration & Credits
 - `Mongoengine <http://mongoengine.org/>`_
 - `Jasny Bootstrap <http://jasny.github.io/bootstrap/>`_
 - `Flask WTF <https://flask-wtf.readthedocs.org/en/latest/>`_
+- `Flask Admin <https://github.com/mrjoes/flask-admin/>`_
 - `Celery Task Queue <http://www.celeryproject.org/>`_
 - `Redis <http://redis.io/>`_
 - `Flask Mail <https://pythonhosted.org/flask-mail/>`_
