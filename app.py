@@ -5,7 +5,7 @@ from settings import ProdConfig
 from assets import assets
 from flask.ext.security import Security, MongoEngineUserDatastore
 from user.models import User, Role
-from admin.views import UserView
+from admin.views import UserView, RoleView
 from user.forms import ExtendedRegisterForm
 from extensions import (
     cache,
@@ -48,6 +48,7 @@ def register_blueprints(app):
 
 def register_admin_views(admin):
     admin.add_view(UserView(User))
+    admin.add_view(RoleView(Role))
     return None
 
 

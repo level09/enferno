@@ -7,6 +7,9 @@ class Role(db.Document, RoleMixin):
     name = db.StringField(max_length=80,unique=True)
     description = db.StringField(max_length=255)
 
+    def __unicode__(self):
+        return '%s' % self.name
+
 
 class User(UserMixin, db.Document):
     created_at = db.DateTimeField(default=datetime.datetime.now, required=True)
@@ -39,5 +42,6 @@ class User(UserMixin, db.Document):
         'indexes': ['-created_at', 'email', 'username'],
         'ordering': ['-created_at']
     }
+
 
 
