@@ -24,6 +24,19 @@ Quickstart
     
     $ pip install -r requirements.txt 
 
+After that, you should create your first user: 
+
+::
+
+    $ ./manage.py create_user -e email@example.com -p yourpassword 
+    
+Assign an 'Admin' role to your username: 
+
+::
+
+    $ ./manage.py add_role -u email@example.com -r admin
+    
+
 Edit the settings.py and change the settings to suit your needs, sepcifically you can change Flask security settings, security keys, Mongodb settings,and Flask mail.
 
 to run the system, you can use a management command:
