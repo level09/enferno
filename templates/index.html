@@ -1,29 +1,41 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<section id="features" class="section">
-    <div class="container">
-        <div class="row">
-            <div class="strike-through-header">
-                <h3>Features</h3>
-            </div>
-            <div class="col-md-10 col-md-offset-1 text-center">
-
-             <ul class="list-unstyled">
-                    <li> <a href="http://flask.pocoo.org/" target="_blank">Flask</a> based</li>
-                    <li> User registration and authentication via <a href="https://pythonhosted.org/Flask-Security/" target="_blank">Flask Security</a></li>
-                    <li> Memory caching via <a href="http://redis.io/" target="_blank">Redis</a></li>
-                    <li> Command line scripting via <a href="http://flask-script.readthedocs.org/en/latest/" target="_blank">Flask Script</a></li>
-                    <li><a href="http://jasny.github.io/bootstrap/" target="_blank">Jasny Bootstrap</a> on the frontend</li>
-                    <li>Simple Administration Backend via <a href="https://github.com/mrjoes/flask-admin/" target="_blank">Flask Admin</a></li>
-                    <li> Automatic assets bundling and minification via <a href="http://flask-assets.readthedocs.org/en/latest/" target="_blank">Flask assets</a></li>
-                    <li> <a href="http://www.mongodb.org/" target="_blank">Mongodb</a> and <a href="http://mongoengine.org/" target="_blank">Mongoengine</a> ORM</li>
-                    <li> Background tasks via <a href="http://www.celeryproject.org/" target="_blank">Celery task queue</a></li>
-                    <li> Email integration via <a href="https://pythonhosted.org/Flask-Mail/" target="_blank">Flask Mail</a></li>
-                </ul>
+    <section id="features" class="section">
+        <div class="container">
+            <div class="row">
+                <div class="strike-through-header">
+                    <h3>Features</h3>
                 </div>
+                <div class="col-md-10 col-md-offset-1 text-center">
+
+                    <ul class="list-unstyled">
+                        <li><a href="http://flask.pocoo.org/" target="_blank">Flask</a> based</li>
+                        <li> User registration and authentication via <a href="https://pythonhosted.org/Flask-Security/"
+                                                                         target="_blank">Flask Security</a></li>
+                        <li>Easy role management</li>
+                        <li> Memory caching via <a href="http://redis.io/" target="_blank">Redis</a></li>
+                        <li> Command line scripting via <a href="http://flask-script.readthedocs.org/en/latest/"
+                                                           target="_blank">Flask Script</a></li>
+                        <li><a href="http://jasny.github.io/bootstrap/" target="_blank">Jasny Bootstrap</a> on the
+                            frontend
+                        </li>
+                        <li>Simple Administration Backend via <a href="https://github.com/mrjoes/flask-admin/"
+                                                                 target="_blank">Flask Admin</a></li>
+                        <li> Automatic assets bundling and minification via <a
+                                href="http://flask-assets.readthedocs.org/en/latest/" target="_blank">Flask assets</a>
+                        </li>
+                        <li><a href="http://www.mongodb.org/" target="_blank">Mongodb</a> and <a
+                                href="http://mongoengine.org/" target="_blank">Mongoengine</a> ORM
+                        </li>
+                        <li> Background tasks via <a href="http://www.celeryproject.org/" target="_blank">Celery task
+                            queue</a></li>
+                        <li> Email integration via <a href="https://pythonhosted.org/Flask-Mail/" target="_blank">Flask
+                            Mail</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
 
 {% endblock %}
