@@ -26,58 +26,57 @@
 
     {% block css %}{% endblock %}
 
-    <script src="/static/js/vendor/modernizr-2.6.2-respond-1.1.0.min.js"></script>
 
-    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,300,600' rel='stylesheet' type='text/css'>
+<script src="/static/js/modernizr.js"></script>
+
+
+
+
+
+
+	<link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700' rel='stylesheet' type='text/css'>
+
 </head>
 <body>
+	<header class="cd-header">
+		<div class="cd-logo"><a href="#0"><img src="/static/img/cd-logo.svg" alt="Logo"></a></div>
 
-<div class="container">
-    <div class="navbar navbar-fixed-top navbar-default">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="offcanvas" data-target=".navbar-offcanvas"
-                        data-canvas="body">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="logo" href="/"><img src="/static/img/logo.svg" alt="Enferno"/></a>
-            </div>
-            <div class="navbar-offcanvas offcanvas pull-right">
+		<nav>
+			<ul class="cd-secondary-nav">
+				<li><a href="#0">Log In</a></li>
+				<li><a href="#0">Register</a></li>
+			</ul>
+		</nav> <!-- cd-nav -->
 
-                <ul class="nav navbar-nav">
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/#features">Features</a></li>
-                    <li><a href="/docs">Documentation</a></li>
-                    <li><a href="https://github.com/level09/enferno">Download</a></li>
+		<a class="cd-primary-nav-trigger" href="#0">
+			<span class="cd-menu-text">Menu</span><span class="cd-menu-icon"></span>
+		</a> <!-- cd-primary-nav-trigger -->
+	</header>
 
 
-                </ul>
-            </div>
-            <!--/.nav-collapse -->
-        </div>
-    </div>
-</div>
-<header class="hero">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-8 col-md-offset-2">
-                <h2> A Framework for the Next Decade</h2>
+<nav>
+		<ul class="cd-primary-nav">
+			<li class="cd-label">About us</li>
 
-    <p> Cutting-Edge tools and libraries to help you build your app FAST. </p>
+			<li><a href="#0">The team</a></li>
+			<li><a href="#0">Our services</a></li>
+			<li><a href="#0">Our projects</a></li>
 
-    <p> Within minutes, you can have a rock-solid framework, a nice out-of-the-box user authentication/registration, no-sql backend with an ORM, Form management,
-        caching, a task queue and a beautiful front-end</p>
+			<li class="cd-label">Work with us</li>
 
-            </div>
-        </div>
-    </div>
+			<li><a href="#0">Start a project</a></li>
+			<li><a href="#0">Join In</a></li>
+			<li><a href="#0">Create an account</a></li>
 
-    <div class="text-center"><a href="https://github.com/level09/enferno" class="btn btn-primary">Download from
-        Github</a></div>
+			<li class="cd-label">Follow us</li>
 
-</header>
+			<li class="cd-social cd-facebook"><a href="#0">Facebook</a></li>
+			<li class="cd-social cd-instagram"><a href="#0">Instagram</a></li>
+			<li class="cd-social cd-dribbble"><a href="#0">Dribbble</a></li>
+			<li class="cd-social cd-twitter"><a href="#0">Twitter</a></li>
+		</ul>
+	</nav>
+
 <section id="messages" class="section">
     <div class="container">
         <div class="row">
@@ -89,14 +88,15 @@
 
 
 
+
+
 {% block content %}
 {% endblock %}
 
 <footer>
     <div class="container">
         <div class="row">
-            <p>&copy; 2014 Project Enferno. Made with ♥ in Dubai, by <a href="http://github.com/level09"
-                                                                        target="_blank">@level09</a></p>
+            <p>footer</p>
         </div>
     </div>
 

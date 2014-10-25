@@ -1,0 +1,383 @@
+@import 'bourbon'; // http://bourbon.io/
+
+@import '../partials/variables'; // colors, fonts etc...
+
+@import '../partials/mixins'; // custom mixins
+
+@import '../partials/layout'; // responsive grid and media queries
+
+/* -------------------------------- 
+
+Primary style
+
+-------------------------------- */
+
+*, *:after, *:before {
+	@include box-sizing(border-box);
+}
+
+body {
+	font: {
+		size: 100%;
+		family: $primary-font; // variables inside partials > _variables.scss
+	}
+	color: rgba($color-1, .7);
+	background-color: $color-3;
+
+	&.overflow-hidden {
+		/* when primary navigation is visible, the content in the background won't scroll */
+		overflow: hidden;
+	}
+}
+
+a {
+	color: $color-3;
+	text-decoration: none;
+}
+
+/* -------------------------------- 
+
+Modules - reusable parts of our design
+
+-------------------------------- */
+
+.cd-container { /* this class is used to give a max-width to the element it is applied to, and center it horizontally when it reaches that max-width */
+	width: 90%;
+	max-width: $M; // breakpoints inside partials > _layout.scss
+	margin: 0 auto;
+	@include clearfix;
+}
+
+/* -------------------------------- 
+
+Main components 
+
+-------------------------------- */
+
+html, body {
+	height: 100%;
+}
+
+.cd-header {
+	position: absolute;
+	top: 0;
+	left: 0;
+	background: rgba($color-1, .95);
+	height: $header-height-S;
+	width: 100%;
+	z-index: $header-zindex;
+	box-shadow: 0 1px 2px rgba(#000, .3);
+	@include font-smoothing;
+
+	@include MQ(M) {
+		height: $header-height-M;
+		background: transparent;
+		box-shadow: none;
+	}
+
+	@include MQ(L) {
+		@include transition(background-color .3s);
+
+		/* Force Hardware Acceleration in WebKit */
+		@include transform(translate3d(0,0,0));
+		-webkit-backface-visibility: hidden;
+		backface-visibility: hidden;
+
+		&.is-fixed {
+			/* when the user scrolls down, we hide the header right above the viewport */
+			position: fixed;
+			top: -$header-height-M;
+			background-color: rgba($color-1, .96);
+			-webkit-transition: -webkit-transform 0.3s;
+			-moz-transition: -moz-transform 0.3s;
+			transition: transform 0.3s;
+		}
+
+		&.is-visible {
+			/* if the user changes the scrolling direction, we show the header */
+			@include transform(translate3d(0,100%,0));
+		}
+
+		&.menu-is-open {
+			/* add a background color to the header when the navigation is open */
+			background-color: rgba($color-1, .96);
+		}
+	}
+}
+
+.cd-logo {
+	display: block;
+	position: absolute;
+	@include center(y);
+	left: .875em;
+
+	img {
+		display: block;
+	}
+
+	@include MQ(M) {
+		left: 2.6em;
+	}
+}
+
+.cd-secondary-nav {
+	position: absolute;
+	@include center(y);
+	right: 10em;
+	/* hidden on small devices */
+	display: none;
+
+	li {
+		display: inline-block;
+		margin-left: 2.2em;
+	}
+
+	a {
+		display: inline-block;
+		color: $color-3;
+		text-transform: uppercase;
+		font-weight: 700;
+	}
+
+	@include MQ(M) {
+		display: block;
+	}
+}
+
+.cd-primary-nav-trigger {
+	position: absolute;
+	right: 0;
+	top: 0;
+	height: 100%;
+	width: 50px;
+	background-color: lighten($color-1, 5%);
+
+	.cd-menu-text {
+		color: $color-3;
+		text-transform: uppercase;
+		font-weight: 700;
+		/* hide the text on small devices */
+		display: none;
+	}
+
+	.cd-menu-icon {
+		/* this span is the central line of the menu icon */
+		display: inline-block;
+		position: absolute;
+		@include center; // mixin inside partials > _mixins.scss
+		width: 18px;
+		height: 2px;
+		background-color: $color-3;
+		@include transition(background-color .3s);
+		
+		/* these are the upper and lower lines in the menu icon */
+		&::before, &:after {
+			content: '';
+			width: 100%;
+			height: 100%; 
+			position: absolute;
+			background-color: $color-3;
+			right: 0;
+
+			-webkit-transition: -webkit-transform .3s, top .3s, background-color 0s;
+			-moz-transition: -moz-transform .3s, top .3s, background-color 0s;
+			transition: transform .3s, top .3s, background-color 0s;
+		}
+		
+		&::before {
+			top: -5px;
+		}
+
+		&::after {
+			top: 5px;
+		}
+
+		&.is-clicked {
+			background-color: rgba($color-3, 0);
+
+			&::before, &::after {
+				background-color: rgba($color-3, 1);
+			}
+
+			&::before {
+				top: 0;
+				@include transform(rotate(135deg));
+			}
+
+			&::after {
+				top: 0;
+				@include transform(rotate(225deg));
+			}
+		}
+	}
+
+	@include MQ(M) {
+		width: 100px;
+		padding-left: 1em;
+		background-color: transparent;
+		height: 30px;
+		line-height: 30px;
+		right: 2.2em;
+		@include center(y);
+
+		.cd-menu-text {
+			display: inline-block;
+		}
+
+		.cd-menu-icon {
+			left: auto;
+			right: 1em;
+			@include transform(translateX(0) translateY(-50%));
+		}
+	}
+}
+
+.cd-primary-nav {
+	/* by default it's hidden - on top of the viewport */
+	position: fixed;
+	left: 0;
+	top: 0;
+	height: 100%;
+	width: 100%;
+	background: rgba($color-1, .96);
+	z-index: $nav-zindex;
+	text-align: center;
+	padding: $header-height-S 0;
+	-webkit-backface-visibility: hidden;
+	backface-visibility: hidden;
+
+	overflow: auto;
+	/* this fixes the buggy scrolling on webkit browsers - mobile devices only - when overflow property is applied */
+	-webkit-overflow-scrolling: touch;
+
+	@include transform(translateY(-100%));
+	@include transition-property(transform);
+	@include transition-duration(.4s);
+
+	li {
+		@include font-size(22px);
+		font-weight: 300;
+		@include font-smoothing;
+		margin: .2em 0;
+		text-transform: capitalize;
+	}
+
+	a {
+		display: inline-block;
+		padding: .4em 1em;
+		@include border-radius;
+		@include transition(background .2s);
+
+		.no-touch &:hover {
+			background-color: $color-2;
+		}
+	}
+
+	.cd-label {
+		color: lighten($color-1, 15%);
+		text-transform: uppercase;
+		font-weight: 700;
+		@include font-size(14px);
+		margin: 2.4em 0 .8em;
+	}
+
+	.cd-social {
+		display: inline-block;
+		margin: 0 .4em;
+		
+		a {
+			width: 44px;
+			height: 44px;
+			padding: 0;
+			background-image: url('../img/cd-socials.svg');
+			background-repeat: no-repeat;
+
+			/* image replacement */
+			overflow: hidden;
+			text-indent: 100%;
+			white-space: nowrap;
+		}
+	}
+
+	.cd-facebook a {
+		background-position: 0 0;
+	}
+
+	.cd-instagram a {
+		background-position: -44px 0;
+	}
+
+	.cd-dribbble a {
+		background-position: -88px 0;
+	}
+
+	.cd-twitter a {
+		background-position: -132px 0;
+	}
+
+	&.is-visible {
+		@include transform(translateY(0));
+	}
+
+	@include MQ(M) {
+		padding: $header-height-M 0;
+	}
+
+	@include MQ(L) {
+		li {
+			@include font-size(30px);
+		}
+
+		.cd-label {
+			@include font-size(16px);
+		}
+	}
+}
+
+.cd-intro {
+	position: relative;
+	height: 100%;
+	background: url('../img/cd-background-img.jpg') no-repeat center center;
+	background-size: cover;
+	z-index: $content-zindex;
+	@include font-smoothing;
+
+	h1 {
+		position: absolute;
+		width: 90%;
+		max-width: $L;
+		@include center;
+
+		color: $color-3;
+		@include font-size(20px);
+		font-weight: 300;
+		text-align: center;
+	}
+
+	@include MQ(M) {
+		h1 {
+			@include font-size(30px);
+		}
+	}
+
+	@include MQ(L) {
+		height: 700px;
+	}
+}
+
+.cd-main-content {
+	position: relative;
+	z-index: $content-zindex;
+
+	p {
+		line-height: 1.6;
+		margin: 2em 0;
+	}
+
+	@include MQ(L) {
+		p {
+			@include font-size(20px);
+		}
+	}
+}
+
