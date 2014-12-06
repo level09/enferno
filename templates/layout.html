@@ -66,26 +66,27 @@
     </ul>
 </nav>
 
-<section id="messages" class="section">
-    <div class="container">
-        <div class="row">
-            {% include "security/_messages.html" %}
 
-        </div>
-    </div>
-</section>
+
+
+{% block header %}
+    <section class="cd-intro">
+        <h1>Congratulations ! </h1>
+    </section>
+{% endblock %}
 
 
 
 
 
 {% block content %}
+{% include "security/_messages.html" %}
+
 {% endblock %}
 
 <footer>
 
-            <p>&copy;2014 powered by <a href="http://enferno.io" target="_blank">Enferno</a></p>
-
+    <p>&copy;2014 powered by <a href="http://enferno.io" target="_blank">Enferno</a></p>
 
 
 </footer>

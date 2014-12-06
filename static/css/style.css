@@ -35,6 +35,7 @@ Modules - reusable parts of our design
   width: 90%;
   max-width: 768px;
   margin: 0 auto;
+  padding: 35px 0;
 }
 .cd-container:after {
   content: "";

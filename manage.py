@@ -4,6 +4,7 @@ import os
 from flask.ext.script import Manager, Shell, Server
 from flask.ext.migrate import MigrateCommand
 from flask.ext.security.script import CreateUserCommand, AddRoleCommand, RemoveRoleCommand,ActivateUserCommand, DeactivateUserCommand
+from script import InstallCommand
 from app import create_app
 
 from settings import DevConfig, ProdConfig
@@ -40,6 +41,7 @@ manager.add_command('add_role', AddRoleCommand())
 manager.add_command('remove_role', RemoveRoleCommand())
 manager.add_command('deactivate_user', DeactivateUserCommand())
 manager.add_command('activate_user', ActivateUserCommand())
+manager.add_command('install',InstallCommand())
 
 
 if __name__ == '__main__':
