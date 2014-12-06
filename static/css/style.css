@@ -424,6 +424,11 @@ html, body {
   }
 }
 
+.btn {
+  background: #f54b07;
+  padding: 8px;
+}
+
 footer {
   background: rgba(2, 23, 37, 0.96);
   padding: 40px;

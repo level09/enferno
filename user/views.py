@@ -12,4 +12,4 @@ def before_request():
 @bp_user.route('/account/')
 @login_required
 def account():
-    return render_template('index.html')
+    return render_template('account.html')
