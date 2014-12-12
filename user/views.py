@@ -2,7 +2,7 @@ from flask import Blueprint, request, session, redirect, url_for, flash, g
 from flask.ext.security import login_required, logout_user, login_user, current_user
 from flask.templating import render_template
 from models import User
-bp_user = Blueprint('user',__name__,static_folder='../static')
+bp_user = Blueprint('users',__name__,static_folder='../static')
 
 
 @bp_user.before_request
