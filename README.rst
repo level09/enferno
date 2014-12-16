@@ -13,7 +13,10 @@ http://medium.com/@level09/
 Prerequisites
 -------------
 
-You will need Mongodb and Redis installed.
+* MongoDB 
+* Redis
+* Python Imaging (jpeg/png) support if you would like to work with images
+
 
 Quickstart
 ----------
