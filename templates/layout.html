@@ -13,12 +13,10 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <meta property="og:title" content="Project Enferno"/>
     <meta property="og:type" content="website"/>
-    <meta property="og:image" content="/static/img/logo.jpg"/>
-    <meta property="og:url" content="/"/>
+    <meta property="og:image" content="{{ url_for('static',filename='img/logo.jpg',_external=True) }}"/>
+    <meta property="og:url" content="{{ request.base_url }}"/>
     <meta property="og:description" content="A Modern Framework for the Next Decade"/>
     <meta property="og:site_name" content="Enferno.io"/>
-
-
 
     {% assets "css_all" %}
         <link rel="stylesheet" href="{{ ASSET_URL }}">
@@ -36,7 +34,7 @@
 <body>
 <header class="cd-header">
     <div class="cd-logo">
-        <a href="#0">
+        <a href="/">
             <img width="45" src="/static/img/logo.svg" alt="Enferno">
         </a>
     </div>
@@ -96,23 +94,5 @@
 {% endassets %}
 {% block js %}{% endblock %}
 
-
-<script>
-    (function (i, s, o, g, r, a, m) {
-        i['GoogleAnalyticsObject'] = r;
-        i[r] = i[r] || function () {
-            (i[r].q = i[r].q || []).push(arguments)
-        }, i[r].l = 1 * new Date();
-        a = s.createElement(o),
-                m = s.getElementsByTagName(o)[0];
-        a.async = 1;
-        a.src = g;
-        m.parentNode.insertBefore(a, m)
-    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
-
-    ga('create', 'UA-52789190-1', 'auto');
-    ga('send', 'pageview');
-
-</script>
 </body>
 </html>

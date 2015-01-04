@@ -9,12 +9,7 @@ Primary style
   box-sizing: border-box;
 }
 
-body {
-  font-size: 100%;
-  font-family: "Source Sans Pro", sans-serif;
-  color: rgba(2, 23, 37, 0.7);
-  background-color: white;
-}
+
 body.overflow-hidden {
   /* when primary navigation is visible, the content in the background won't scroll */
   overflow: hidden;
@@ -25,23 +20,7 @@ a {
   text-decoration: none;
 }
 
-/* --------------------------------
 
-Modules - reusable parts of our design
-
--------------------------------- */
-.cd-container {
-  /* this class is used to give a max-width to the element it is applied to, and center it horizontally when it reaches that max-width */
-  width: 90%;
-  max-width: 768px;
-  margin: 0 auto;
-  padding: 35px 0;
-}
-.cd-container:after {
-  content: "";
-  display: table;
-  clear: both;
-}
 
 /* --------------------------------
 
@@ -293,7 +272,7 @@ html, body {
 }
 .cd-primary-nav li {
   font-size: 22px;
-  font-size: 1.375rem;
+
   font-weight: 300;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -316,7 +295,7 @@ html, body {
   text-transform: uppercase;
   font-weight: 700;
   font-size: 14px;
-  font-size: 0.875rem;
+
   margin: 2.4em 0 .8em;
 }
 .cd-primary-nav .cd-social {
@@ -361,11 +340,11 @@ html, body {
 @media only screen and (min-width: 1170px) {
   .cd-primary-nav li {
     font-size: 30px;
-    font-size: 1.875rem;
+
   }
   .cd-primary-nav .cd-label {
     font-size: 16px;
-    font-size: 1rem;
+
   }
 }
 
@@ -393,14 +372,14 @@ html, body {
   transform: translateX(-50%) translateY(-50%);
   color: white;
   font-size: 20px;
-  font-size: 1.25rem;
+
   font-weight: 300;
   text-align: center;
 }
 @media only screen and (min-width: 768px) {
   .cd-intro h1 {
     font-size: 30px;
-    font-size: 1.875rem;
+
   }
 }
 @media only screen and (min-width: 1170px) {
@@ -409,25 +388,11 @@ html, body {
   }
 }
 
-.cd-main-content {
-  position: relative;
-  z-index: 1;
-}
-.cd-main-content p {
-  line-height: 1.6;
-  margin: 2em 0;
-}
-@media only screen and (min-width: 1170px) {
-  .cd-main-content p {
-    font-size: 20px;
-    font-size: 1.25rem;
-  }
+
+main .row {
+  padding-top: 35px;
 }
 
-.btn {
-  background: #f54b07;
-  padding: 8px;
-}
 
 footer {
   background: rgba(2, 23, 37, 0.96);
