@@ -16,7 +16,7 @@ Prerequisites
 * MongoDB 
 * Redis
 * Python Imaging (jpeg/png) support if you would like to work with images
-
+* Node.js and npm (for front-end stuff)
 
 Quickstart
 ----------
@@ -30,14 +30,16 @@ Quickstart
     
     $ source env/bin/activate 
     
-    $ pip install -r requirements.txt 
+    $ pip install -r requirements.txt
+
+    $ npm install
 
 After that, you should create your admin user, run the following command:
 ::
 
     $ ./manage.py install
-    
-and follow the instructions
+
+and follow the instructions, this will create your first user and first admin role.
 
 
 Edit the settings.py and change the settings to suit your needs, sepcifically you can change Flask security settings, security keys, Mongodb settings,and Flask mail.
@@ -47,6 +49,10 @@ to run the system, you can use a management command:
 
     $ ./manage.py server
 
+    and
+
+    $ gulp
+    
 
 Features
 --------
