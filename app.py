@@ -2,7 +2,6 @@
 
 from flask import Flask, render_template
 from settings import ProdConfig
-from assets import assets
 from flask.ext.security import Security, MongoEngineUserDatastore
 from user.models import User, Role
 from admin.views import UserView, RoleView
@@ -28,7 +27,6 @@ def create_app(config_object=ProdConfig):
 
 
 def register_extensions(app):
-    assets.init_app(app)
     cache.init_app(app)
     db.init_app(app)
     admin.init_app(app)
