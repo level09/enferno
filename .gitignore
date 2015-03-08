@@ -4,6 +4,4 @@
 celerybeat-schedule
 env
 local_settings.py
-static/css/common.css
-static/js/common.js
 node_modules/

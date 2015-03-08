@@ -4,27 +4,27 @@ var gulp = require('gulp'),
     uglify = require('gulp-uglify');
 
 gulp.task('css',function(){
-    return gulp.src('static/css/*.css')
+    return gulp.src('static/_css/*.css')
         .pipe(concat('app.css'))
         .pipe(minifyCSS())
-        .pipe(gulp.dest('static/build/css'))
+        .pipe(gulp.dest('static/css'))
 });
 
 gulp.task('js',function(){
     //define scripts as array so we can prioritize them
     return gulp.src([
-        'static/js/main.js'
+        'static/_js/main.js'
             ]
     )
         .pipe(concat('app.js'))
         .pipe(uglify())
-        .pipe(gulp.dest('static/build/js'))
+        .pipe(gulp.dest('static/js'))
 })
 
 
 gulp.task('default',function(){
 
-    gulp.watch('static/css/*.css',['css']);
-    gulp.watch('static/js/*.js',['js']);
+    gulp.watch('static/_css/*.css',['css']);
+    gulp.watch('static/_js/*.js',['js']);
 
 })
