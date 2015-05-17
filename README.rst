@@ -9,6 +9,18 @@ To learn more about the framework and its use cases, you can follow my articles 
 
 http://medium.com/@level09/
 
+Tutorials
+-------------
+
+* First steps: create your first website with Enferno : https://medium.com/project-enferno/moonwalking-with-project-enferno-402937628745
+* Customize your website : https://medium.com/project-enferno/moonwalking-with-project-enferno-part-2-9a23d39af55a
+* Create a simple blog in 5 minutes: https://medium.com/project-enferno/create-a-simple-blog-in-5-min-using-project-enferno-be359ae77788?source=1
+* Create a comic website with Enferno in 7 min: https://medium.com/project-enferno/create-a-comic-website-in-7-min-using-project-enferno-6c838c1e2742?source=1
+* How to use background tasks and Mail in Enferno : https://medium.com/project-enferno/create-your-first-minion-with-project-enferno-f7884aa95443?source=1
+* Deploy your Enferno project on Ubuntu in a minute: https://medium.com/project-enferno/tip-deploy-enferno-framework-on-ubuntu-with-a-single-command-cc1a596ec3f7
+* How to deploy Enferno on Heroku: https://medium.com/project-enferno/deploy-your-enferno-website-on-heroku-for-free-810326f0aaa
+* YOOO: a url shortener built with Enferno: https://medium.com/project-enferno/introducing-yooo-a-url-shortener-api-based-on-enferno-framework-823bdc2afa05?source=1
+
 
 Prerequisites
 -------------
