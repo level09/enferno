@@ -5,3 +5,4 @@ celerybeat-schedule
 env
 local_settings.py
 node_modules/
+.DS_Store
