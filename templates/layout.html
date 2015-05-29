@@ -19,26 +19,21 @@
 
   <!-- CSS
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-<link rel="stylesheet" href="/static/css/app.css">
-    {% block css %}{% endblock %}
-
-
+  <link rel="stylesheet" href="/static/css/app.css">
+  {% block css %}{% endblock %}
 
   <!-- Favicon
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <link rel="icon" type="image/png" href="/static/img/logo.svg">
+  <link rel="shortcut icon" type="image/png" href="/static/img/logo.svg">
 
 </head>
 
-
+<body>
 {% block content %}
 {% include "security/_messages.html" %}
 {% endblock %}
 
-<footer>
-</footer>
-
 <script type="text/javascript" src="/static/js/app.js"></script>
 {% block js %}{% endblock %}
-
+</body>
 </html>
