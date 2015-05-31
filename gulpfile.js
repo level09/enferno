@@ -24,6 +24,7 @@ gulp.task('js',function(){
 
 gulp.task('default',function(){
     gulp.start('css','js');
+    gulp.watch('gulpfile.js');
     gulp.watch('static/_css/*.css',['css']);
     gulp.watch('static/_js/*.js',['js']);
 
