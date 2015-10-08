@@ -1,0 +1,31 @@
+@import 'compass/typography';
+@import 'compass/reset';
+
+
+$font-family: 'Source Sans Pro', sans-serif;
+
+// Compass Vertical Rhythms Settings
+// ---------------------------------
+$base-font-size: 16px;
+$base-line-height: 24px;
+$round-to-nearest-half-line: true;
+
+// Uses the `rem` unit for all vertical rhythm output
+$rhythm-unit: "rem";
+
+
+body {
+  font-family: $font-family;
+  text-rendering: optimizeLegibility;
+
+}
+
+@include establish-baseline;
+
+.w {
+  padding : 200px;
+}
+
+h3{
+  @include adjust-font-size-to(28px);
+}
