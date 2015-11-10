@@ -80,6 +80,16 @@ Features
 - Best practices by utilizing Flask blueprints and development/production configuration
 
 
+Showcase
+--------
+Some of the websites running on Enferno: 
+
+- `DUKES Hotel <http://dukeshotel.com>`_ 
+- `Dubaiz Properties <http://dubaiz.com>`_ 
+- `Bistro Des Arts <http://bistrodesarts.com>`_ 
+- `Seven Tides <http://seventides.com>`_ 
+- `Anantara Residences <http://anantararesidences.com>`_ 
+
 
 Inspiration & Credits
 ---------------------
