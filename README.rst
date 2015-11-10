@@ -86,7 +86,7 @@ Some of the websites running on Enferno:
 
 - `DUKES Hotel <http://dukeshotel.com>`_ 
 - `Dubaiz Properties <http://dubaiz.com>`_ 
-- `Bistro Des Arts <http://bistrodesarts.com>`_ 
+- `Bistro Des Arts <http://bistrodesarts.ae>`_ 
 - `Seven Tides <http://seventides.com>`_ 
 - `Anantara Residences <http://anantararesidences.com>`_ 
 
