@@ -2,7 +2,7 @@
 
 from flask import Flask, render_template
 from settings import ProdConfig
-from flask.ext.security import Security, MongoEngineUserDatastore
+from flask.ext.security import Security, SQLAlchemyUserDatastore
 from user.models import User, Role
 from admin.views import UserView, RoleView
 from user.forms import ExtendedRegisterForm
@@ -23,7 +23,13 @@ def create_app(config_object=ProdConfig):
     register_extensions(app)
     register_blueprints(app)
     register_errorhandlers(app)
+
+    @app.before_first_request
+    def before_first_request():
+        db.create_all()
+            
     return app
+
 
 
 def register_extensions(app):
@@ -31,7 +37,7 @@ def register_extensions(app):
     db.init_app(app)
     admin.init_app(app)
     register_admin_views(admin)
-    user_datastore = MongoEngineUserDatastore(db, User, Role)
+    user_datastore = SQLAlchemyUserDatastore(db, User, Role)
     security = Security(app, user_datastore, confirm_register_form=ExtendedRegisterForm)
     mail.init_app(app)
     debug_toolbar.init_app(app)
@@ -41,12 +47,12 @@ def register_extensions(app):
 
 def register_blueprints(app):
     app.register_blueprint(bp_public)
-    app.register_blueprint(bp_user)
+    app.register_blueprint(bp_user)            
     return None
 
 def register_admin_views(admin):
-    admin.add_view(UserView(User))
-    admin.add_view(RoleView(Role))
+    admin.add_view(UserView(User, db.session))
+    admin.add_view(RoleView(Role, db.session))
     return None
 
 

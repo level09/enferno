@@ -14,7 +14,7 @@ Flask-DebugToolbar==0.9.0
 Flask-Login==0.2.11
 Flask-Mail==0.9.1
 Flask-Migrate==1.2.0
-flask-mongoengine==0.7.0
+Flask-SQLAlchemy==2.0
 Flask-Principal==0.4.0
 Flask-Script==2.0.5
 Flask-Security==1.7.4
@@ -27,11 +27,9 @@ jsmin==2.0.11
 kombu==3.0.20
 Mako==1.0.0
 MarkupSafe==0.23
-mongoengine==0.8.7
 passlib==1.6.2
 Pillow==2.5.1
 py-bcrypt==0.4
-pymongo==2.7.1
 pytz==2014.4
 redis==2.10.1
 SQLAlchemy==0.9.4

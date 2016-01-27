@@ -11,10 +11,8 @@ class Config(object):
     DEBUG_TB_ENABLED = False  # Disable Debug toolbar
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     CACHE_TYPE = 'simple'  # Can be "memcached", "redis", etc.
+    SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/test.db'
     BROKER_URL = 'redis://localhost:6379/10'
-    MONGODB_SETTINGS = {
-        'DB': 'enferno'
-    }
 
     #security
     SECURITY_REGISTERABLE = True
