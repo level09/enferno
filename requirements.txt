@@ -18,7 +18,6 @@ Flask-SQLAlchemy==2.0
 Flask-Principal==0.4.0
 Flask-Script==2.0.5
 Flask-Security==1.7.4
-Flask-SQLAlchemy==2.0
 Flask-WTF==0.10.3
 gunicorn==19.0.0
 itsdangerous==0.24

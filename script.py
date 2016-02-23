@@ -2,14 +2,18 @@ from flask.ext.script import Command, prompt, Option
 from flask.ext.security.script import CreateUserCommand, AddRoleCommand
 from flask_security.utils import encrypt_password
 from user.models import Role, User
+from extensions import db
+
 
 class InstallCommand(Command):
 
     def run(self, **kwargs):
         #check if admin exists
-        a = Role.objects.filter(name='admin').first()
+        a = Role.query.filter(Role.name =='admin').first()
         if a == None:
-            Role(name='admin').save()
+            r = Role(name='admin')
+            db.session.add(r)
+            db.session.commit()
             u = prompt('Admin Email?',default='admin@enferno.io')
             p = prompt('Admin Password (min 6 characters)?',default='enferno')
             CreateUserCommand().run(email=u,password=p,active=1)
@@ -27,7 +31,10 @@ class ResetUserCommand(Command):
     def run(self, **kwargs):
         try:
             pwd = encrypt_password(kwargs['password'])
-            User.objects(email=kwargs['email']).first().update(set__password=pwd)
+            u = User.query.filter(User.email == kwargs['email']).first()
+            u.password = pwd
+            db.session.commit()
+
         except Exception, e:
             print ('Error resetting user password: %s' % e)
 
