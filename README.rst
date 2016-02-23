@@ -1,4 +1,4 @@
-Project Enferno
+Project Enferno (SQL Branch)
 ==================
 
 A framework for the next decade, this is a collection of cutting-edge libraries and tools based on Flask framework.
@@ -24,11 +24,10 @@ Tutorials
 
 Prerequisites
 -------------
-
-* MongoDB 
+ 
 * Redis
 * Python Imaging (jpeg/png) support if you would like to work with images
-* Node.js and npm (for front-end stuff)
+* (Optional) Node.js and npm (for front-end stuff)
 
 Quickstart
 ----------
@@ -46,22 +45,23 @@ Quickstart
 
     $ npm install
 
+Edit the settings.py and change the values to suit your needs, sepcifically you can change Flask security settings, security keys, Mysql settings,and Flask mail.
+
 After that, you should create your admin user, run the following command:
 ::
 
     $ ./manage.py install
-
 and follow the instructions, this will create your first user and first admin role.
 
 
-Edit the settings.py and change the settings to suit your needs, sepcifically you can change Flask security settings, security keys, Mongodb settings,and Flask mail.
+
 
 to run the system, you can use a management command:
-::
 
     $ ./manage.py server
 
-    and
+Then 
+
 
     $ gulp
     
