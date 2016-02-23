@@ -1,4 +1,4 @@
-from flask_admin.contrib.mongoengine import ModelView
+from flask_admin.contrib.sqla import ModelView
 from user.models import User
 from flask_security import current_user
 from flask_admin import expose, BaseView
