@@ -1,4 +1,4 @@
-Project Enferno
+Project Enferno (NoSQL)
 ==================
 
 A framework for the next decade, this is a collection of cutting-edge libraries and tools based on Flask framework.
@@ -8,6 +8,8 @@ http://enferno.io
 To learn more about the framework and its use cases, you can follow my articles on Medium :
 
 http://medium.com/@level09/
+
+If you are prefer to use a SQL compatible backend, please check out the "sql" branch. 
 
 Tutorials
 -------------
