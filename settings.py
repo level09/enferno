@@ -40,6 +40,7 @@ class ProdConfig(Config):
     """Production configuration."""
     ENV = 'prod'
     DEBUG = False
+    #SQLALCHEMY_DATABASE_URI = 'mysql://user:pass@localhost/enferno'
     DEBUG_TB_ENABLED = False  # Disable Debug toolbar
 
 

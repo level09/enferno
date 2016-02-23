@@ -20,7 +20,7 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.datetime.now,  nullable=False)
     email = db.Column(db.String(255),  nullable=False)
     username = db.Column(db.String(255), nullable=True, unique=True)
-    password = db.Column(db.String,  nullable=False)
+    password = db.Column(db.String(255),  nullable=False)
     active = db.Column(db.Boolean, default=False)
     roles = db.relationship('Role', secondary=roles_users,
                             backref=db.backref('users', lazy='dynamic'))
@@ -30,8 +30,8 @@ class User(UserMixin, db.Model):
     #tracking
     last_login_at = db.Column(db.DateTime())
     current_login_at = db.Column(db.DateTime())
-    last_login_ip = db.Column(db.String())
-    current_login_ip = db.Column(db.String())
+    last_login_ip = db.Column(db.String(255))
+    current_login_ip = db.Column(db.String(255))
     login_count = db.Column(db.Integer())
 
     def __unicode__(self):
