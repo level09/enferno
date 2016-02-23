@@ -1,9 +1,13 @@
+#import datetime
 from extensions import db
+
 
 
 #your models can go here
 '''
-class MyModel(db.Document):
-    field = db.StringField()
-    updated = db.DateTimeField()
+class MyModel(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.now,  nullable=False)
+    field = db.Column(db.String(255),  nullable=False)
+
 '''
