@@ -75,7 +75,7 @@ Features
 - Memory caching via Redis and Flask cache
 - Simple admin backend via Flask Admin
 - Command line scripting via Flask Script (will be replaced by "click" in the next release)
-- Automatic assets bundling and minification via Flask assets
+- Automatic assets bundling, minification and sass support via gulp
 - Mongodb and Mongoengine ORM
 - Background tasks via Celery
 - Email integration via Flask Mail
