@@ -29,7 +29,7 @@
 
 </head>
 
-<body>
+<body class="{{ request.path }}">
 {% block content %}
 {% include "security/_messages.html" %}
 {% endblock %}
