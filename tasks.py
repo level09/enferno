@@ -19,6 +19,7 @@ else:
 celery = Celery('tasks', broker=cfg.CELERY_BROKER_URL)
 #remove deprecated warning
 celery.conf.update({'CELERY_ACCEPT_CONTENT':['pickle', 'json', 'msgpack', 'yaml']})
+celery.conf.update({'CELERY_RESULT_BACKEND':cfg.CELERY_RESULT_BACKEND})
 
 @task
 def task():

@@ -12,6 +12,7 @@ class Config(object):
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     CACHE_TYPE = 'simple'  # Can be "memcached", "redis", etc.
     CELERY_BROKER_URL = 'redis://localhost:6379/10'
+    CELERY_RESULT_BACKEND = 'redis://localhost:6379/11'
     MONGODB_SETTINGS = {
         'DB': 'enferno'
     }
