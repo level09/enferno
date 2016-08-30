@@ -51,10 +51,6 @@ def register_blueprints(app):
     app.register_blueprint(bp_user)            
     return None
 
-def register_admin_views(admin):
-    admin.add_view(UserView(User, db.session))
-    admin.add_view(RoleView(Role, db.session))
-    return None
 
 
 def register_errorhandlers(app):
