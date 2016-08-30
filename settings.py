@@ -12,7 +12,10 @@ class Config(object):
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     CACHE_TYPE = 'simple'  # Can be "memcached", "redis", etc.
     SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/test.db'
-    BROKER_URL = 'redis://localhost:6379/10'
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
+    CELERY_BROKER_URL = 'redis://localhost:6379/10'
+    CELERY_RESULT_BACKEND = 'redis://localhost:6379/11'
+
 
     #security
     SECURITY_REGISTERABLE = True
@@ -26,13 +29,13 @@ class Config(object):
     SECURITY_POST_CONFIRM_VIEW = '/account'
 
 
-    #flask mail settings - Mailgun
-    MAIL_SERVER = 'smtp.mailgun.com'
+    #flask mail settings
+    MAIL_SERVER = 'smtp.domain.com'
     MAIL_PORT = 465
     MAIL_USE_SSL = True
     MAIL_USERNAME = 'user'
     MAIL_PASSWORD = 'pass'
-    SECURITY_EMAIL_SENDER = 'info@level09.com'
+    SECURITY_EMAIL_SENDER = 'info@domain.com'
 
 
 

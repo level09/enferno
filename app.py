@@ -2,22 +2,25 @@
 
 from flask import Flask, render_template
 from settings import ProdConfig
-from flask.ext.security import Security, SQLAlchemyUserDatastore
+from flask_security import Security, SQLAlchemyUserDatastore
 from user.models import User, Role
-from admin.views import UserView, RoleView
 from user.forms import ExtendedRegisterForm
 from extensions import (
     cache,
-    admin,
     db,
     mail,
     debug_toolbar,
 )
 from public.views import bp_public
 from user.views import bp_user
+import warnings
+from flask.exthook import ExtDeprecationWarning
+
+
 
 
 def create_app(config_object=ProdConfig):
+    warnings.simplefilter('ignore', ExtDeprecationWarning)
     app = Flask(__name__)
     app.config.from_object(config_object)
     register_extensions(app)
@@ -35,8 +38,6 @@ def create_app(config_object=ProdConfig):
 def register_extensions(app):
     cache.init_app(app)
     db.init_app(app)
-    admin.init_app(app)
-    register_admin_views(admin)
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
     security = Security(app, user_datastore, confirm_register_form=ExtendedRegisterForm)
     mail.init_app(app)
