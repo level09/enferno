@@ -1,5 +1,5 @@
 {% macro render_field_with_errors(field) %}
-    <p>
+    <div class="field">
         {% if field.type == 'BooleanField' %}
             {{ field.label }} {{ field(**kwargs)|safe }}
         {% elif field.type == 'SubmitField' %}
@@ -15,9 +15,9 @@
                 {% endfor %}
             </ul>
         {% endif %}
-    </p>
+    </div>
 {% endmacro %}
 
 {% macro render_field(field) %}
-    <p>{{ field(**kwargs)|safe }}</p>
+    <div class="field">{{ field(**kwargs)|safe }}</div>
 {% endmacro %}
