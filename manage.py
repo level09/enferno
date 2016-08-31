@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
-from flask.ext.script import Manager, Shell, Server
-from flask.ext.migrate import MigrateCommand
-from flask.ext.security.script import CreateUserCommand, AddRoleCommand, RemoveRoleCommand,ActivateUserCommand, DeactivateUserCommand
+from flask_script import Manager, Shell, Server
+from flask_security.script import CreateUserCommand, AddRoleCommand, RemoveRoleCommand,ActivateUserCommand, DeactivateUserCommand
 from script import InstallCommand, ResetUserCommand
 from app import create_app
 

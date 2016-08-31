@@ -2,7 +2,7 @@
 
 from flask import Flask, render_template
 from settings import ProdConfig
-from flask.ext.security import Security, MongoEngineUserDatastore
+from flask_security import Security, MongoEngineUserDatastore
 from user.models import User, Role
 from admin.views import UserView, RoleView
 from user.forms import ExtendedRegisterForm
@@ -15,9 +15,12 @@ from extensions import (
 )
 from public.views import bp_public
 from user.views import bp_user
+import warnings
+from flask.exthook import ExtDeprecationWarning
 
 
 def create_app(config_object=ProdConfig):
+    warnings.simplefilter('ignore', ExtDeprecationWarning)
     app = Flask(__name__)
     app.config.from_object(config_object)
     register_extensions(app)

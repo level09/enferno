@@ -1,5 +1,5 @@
-from flask.ext.script import Command, prompt, Option
-from flask.ext.security.script import CreateUserCommand, AddRoleCommand
+from flask_script import Command, prompt, Option
+from flask_security.script import CreateUserCommand, AddRoleCommand
 from flask_security.utils import encrypt_password
 from user.models import Role, User
 
