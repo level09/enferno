@@ -23,10 +23,6 @@ def create_app(config_object=ProdConfig):
     register_errorhandlers(app)
     register_shellcontext(app)
     register_commands(app)
-    @app.before_first_request
-    def before_first_request():
-        db.create_all()
-            
     return app
 
 
@@ -74,6 +70,7 @@ def register_commands(app):
     """Register Click commands."""
 
     app.cli.add_command(commands.clean)
+    app.cli.add_command(commands.create_db)
     app.cli.add_command(commands.install)
     app.cli.add_command(commands.reset)
 

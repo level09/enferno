@@ -16,9 +16,14 @@ from user.models import User
 from flask import current_app
 from flask.cli import with_appcontext
 
-HERE = os.path.abspath(os.path.dirname(__file__))
-PROJECT_ROOT = os.path.join(HERE, os.pardir)
-TEST_PATH = os.path.join(PROJECT_ROOT, 'tests')
+
+@click.command()
+@with_appcontext
+def create_db():
+    """Install a default admin user and add an admin role to it.
+    """
+    #check if admin exists
+    db.create_all()
 
 
 @click.command()
