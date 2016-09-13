@@ -8,14 +8,10 @@ from user.forms import ExtendedRegisterForm
 from extensions import  cache,  db,  mail, debug_toolbar, migrate
 from public.views import bp_public
 from user.views import bp_user
-import warnings
-from flask.exthook import ExtDeprecationWarning
 import commands
 
-
-
 def create_app(config_object=ProdConfig):
-    warnings.simplefilter('ignore', ExtDeprecationWarning)
+
     app = Flask(__name__)
     app.config.from_object(config_object)
     register_extensions(app)

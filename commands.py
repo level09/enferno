@@ -34,7 +34,6 @@ def install():
     #check if admin exists
     from user.models import Role
     a = Role.query.filter(Role.name =='admin').first()
-    print a
 
     if a == None:
         r = Role(name='admin')
@@ -60,6 +59,7 @@ def reset(email, password):
         u = User.query.filter(User.email == email).first()
         u.password = pwd
         db.session.commit()
+        print ('User password has been reset successfully.')
     except Exception, e:
         print ('Error resetting user password: %s' % e)
 

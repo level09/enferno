@@ -1,4 +1,8 @@
 import os
+import warnings
+from flask.exthook import ExtDeprecationWarning
+warnings.simplefilter('ignore', ExtDeprecationWarning)
+
 
 from app import create_app
 from settings import DevConfig, ProdConfig
