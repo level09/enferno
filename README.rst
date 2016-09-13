@@ -51,7 +51,8 @@ Quickstart
 After that, you should create your admin user, run the following command:
 ::
 
-    $ ./manage.py install
+    $ export FLASK_APP=enfenro.py
+    $ flask install
 
 and follow the instructions, this will create your first user and first admin role.
 
@@ -61,7 +62,7 @@ Edit the settings.py and change the settings to suit your needs, sepcifically yo
 to run the system, you can use a management command:
 ::
 
-    $ ./manage.py server
+    $ flask run
 
     and
 
@@ -71,10 +72,9 @@ to run the system, you can use a management command:
 Features
 --------
 - Flask based
-- Fully working user registration and authentication + user roles via Flask security and Flask Principal
+- Fully working user registration and authentication + user roles via Flask security
 - Memory caching via Redis and Flask cache
-- Simple admin backend via Flask Admin
-- Command line scripting via Flask Script (will be replaced by "click" in the next release)
+- Command line scripting via Flask click
 - Automatic assets bundling, minification and sass support via gulp
 - Mongodb and Mongoengine ORM
 - Background tasks via Celery

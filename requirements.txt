@@ -7,7 +7,6 @@ celery==3.1.23
 cffi==1.7.0
 click==6.6
 Flask==0.11.1
-Flask-Admin==1.4.2
 Flask-Cache==0.13.1
 Flask-DebugToolbar==0.10.0
 Flask-Login==0.3.2
