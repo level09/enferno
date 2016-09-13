@@ -50,7 +50,9 @@ Edit the settings.py and change the values to suit your needs, sepcifically you 
 After that, you should create your admin user, run the following command:
 ::
 
-    $ ./manage.py install
+    $ export FLASK_APP=enferno.py
+    $ flask install
+
 and follow the instructions, this will create your first user and first admin role.
 
 
@@ -69,7 +71,7 @@ Then
 Features
 --------
 - Flask based
-- Fully working user registration and authentication + user roles via Flask security and Flask Principal
+- Fully working user registration and authentication + user roles via Flask security
 - Memory caching via Redis and Flask cache
 - Command line scripting via Flask Script (will be replaced by "click" in the next release)
 - Automatic assets bundling and minification via Flask assets
