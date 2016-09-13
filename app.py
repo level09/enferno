@@ -5,17 +5,12 @@ from settings import ProdConfig
 from flask_security import Security, SQLAlchemyUserDatastore
 from user.models import User, Role
 from user.forms import ExtendedRegisterForm
-from extensions import (
-    cache,
-    db,
-    mail,
-    debug_toolbar,
-)
+from extensions import  cache,  db,  mail, debug_toolbar, migrate
 from public.views import bp_public
 from user.views import bp_user
 import warnings
 from flask.exthook import ExtDeprecationWarning
-
+import commands
 
 
 
@@ -26,7 +21,8 @@ def create_app(config_object=ProdConfig):
     register_extensions(app)
     register_blueprints(app)
     register_errorhandlers(app)
-
+    register_shellcontext(app)
+    register_commands(app)
     @app.before_first_request
     def before_first_request():
         db.create_all()
@@ -41,8 +37,8 @@ def register_extensions(app):
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
     security = Security(app, user_datastore, confirm_register_form=ExtendedRegisterForm)
     mail.init_app(app)
+    migrate.init_app(app)
     debug_toolbar.init_app(app)
-
     return None
 
 
@@ -57,7 +53,27 @@ def register_errorhandlers(app):
     def render_error(error):
         error_code = getattr(error, 'code', 500)
         return render_template("{0}.html".format(error_code)), error_code
-
     for errcode in [401, 404, 500]:
         app.errorhandler(errcode)(render_error)
     return None
+
+
+def register_shellcontext(app):
+    """Register shell context objects."""
+    def shell_context():
+        """Shell context objects."""
+        return {
+            'db': db,
+            'User': User}
+
+    app.shell_context_processor(shell_context)
+
+
+
+def register_commands(app):
+    """Register Click commands."""
+
+    app.cli.add_command(commands.clean)
+    app.cli.add_command(commands.install)
+    app.cli.add_command(commands.reset)
+
