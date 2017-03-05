@@ -51,7 +51,7 @@ Quickstart
 After that, you should create your admin user, run the following command:
 ::
 
-    $ export FLASK_APP=enfenro.py
+    $ export FLASK_APP=enferno.py
     $ flask install
 
 and follow the instructions, this will create your first user and first admin role.
