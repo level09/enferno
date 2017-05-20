@@ -1,0 +1,138 @@
+@import 'compass/typography';
+@import 'compass/css3';
+@import 'compass/reset';
+
+$font-family: 'Source Sans Pro', sans-serif;
+
+// Compass Vertical Rhythms Settings
+// ---------------------------------
+$base-font-size: 16px;
+$base-line-height: 24px;
+$round-to-nearest-half-line: true;
+
+// Uses the `rem` unit for all vertical rhythm output
+$rhythm-unit: "rem";
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+html {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: $font-family;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  box-sizing: border-box;
+  background: #f0f0f0;
+  padding-top: 70px;
+}
+
+@include establish-baseline;
+
+main {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 50px;
+  background: white;
+  @include clearfix;
+}
+
+h3 {
+  @include adjust-font-size-to(24px);
+  margin-bottom: 15px;
+}
+
+//Flask Security styling (user registeration/login etc ...)
+
+h2 {
+  @include adjust-font-size-to(28px);
+  margin: 18px 0;
+}
+
+input[type="text"], input[type="email"], input[type="password"], textarea {
+  @include appearance(none);
+  font-size: 18px;
+  border: 0;
+  padding: 8px;
+  //width: 100%;
+  @include transition(all .2s ease);
+  background: #f0f0f0;
+  @include box-shadow(0 0 0 2px transparent);
+
+  &:focus {
+    background: #fff;
+    outline: none;
+    @include box-shadow(0 0 0 2px #000000);
+
+  }
+
+}
+
+select {
+
+  padding: 6px;
+  border: 1px solid #f0f0f0;
+  @include border-radius(0);
+  width: 97%;
+  -webkit-appearance: none;
+
+  background: #f0f0f0;
+  &:focus {
+    background: #fff;
+  }
+}
+
+label {
+  display: block;
+  margin-bottom: 6px;
+  text-align: left;
+  width: 100%;
+  font-weight: bold;
+  color: #444;
+}
+
+input[type="submit"] {
+  @include appearance(none);
+
+  align-items: center;
+  background-color: white;
+  border: 1px solid #dbdbdb;
+  border-radius: 3px;
+  color: #363636;
+
+  @include display-flex();
+
+  height: 32px;
+
+  line-height: 24px;
+  padding-left: 8px;
+  padding-right: 8px;
+  position: relative;
+  vertical-align: top;
+  -webkit-touch-callout: none;
+  @include user-select(none);
+  cursor: pointer;
+
+  justify-content: center;
+
+  text-align: center;
+  white-space: nowrap;
+
+  @include transition(all .2s ease);
+  margin-top: 20px;
+
+  font-size: 14px;
+  text-transform: uppercase;
+  font-weight: bold;
+  font-family: $font-family;
+  &:hover  {
+    border-color: #000000;
+    outline: none;
+
+  }
+}

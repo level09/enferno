@@ -1,4 +1,4 @@
-from ..extensions import db
+from enferno.extensions import  db
 from flask_security import UserMixin, RoleMixin
 import datetime
 
@@ -39,9 +39,7 @@ class User(UserMixin, db.Document):
 
     meta = {
         'allow_inheritance': True,
-        'indexes': ['-created_at', 'email', 'username'],
+        'indexes': ['created_at', 'email', 'username'],
         'ordering': ['-created_at']
     }
-
-
 

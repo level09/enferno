@@ -11,11 +11,11 @@ class Config(object):
     DEBUG_TB_ENABLED = False  # Disable Debug toolbar
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     CACHE_TYPE = 'simple'  # Can be "memcached", "redis", etc.
+    MONGODB_SETTINGS = {'DB': 'enfernodb' }
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
     CELERY_BROKER_URL = 'redis://localhost:6379/10'
     CELERY_RESULT_BACKEND = 'redis://localhost:6379/11'
-    MONGODB_SETTINGS = {
-        'DB': 'enferno'
-    }
+
 
     #security
     SECURITY_REGISTERABLE = True

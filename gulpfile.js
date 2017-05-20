@@ -5,32 +5,32 @@ var gulp = require('gulp'),
     uglify = require('gulp-uglify');
 
 gulp.task('css',function(){
-    return gulp.src('static/_css/*.css')
+    return gulp.src('enferno/static/_css/*.css')
         .pipe(concat('style.css'))
         .pipe(minifyCSS())
-        .pipe(gulp.dest('static/css'))
+        .pipe(gulp.dest('enferno/static/css'))
 });
 
 gulp.task('js',function(){
     //define scripts as array so we can prioritize them
     return gulp.src([
-        'static/_js/main.js'
+        'enferno/static/_js/main.js'
             ]
     )
         .pipe(concat('app.js'))
         .pipe(uglify())
-        .pipe(gulp.dest('static/js'))
+        .pipe(gulp.dest('enferno/static/js'))
 });
 
 gulp.task('compass', function() {
-  gulp.src('./static/scss/*.scss')
+  gulp.src('./enferno/static/scss/*.scss')
     .pipe(compass({
-      css: './static/css',
-      sass: './static/scss',
+      css: './enferno/static/css',
+      sass: './enferno/static/scss',
       //uncomment if you would like to include susy grids
       //require: ['susy']
     }))
-    .pipe(gulp.dest('static/css'));
+    .pipe(gulp.dest('enferno/static/css'));
 });
 
 
@@ -38,8 +38,8 @@ gulp.task('compass', function() {
 gulp.task('default',function(){
     gulp.start('compass','css','js');
     gulp.watch('gulpfile.js');
-    gulp.watch('static/_css/*.css',['css']);
-    gulp.watch('static/_js/*.js',['js']);
-    gulp.watch('static/scss/*.scss',['compass']);
+    gulp.watch('enferno/static/_css/*.css',['css']);
+    gulp.watch('enferno/static/_js/*.js',['js']);
+    gulp.watch('enferno/static/scss/*.scss',['compass']);
 
 })

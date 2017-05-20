@@ -8,11 +8,12 @@ from user.forms import ExtendedRegisterForm
 from extensions import   cache,  db,  mail,debug_toolbar
 from public.views import bp_public
 from user.views import bp_user
+import enferno.commands as commands
 
-import commands
 
 
 def create_app(config_object=ProdConfig):
+
     app = Flask(__name__)
     app.config.from_object(config_object)
     register_extensions(app)
@@ -21,6 +22,7 @@ def create_app(config_object=ProdConfig):
     register_shellcontext(app)
     register_commands(app)
     return app
+
 
 
 def register_extensions(app):
@@ -35,7 +37,7 @@ def register_extensions(app):
 
 def register_blueprints(app):
     app.register_blueprint(bp_public)
-    app.register_blueprint(bp_user)
+    app.register_blueprint(bp_user)            
     return None
 
 
@@ -44,7 +46,6 @@ def register_errorhandlers(app):
     def render_error(error):
         error_code = getattr(error, 'code', 500)
         return render_template("{0}.html".format(error_code)), error_code
-
     for errcode in [401, 404, 500]:
         app.errorhandler(errcode)(render_error)
     return None
@@ -56,8 +57,7 @@ def register_shellcontext(app):
         """Shell context objects."""
         return {
             'db': db,
-            'User': User
-        }
+            'User': User}
 
     app.shell_context_processor(shell_context)
 
@@ -70,3 +70,4 @@ def register_commands(app):
     app.cli.add_command(commands.create_db)
     app.cli.add_command(commands.install)
     app.cli.add_command(commands.reset)
+

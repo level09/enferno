@@ -1,0 +1,190 @@
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  font-size: 100%;
+  vertical-align: baseline;
+}
+
+html {
+  line-height: 1;
+}
+
+ol, ul {
+  list-style: none;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+caption, th, td {
+  text-align: left;
+  font-weight: normal;
+  vertical-align: middle;
+}
+
+q, blockquote {
+  quotes: none;
+}
+q:before, q:after, blockquote:before, blockquote:after {
+  content: "";
+  content: none;
+}
+
+a img {
+  border: none;
+}
+
+article, aside, details, figcaption, figure, footer, header, hgroup, main, menu, nav, section, summary {
+  display: block;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+html {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Source Sans Pro", sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  box-sizing: border-box;
+  background: #f0f0f0;
+  padding-top: 70px;
+}
+
+html {
+  font-size: 100%;
+  line-height: 1.5em;
+}
+
+main {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 50px;
+  background: white;
+  overflow: hidden;
+  *zoom: 1;
+}
+
+h3 {
+  font-size: 24px;
+  font-size: 1.5rem;
+  line-height: 36px;
+  line-height: 2.25rem;
+  margin-bottom: 15px;
+}
+
+h2 {
+  font-size: 28px;
+  font-size: 1.75rem;
+  line-height: 36px;
+  line-height: 2.25rem;
+  margin: 18px 0;
+}
+
+input[type="text"], input[type="email"], input[type="password"], textarea {
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  font-size: 18px;
+  border: 0;
+  padding: 8px;
+  -moz-transition: all 0.2s ease;
+  -o-transition: all 0.2s ease;
+  -webkit-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+  background: #f0f0f0;
+  -moz-box-shadow: 0 0 0 2px transparent;
+  -webkit-box-shadow: 0 0 0 2px transparent;
+  box-shadow: 0 0 0 2px transparent;
+}
+input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, textarea:focus {
+  background: #fff;
+  outline: none;
+  -moz-box-shadow: 0 0 0 2px #000000;
+  -webkit-box-shadow: 0 0 0 2px #000000;
+  box-shadow: 0 0 0 2px #000000;
+}
+
+select {
+  padding: 6px;
+  border: 1px solid #f0f0f0;
+  -moz-border-radius: 0;
+  -webkit-border-radius: 0;
+  border-radius: 0;
+  width: 97%;
+  -webkit-appearance: none;
+  background: #f0f0f0;
+}
+select:focus {
+  background: #fff;
+}
+
+label {
+  display: block;
+  margin-bottom: 6px;
+  text-align: left;
+  width: 100%;
+  font-weight: bold;
+  color: #444;
+}
+
+input[type="submit"] {
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  align-items: center;
+  background-color: white;
+  border: 1px solid #dbdbdb;
+  border-radius: 3px;
+  color: #363636;
+  display: -webkit-flex;
+  display: flex;
+  height: 32px;
+  line-height: 24px;
+  padding-left: 8px;
+  padding-right: 8px;
+  position: relative;
+  vertical-align: top;
+  -webkit-touch-callout: none;
+  -moz-user-select: -moz-none;
+  -ms-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: pointer;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+  -moz-transition: all 0.2s ease;
+  -o-transition: all 0.2s ease;
+  -webkit-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+  margin-top: 20px;
+  font-size: 14px;
+  text-transform: uppercase;
+  font-weight: bold;
+  font-family: "Source Sans Pro", sans-serif;
+}
+input[type="submit"]:hover {
+  border-color: #000000;
+  outline: none;
+}
