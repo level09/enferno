@@ -1,5 +1,5 @@
 var gulp = require('gulp'),
-    minifyCSS = require('gulp-minify-css'),
+    cleanCSS = require('gulp-clean-css'),
     compass = require('gulp-compass'),
     concat = require('gulp-concat'),
     uglify = require('gulp-uglify');
@@ -7,7 +7,7 @@ var gulp = require('gulp'),
 gulp.task('css',function(){
     return gulp.src('enferno/static/_css/*.css')
         .pipe(concat('style.css'))
-        .pipe(minifyCSS())
+        .pipe(cleanCSS())
         .pipe(gulp.dest('enferno/static/css'))
 });
 
