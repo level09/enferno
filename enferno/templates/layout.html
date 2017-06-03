@@ -1,39 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
 
-  <!-- Basic Page Needs
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<head>
   <meta charset="utf-8">
   <title>Project Enferno</title>
   <meta name="description" content="">
   <meta name="author" content="">
-
-  <!-- Mobile Specific Metas
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- FONT
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro' rel='stylesheet' type='text/css'>
-
-  <!-- CSS
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <link rel="stylesheet" href="/static/css/style.css">
   <link rel="stylesheet" href="/static/css/app.css">
   {% block css %}{% endblock %}
-
-  <!-- Favicon
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <link rel="shortcut icon" type="image/png" href="/static/img/logo.svg">
-
 </head>
 
-<body class="{{ request.path }}">
+<body>
 {% block content %}
 {% include "security/_messages.html" %}
 {% endblock %}
-
 <script type="text/javascript" src="/static/js/app.js"></script>
 {% block js %}{% endblock %}
 </body>
