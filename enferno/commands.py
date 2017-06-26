@@ -44,13 +44,33 @@ def install():
 def create(email, password):
     """Creates a user using an email.
     """
-    if User.objects(email = email).count() > 0:
+    if User.objects(email = email).first() != None:
         print 'User already exists!'
     else:
         CreateUserCommand().run(email=email, password=password, active=1)
         # you can add default roles here
 
-
+@click.command()
+@click.option('-e', '--email', prompt=True, default=None)
+@click.option('-r', '--role', prompt=True, default='admin')
+@with_appcontext
+def add_role(email, role):
+    """Adds a role to the specified user.
+    """
+    from enferno.user.models import Role
+    u = User.objects(email = email).first()
+    if u == None:
+        print 'Sorry, this user does not exist!'
+        return
+    r = Role.objects(name = role).first()
+    if r == None:
+        print 'Sorry, this role does not exist!'
+        u = click.prompt('Would you like to create one? Y/N', default='N')
+        if u.lower() == 'y':
+            Role(name=role).save()
+            print 'Role created successfully, you may add it now to the user'
+    else:
+        AddRoleCommand().run(user_identifier=email, role_name=role)
 
 @click.command()
 @click.option('-e', '--email', prompt=True, default=None)
