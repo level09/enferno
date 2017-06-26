@@ -17,14 +17,6 @@ from flask import current_app
 from flask.cli import with_appcontext
 
 
-@click.command()
-@with_appcontext
-def create_db():
-    """Install a default admin user and add an admin role to it.
-    """
-    #check if admin exists
-    db.create_all()
-
 
 @click.command()
 @with_appcontext
@@ -43,6 +35,21 @@ def install():
         AddRoleCommand().run(user_identifier=u,role_name='admin')
     else:
         print ('Seems like an Admin is already installed')
+
+
+@click.command()
+@click.option('-e', '--email', prompt=True, default=None)
+@click.option('-p', '--password', prompt=True, default=None)
+@with_appcontext
+def create(email, password):
+    """Creates a user using an email.
+    """
+    if User.objects(email = email).count() > 0:
+        print 'User already exists!'
+    else:
+        CreateUserCommand().run(email=email, password=password, active=1)
+        # you can add default roles here
+
 
 
 @click.command()
