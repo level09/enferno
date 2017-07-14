@@ -45,7 +45,7 @@ def create(email, password):
     """Creates a user using an email.
     """
     if User.objects(email = email).first() != None:
-        print 'User already exists!'
+        print ('User already exists!')
     else:
         CreateUserCommand().run(email=email, password=password, active=1)
         # you can add default roles here
@@ -60,15 +60,15 @@ def add_role(email, role):
     from enferno.user.models import Role
     u = User.objects(email = email).first()
     if u == None:
-        print 'Sorry, this user does not exist!'
+        print ('Sorry, this user does not exist!')
         return
     r = Role.objects(name = role).first()
     if r == None:
-        print 'Sorry, this role does not exist!'
+        print ('Sorry, this role does not exist!')
         u = click.prompt('Would you like to create one? Y/N', default='N')
         if u.lower() == 'y':
             Role(name=role).save()
-            print 'Role created successfully, you may add it now to the user'
+            print ('Role created successfully, you may add it now to the user')
     else:
         AddRoleCommand().run(user_identifier=email, role_name=role)
 
