@@ -54,16 +54,12 @@ article, aside, details, figcaption, figure, footer, header, hgroup, main, menu,
   display: block;
 }
 
-*, *:before, *:after {
-  box-sizing: inherit;
-}
-
 html {
   box-sizing: border-box;
 }
 
 body {
-  font-family: "Source Sans Pro", sans-serif;
+  font-family: Arial, sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
@@ -71,9 +67,8 @@ body {
   padding-top: 70px;
 }
 
-html {
-  font-size: 100%;
-  line-height: 1.5em;
+*, *:before, *:after {
+  box-sizing: inherit;
 }
 
 main {
@@ -87,19 +82,8 @@ main {
   *zoom: 1;
 }
 
-h3 {
-  font-size: 24px;
-  font-size: 1.5rem;
-  line-height: 36px;
-  line-height: 2.25rem;
-  margin-bottom: 15px;
-}
-
 h2 {
   font-size: 28px;
-  font-size: 1.75rem;
-  line-height: 36px;
-  line-height: 2.25rem;
   margin: 18px 0;
 }
 
@@ -182,7 +166,7 @@ input[type="submit"] {
   font-size: 14px;
   text-transform: uppercase;
   font-weight: bold;
-  font-family: "Source Sans Pro", sans-serif;
+  font-family: Arial, sans-serif;
 }
 input[type="submit"]:hover {
   border-color: #000000;

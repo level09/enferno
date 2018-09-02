@@ -17,22 +17,35 @@ from flask import current_app
 from flask.cli import with_appcontext
 
 
+@click.command()
+@with_appcontext
+def create_db():
+    """creates db tables - import your models within commands.py to create the models.
+    """
+    # check if admin exists
+    db.create_all()
+
 
 @click.command()
 @with_appcontext
 def install():
     """Install a default admin user and add an admin role to it.
     """
-    #check if admin exists
+    # check if admin exists
     from enferno.user.models import Role
-    a = Role.objects.filter(name ='admin').first()
+    a = Role.query.filter(Role.name == 'admin').first()
 
     if a == None:
-        r = Role(name='admin').save()
-        u = click.prompt('Admin Email?',default='admin@enferno.io')
-        p = click.prompt('Admin Password (min 6 characters)?',default='enferno')
-        CreateUserCommand().run(email=u,password=p,active=1)
-        AddRoleCommand().run(user_identifier=u,role_name='admin')
+        r = Role(name='admin')
+        try:
+            db.session.add(r)
+            db.session.commit()
+            u = click.prompt('Admin Email?', default='admin@enferno.io')
+            p = click.prompt('Admin Password (min 6 characters)?', default='enferno')
+            CreateUserCommand().run(email=u, password=p, active=1)
+            AddRoleCommand().run(user_identifier=u, role_name='admin')
+        except:
+            db.session.rollback()
     else:
         print ('Seems like an Admin is already installed')
 
@@ -44,11 +57,14 @@ def install():
 def create(email, password):
     """Creates a user using an email.
     """
-    if User.objects(email = email).first() != None:
+
+    a = User.query.filter(User.email == email).first()
+    if a != None:
         print ('User already exists!')
     else:
         CreateUserCommand().run(email=email, password=password, active=1)
         # you can add default roles here
+
 
 @click.command()
 @click.option('-e', '--email', prompt=True, default=None)
@@ -56,21 +72,28 @@ def create(email, password):
 @with_appcontext
 def add_role(email, role):
     """Adds a role to the specified user.
-    """
+        """
     from enferno.user.models import Role
-    u = User.objects(email = email).first()
+    u = User.query.filter(User.email == email).first()
     if u == None:
         print ('Sorry, this user does not exist!')
         return
-    r = Role.objects(name = role).first()
+    r = Role.query.filter(Role.name == role).first()
     if r == None:
         print ('Sorry, this role does not exist!')
         u = click.prompt('Would you like to create one? Y/N', default='N')
         if u.lower() == 'y':
-            Role(name=role).save()
-            print ('Role created successfully, you may add it now to the user')
+            r = Role(name=role)
+            try:
+                db.session.add(r)
+                db.session.commit()
+                print ('Role created successfully, you may add it now to the user')
+            except:
+                db.session.rollback()
+
     else:
         AddRoleCommand().run(user_identifier=email, role_name=role)
+
 
 @click.command()
 @click.option('-e', '--email', prompt=True, default=None)
@@ -81,10 +104,13 @@ def reset(email, password):
     """
     try:
         pwd = encrypt_password(password)
-        u = User.objects(email= email).first()
+        u = User.query.filter(User.email == email).first()
         u.password = pwd
-        u.save()
-        print ('User password has been reset successfully.')
+        try:
+            db.session.commit()
+            print ('User password has been reset successfully.')
+        except:
+            db.session.rollback()
     except Exception as e:
         print ('Error resetting user password: %s' % e)
 
@@ -100,5 +126,3 @@ def clean():
                 full_pathname = os.path.join(dirpath, filename)
                 click.echo('Removing {}'.format(full_pathname))
                 os.remove(full_pathname)
-
-

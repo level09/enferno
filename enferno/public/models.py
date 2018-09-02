@@ -1,15 +1,13 @@
-import datetime
+#import datetime
 from enferno.extensions import db
 
 
-class Timestamp(object):
-    created_at = db.DateTimeField(default=datetime.utcnow())
-    updated_at = db.DateTimeField()
 
 #your models can go here
 '''
-class MyModel(db.Document, Timestamp):
-    my_id = db.IntField()
-    my_field = db.StringField()
+class MyModel(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.now,  nullable=False)
+    field = db.Column(db.String(255),  nullable=False)
 
 '''

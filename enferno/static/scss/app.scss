@@ -2,20 +2,9 @@
 @import 'compass/css3';
 @import 'compass/reset';
 
-$font-family: 'Source Sans Pro', sans-serif;
+$font-family: Arial, sans-serif;
 
-// Compass Vertical Rhythms Settings
-// ---------------------------------
-$base-font-size: 16px;
-$base-line-height: 24px;
-$round-to-nearest-half-line: true;
 
-// Uses the `rem` unit for all vertical rhythm output
-$rhythm-unit: "rem";
-
-*, *:before, *:after {
-  box-sizing: inherit;
-}
 
 html {
   box-sizing: border-box;
@@ -30,7 +19,10 @@ body {
   padding-top: 70px;
 }
 
-@include establish-baseline;
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
 
 main {
   position: relative;
@@ -42,15 +34,12 @@ main {
   @include clearfix;
 }
 
-h3 {
-  @include adjust-font-size-to(24px);
-  margin-bottom: 15px;
-}
+
 
 //Flask Security styling (user registeration/login etc ...)
 
 h2 {
-  @include adjust-font-size-to(28px);
+  font-size: 28px;
   margin: 18px 0;
 }
 

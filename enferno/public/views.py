@@ -3,6 +3,10 @@ from flask.templating import render_template
 from flask_security.decorators import roles_required, login_required
 
 bp_public = Blueprint('public',__name__, static_folder='../static')
+@bp_public.after_request
+def add_header(response):
+    response.headers['Cache-Control'] = 'public, max-age=10800'
+    return response
 
 @bp_public.route('/')
 def index():

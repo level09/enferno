@@ -1,4 +1,4 @@
-Project Enferno (NoSQL)
+Project Enferno (SQL Branch)
 ==================
 
 A framework for the next decade, this is a collection of cutting-edge libraries and tools based on Flask framework.
@@ -8,8 +8,6 @@ http://enferno.io
 To learn more about the framework and its use cases, you can follow my articles on Medium :
 
 http://medium.com/@level09/
-
-If you are prefer to use a SQL compatible backend, please check out the "sql" branch. 
 
 Tutorials
 -------------
@@ -26,11 +24,10 @@ Tutorials
 
 Prerequisites
 -------------
-
-* MongoDB 
+ 
 * Redis
 * Python Imaging (jpeg/png) support if you would like to work with images
-* Node.js and npm (for front-end stuff)
+* (Optional) Node.js and npm (for front-end stuff)
 
 Quickstart
 ----------
@@ -48,23 +45,26 @@ Quickstart
 
     $ npm install
 
+Edit the settings.py and change the values to suit your needs, sepcifically you can change Flask security settings, security keys, Mysql settings,and Flask mail.
+
 After that, you should create your admin user, run the following command:
 ::
 
-    $ export FLASK_APP=enferno.py
-    $ flask install
+    $ export FLASK_APP=run.py
+    $ flask create_db
+    $ flask install 
 
 and follow the instructions, this will create your first user and first admin role.
 
 
-Edit the settings.py and change the settings to suit your needs, sepcifically you can change Flask security settings, security keys, Mongodb settings,and Flask mail.
+
 
 to run the system, you can use a management command:
-::
 
     $ flask run
 
-    and
+Then 
+
 
     $ gulp
     
@@ -74,9 +74,9 @@ Features
 - Flask based
 - Fully working user registration and authentication + user roles via Flask security
 - Memory caching via Redis and Flask cache
-- Command line scripting via Flask click
-- Automatic assets bundling, minification and sass support via gulp
-- Mongodb and Mongoengine ORM
+- Command line scripting via Flask Script (will be replaced by "click" in the next release)
+- Automatic assets bundling and minification via Flask assets
+- Relational database support with sql alchemy ORM
 - Background tasks via Celery
 - Email integration via Flask Mail
 - Best practices by utilizing Flask blueprints and development/production configuration
@@ -100,7 +100,6 @@ Inspiration & Credits
 - `Flask Security <https://pythonhosted.org/Flask-Security/>`_
 - `Mongoengine <http://mongoengine.org/>`_
 - `Flask WTF <https://flask-wtf.readthedocs.org/en/latest/>`_
-- `Flask Admin <https://github.com/mrjoes/flask-admin/>`_
 - `Celery Task Queue <http://www.celeryproject.org/>`_
 - `Redis <http://redis.io/>`_
 - `Flask Mail <https://pythonhosted.org/flask-mail/>`_
