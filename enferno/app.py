@@ -5,7 +5,7 @@ from enferno.settings import ProdConfig
 from flask_security import Security, SQLAlchemyUserDatastore
 from enferno.user.models import User, Role
 from enferno.user.forms import ExtendedRegisterForm
-from enferno.extensions import    db,  mail, debug_toolbar, migrate
+from enferno.extensions import   cache,  db,  mail, debug_toolbar, migrate
 from enferno.public.views import bp_public
 from enferno.user.views import bp_user
 import enferno.commands as commands
@@ -24,7 +24,7 @@ def create_app(config_object=ProdConfig):
 
 
 def register_extensions(app):
-    #cache.init_app(app)
+    cache.init_app(app)
     db.init_app(app)
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
     security = Security(app, user_datastore, confirm_register_form=ExtendedRegisterForm)
