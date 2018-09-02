@@ -1,9 +1,4 @@
 import os
-import warnings
-from flask.exthook import ExtDeprecationWarning
-warnings.simplefilter('ignore', ExtDeprecationWarning)
-
-
 from enferno.app import create_app
 from enferno.settings import DevConfig, ProdConfig
 

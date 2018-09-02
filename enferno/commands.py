@@ -11,7 +11,7 @@ from werkzeug.exceptions import MethodNotAllowed, NotFound
 
 from enferno.extensions import db
 from flask_security.script import CreateUserCommand, AddRoleCommand
-from flask.ext.security.utils import encrypt_password
+from flask_security.utils import encrypt_password
 from enferno.user.models import User
 from flask import current_app
 from flask.cli import with_appcontext

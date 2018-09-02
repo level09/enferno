@@ -1,4 +1,5 @@
 alembic==0.8.8
+amqp==1.4.9
 anyjson==0.3.3
 bcrypt==3.1.0
 billiard==3.3.0.23
@@ -6,9 +7,8 @@ blinker==1.4
 celery==3.1.23
 cffi==1.7.0
 click==6.6
-Flask==0.11.1
-Flask-Cache==0.13.1
-Flask-DebugToolbar==0.10.0
+Flask==1.0
+Flask-DebugToolbar==0.10.1
 Flask-Login==0.3.2
 Flask-Mail==0.9.1
 Flask-Migrate==2.0.0
@@ -18,7 +18,7 @@ Flask-Security==1.7.5
 Flask-SQLAlchemy==2.1
 Flask-WTF==0.12
 itsdangerous==0.24
-Jinja2==2.8
+Jinja2==2.10
 kombu==3.0.35
 Mako==1.0.4
 MarkupSafe==0.23
@@ -32,5 +32,5 @@ redis==2.10.5
 six==1.10.0
 SQLAlchemy==1.0.15
 uWSGI==2.0.14
-Werkzeug==0.11.10
+Werkzeug==0.14.1
 WTForms==2.1
