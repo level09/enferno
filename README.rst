@@ -1,16 +1,16 @@
-Project Enferno (SQL Branch)
+Project Enferno v1.0
 ==================
 
-A framework for the next decade, this is a collection of cutting-edge libraries and tools based on Flask framework.
+A framework for the next decade, this is a collection of cutting-edge libraries and tools based on Flask framework, that will help build any website or web app (SAAS) extremely fast !
 
 http://enferno.io
 
-To learn more about the framework and its use cases, you can follow my articles on Medium :
-
-http://medium.com/@level09/
-
-
-
+What's New
+==================
+- Removed MongoDB in favour of Postgresql (or Mysql/sqlite) with sqlalchemy. 
+- No more front-end bundlers (feel free to integrate your own : webpack, gulp, parcel, etc ..) 
+- Upgraded all python libraries (also based on flask 1.x)
+- More tutorials will be coming soon. 
 
 Prerequisites
 -------------
