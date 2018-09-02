@@ -64,7 +64,7 @@ Features
 - Relational database support with sql alchemy ORM
 - Background tasks via Celery
 - Email integration via Flask Mail
-- Best practices by utilizing Flask blueprints and development/production configuration
+- Files are structured based on best practices by utilizing Flask blueprints and development/production configuration
 
 
 Showcase
