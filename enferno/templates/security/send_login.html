@@ -1,6 +1,6 @@
 {% extends 'layout.html' %}
 {% block content %}
-    <main>
+    <div class="main">
         {% from "security/_macros.html" import render_field_with_errors, render_field %}
 
         <h2>Login</h2>
@@ -11,5 +11,5 @@
             {{ render_field(send_login_form.submit) }}
         </form>
 
-    </main>
+    </div>
 {% endblock %}
