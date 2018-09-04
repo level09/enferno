@@ -6,13 +6,13 @@ services:
     env_file:
       - '.env'
     volumes:
-      - 'enferno:/var/lib/postgresql/data'
+      - 'db:/var/lib/postgresql/data'
     ports:
       - '5432:5432'
 
   redis:
     image: 'redis:3.0-alpine'
-    command: redis-server --requirepass verystrongpass
+    command: redis-server
     volumes:
       - 'redis:/var/lib/redis/data'
     ports:
@@ -23,18 +23,33 @@ services:
     env_file:
       - '.env'
     volumes:
-      - '.:/enferno-plat'
+      - 'enferno:/enferno-plat'
+    links:
+      - redis
     ports:
       - '8000:5000'
+
+
+  nginx:
+    restart: always
+    build: ./nginx/
+    ports:
+      - "80:80"
+    links:
+      - website
 
   celery:
     build: .
     command: celery worker -B -l info -A enferno.tasks
     env_file:
       - '.env'
+    links:
+      - redis
     volumes:
       - '.:/enferno-plat'
+
 
 volumes:
   enferno:
   redis:
+  db:
