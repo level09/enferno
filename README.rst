@@ -51,6 +51,8 @@ The fastest and easiest way to run the system is by using docker-compose:
 
 Edit the settings.py and change the values to suit your needs, specifically you can change Flask security settings, security keys, Redis DB, Mysql settings, and Flask mail.
 
+If you are installing Enferno locally, you will also need to replace "redis" and "postgres" with "localhost" in connection strings. 
+
 After that, you should create your admin user, run the following command:
 ::
 
