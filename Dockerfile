@@ -1,9 +1,9 @@
-FROM ubuntu:16.04
+FROM python:2.7-slim
 
 MAINTAINER Nidal Alhariri "nidal@level09.com"
 
 RUN apt-get update -y && \
-    apt-get install -y python-pip python-dev libjpeg8-dev libzip-dev libxml2-dev libssl-dev libffi-dev libxslt1-dev libmysqlclient-dev libncurses5-dev python-setuptools postgresql postgresql-contrib python-psycopg2 libpq-dev git
+    apt-get install -y python-pip python-dev libjpeg62-turbo-dev libzip-dev libxml2-dev libssl-dev libffi-dev libxslt1-dev libmysqlclient-dev libncurses5-dev python-setuptools postgresql postgresql-contrib python-psycopg2 libpq-dev git
 
 # We copy just the requirements.txt first to leverage Docker cache
 COPY ./requirements.txt /app/requirements.txt
