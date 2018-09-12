@@ -3,7 +3,7 @@ FROM python:2.7-slim
 MAINTAINER Nidal Alhariri "nidal@level09.com"
 
 RUN apt-get update -y && \
-    apt-get install -y python-pip python-dev libjpeg62-turbo-dev libzip-dev libxml2-dev libssl-dev libffi-dev libxslt1-dev  libncurses5-dev python-setuptools libpq-dev git
+    apt-get install -y python-pip python-dev apt-utils libjpeg62-turbo-dev libzip-dev libxml2-dev libssl-dev libffi-dev libxslt1-dev  libncurses5-dev python-setuptools libpq-dev git
 
 # We copy just the requirements.txt first to leverage Docker cache
 COPY ./requirements.txt /app/requirements.txt
