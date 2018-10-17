@@ -16,6 +16,9 @@ COPY . /app
 
 ENV FLASK_APP=run.py
 ENV C_FORCE_ROOT="true"
+ENV SQLALCHEMY_DATABASE_URI="enferno:verystrongpass@postgres/enferno"
+ENV CELERY_BROKER_URL="redis://redis:6379/10"
+ENV CELERY_RESULT_BACKEND="redis://redis:6379/11"
 
 
 RUN echo 'alias act="source env/bin/activate"' >> ~/.bashrc
