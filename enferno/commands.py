@@ -97,7 +97,7 @@ def add_role(email, role):
 
 @click.command()
 @click.option('-e', '--email', prompt=True, default=None)
-@click.option('-p', '--password', prompt=True, default=None)
+@click.option('-p', '--password',hide_input=True,confirmation_prompt=True, prompt=True, default=None)
 @with_appcontext
 def reset(email, password):
     """Reset a user password
