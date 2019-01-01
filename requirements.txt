@@ -27,7 +27,7 @@ Mako==1.0.7
 MarkupSafe==1.0
 passlib==1.7.1
 Pillow==5.2.0
-psycopg2==2.7.5
+psycopg2-binary==2.7.5
 pycparser==2.18
 python-dateutil==2.7.3
 python-editor==1.0.3
