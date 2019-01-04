@@ -34,6 +34,9 @@ The fastest and easiest way to run the system is by using docker-compose:
 
     $ docker-compose up
 
+[![asciicast](https://asciinema.org/a/219755.svg)](https://asciinema.org/a/219755)
+
+Alternatively, you can install it locally: 
 
 ::
 
@@ -85,11 +88,8 @@ Features
 Showcase
 --------
 Some of the websites running on Enferno: 
-
-- `DUKES Hotel <http://dukeshotel.com>`_ 
-- `Dubaiz Properties <http://dubaiz.com>`_ 
-- `Bistro Des Arts <http://bistrodesarts.ae>`_ 
 - `Seven Tides <http://seventides.com>`_ 
+- `DUKES Hotel <http://dukeshotel.com>`_ 
 - `Anantara Residences <http://anantararesidences.com>`_ 
 
 
