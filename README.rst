@@ -34,7 +34,8 @@ The fastest and easiest way to run the system is by using docker-compose:
 
     $ docker-compose up
 
-[![asciicast](https://asciinema.org/a/219755.svg)](https://asciinema.org/a/219755)
+https://asciinema.org/a/219755
+
 
 Alternatively, you can install it locally: 
 
