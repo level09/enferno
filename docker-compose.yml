@@ -12,7 +12,7 @@ services:
       - '5432:5432'
 
   redis:
-    container_name: postgres 
+    container_name: redis 
     image: 'redis:3.0-alpine'
     command: redis-server
     volumes:
