@@ -13,7 +13,7 @@ class Config(object):
     CACHE_TYPE = 'simple'  # Can be "memcached", "redis", etc.
     #SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/enferno.db'
     #for postgres
-    SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABAE_URI','postgresql:///enferno')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI','postgresql:///enferno')
     SQLALCHEMY_TRACK_MODIFICATIONS = True
 
     CELERY_BROKER_URL = os.environ.get('CELERY+BROKER_URL','redis://localhost:6379/10')

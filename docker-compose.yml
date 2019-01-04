@@ -1,7 +1,8 @@
-version: '2'
+version: '3'
 
 services:
   postgres:
+    container_name: postgres
     image: 'postgres:9.5'
     env_file:
       - '.env'
@@ -11,6 +12,7 @@ services:
       - '5432:5432'
 
   redis:
+    container_name: postgres 
     image: 'redis:3.0-alpine'
     command: redis-server
     volumes:
@@ -19,6 +21,7 @@ services:
       - '6379:6379'
 
   website:
+    container_name: website
     build: .
     env_file:
       - '.env'
@@ -31,6 +34,7 @@ services:
 
 
   nginx:
+    container_name: nginx
     restart: always
     build: ./nginx/
     ports:
@@ -39,6 +43,7 @@ services:
       - website
 
   celery:
+    container_name: celery
     build: .
     command: celery worker -B -l info -A enferno.tasks
     env_file:
