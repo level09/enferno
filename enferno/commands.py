@@ -24,6 +24,7 @@ def create_db():
     """
     # check if admin exists
     db.create_all()
+    print ('Database structure created successfully')
 
 
 @click.command()

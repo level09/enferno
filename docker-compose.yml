@@ -13,7 +13,7 @@ services:
 
   redis:
     container_name: redis 
-    image: 'redis:3.0-alpine'
+    image: 'redis:4.0-alpine'
     command: redis-server
     volumes:
       - 'redis:/var/lib/redis/data'
