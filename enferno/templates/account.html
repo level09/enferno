@@ -1,4 +1,4 @@
-{% extends 'layout.html' %}
+{% extends 'login-layout.html' %}
 {% block content %}
 <div class="main">
             <h3>User Account</h3>
@@ -6,6 +6,6 @@
             <p>Welcome, {{ g.user.email }}</p>
 
             <p>Last login at: {{ g.user.last_login_at }}</p>
-            <p><a class="btn" href="/logout">Logout</a></p>
+            <p><button class="btn" href="/logout">Logout</button></p>
 </div>
 {% endblock %}
