@@ -14,9 +14,9 @@ services:
   redis:
     container_name: redis 
     image: 'redis:4.0-alpine'
-    command: redis-server
+    command: redis-server --requirepass verystrongpass
     volumes:
-      - 'redis:/var/lib/redis/data'
+      - './redis-data:/var/lib/redis/data'
     ports:
       - '6379:6379'
 
