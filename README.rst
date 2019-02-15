@@ -7,7 +7,7 @@ http://enferno.io
 
 What's New
 ==================
-- Docker ! you can now test the framework directly using docker-compose 
+- Docker! you can now test the framework directly using docker-compose 
 - Removed MongoDB in favour of Postgresql (or Mysql/sqlite) with sqlalchemy. 
 - No more front-end bundlers (feel free to integrate your own : webpack, gulp, parcel, etc ..) 
 - Upgraded all python libraries (also based on flask 1.x)
