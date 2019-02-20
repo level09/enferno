@@ -1,0 +1,60 @@
+version: '3'
+
+services:
+  postgres:
+    container_name: postgres
+    image: 'postgres:9.5'
+    env_file:
+      - '.env'
+    volumes:
+      - './postgres-data:/var/lib/postgresql'
+    ports:
+      - '5432:5432'
+
+  redis:
+    container_name: redis 
+    image: 'redis:4.0-alpine'
+    command: redis-server --requirepass verystrongpass
+    volumes:
+      - './redis-data:/var/lib/redis/data'
+    ports:
+      - '6379:6379'
+
+  website:
+    container_name: website
+    build: .
+    env_file:
+      - '.env'
+    volumes:
+      - 'enferno:/enferno-plat'
+    links:
+      - redis
+    ports:
+      - '8000:5000'
+
+
+  nginx:
+    container_name: nginx
+    restart: always
+    build: ./nginx/
+    ports:
+      - "80:80"
+    links:
+      - website
+
+  celery:
+    container_name: celery
+    build: .
+    command: celery worker -B -l info -A enferno.tasks
+    env_file:
+      - '.env'
+    links:
+      - redis
+    volumes:
+      - '.:/enferno-plat'
+
+
+volumes:
+  enferno:
+  redis:
+  db:
