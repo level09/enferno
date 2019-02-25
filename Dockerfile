@@ -1,4 +1,4 @@
-FROM python:2.7-slim
+FROM python:3.7.2-slim
 
 MAINTAINER Nidal Alhariri "nidal@level09.com"
 
