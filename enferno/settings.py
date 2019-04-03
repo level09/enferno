@@ -30,6 +30,9 @@ class Config(object):
     SECURITY_POST_LOGIN_VIEW = '/dashboard'
     SECURITY_POST_CONFIRM_VIEW = '/dashboard'
 
+    SESSION_TYPE = 'redis'
+    PERMANENT_SESSION_LIFETIME = 3600
+
 
     #flask mail settings
     MAIL_SERVER = 'smtp.domain.com'
