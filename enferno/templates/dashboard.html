@@ -1,0 +1,22 @@
+{% extends 'login-layout.html' %}
+{% block content %}
+
+    <div class="layout">
+        <aside class="sidebar">
+            <nav class="side-nav">
+                <a href="/dashboard/">Dashboard</a>
+            </nav>
+
+        </aside>
+
+        <div class="content">
+            <h3>Account</h3>
+
+            <p>Welcome, {{ g.user.email }}</p>
+
+            <p>Last login at: {{ g.user.last_login_at }}</p>
+            <p><a class="btn" href="/logout">Logout</a></p>
+        </div>
+
+    </div>
+{% endblock %}

@@ -369,7 +369,7 @@ code {
 a {
     color: #007bff;
     text-decoration: none;
-    background-color: rgba(0, 0, 0, 0)
+    background-color: rgba(0, 0, 0, 0);
 }
 a:focus,
 a:hover {
@@ -435,7 +435,7 @@ textarea {
     background: #fff;
     background-clip: padding-box;
     border: 1px solid rgba(0, 0, 0, .12);
-    border-radius: 4px;
+
     color: rgba(0, 0, 0, .8);
     display: block;
     width: 100%;
@@ -594,7 +594,7 @@ input[type=reset],
 input[type=submit] {
     background-color: #007bff;
     border: #007bff;
-    border-radius: 4px;
+
     color: #fff;
     padding: 8px 16px;
     display: inline-block;
@@ -683,4 +683,15 @@ tfoot td {
     font-size: 8px;
     font-style: italic;
     padding: 16px 4px
+}
+
+/* Dashboard/User management */
+
+.layout {
+    display: grid;
+
+}
+
+.sidebar {
+
 }

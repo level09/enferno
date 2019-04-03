@@ -27,8 +27,8 @@ class Config(object):
     SECURITY_PASSWORD_HASH = 'bcrypt'
     SECURITY_PASSWORD_SALT = '3nF3Rn0'
 
-    SECURITY_POST_LOGIN_VIEW = '/account'
-    SECURITY_POST_CONFIRM_VIEW = '/account'
+    SECURITY_POST_LOGIN_VIEW = '/dashboard'
+    SECURITY_POST_CONFIRM_VIEW = '/dashboard'
 
 
     #flask mail settings

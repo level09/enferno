@@ -8,11 +8,25 @@
   <meta name="author" content="Enferno">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/static/css/system.css">
-  <link rel="stylesheet" href="/static/css/login.css">
+  <link rel="stylesheet" href="/static/css/dashboard.css">
   {% block css %}{% endblock %}
 </head>
 
 <body>
+
+ <nav class="navbar" >
+        <div class="logo"><img src="/static/img/enferno.svg" width="72" alt=""></div>
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="/">Account</a>
+                <ul>
+                    <li><a href="/settings/">Settings</a></li>
+                    <li><a href="/logout">Logout</a></li>
+
+                </ul>
+            </li>
+        </ul>
+    </nav>
 {% block content %}
 
 {% endblock %}

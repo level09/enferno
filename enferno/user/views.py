@@ -9,7 +9,13 @@ bp_user = Blueprint('users',__name__,static_folder='../static')
 def before_request():
     g.user = current_user
 
-@bp_user.route('/account/')
+@bp_user.route('/dashboard/')
 @login_required
 def account():
-    return render_template('account.html')
+    return render_template('dashboard.html')
+
+
+@bp_user.route('/settings/')
+@login_required
+def settings():
+    return render_template('settings.html')
