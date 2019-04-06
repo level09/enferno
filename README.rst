@@ -61,7 +61,7 @@ After that, you should create your admin user, run the following command:
 ::
 
     $ export FLASK_APP=run.py
-    $ flask create_db
+    $ flask create-db
     $ flask install 
 
 and follow the instructions, this will create your first user and first admin role.
@@ -91,7 +91,6 @@ Showcase
 Some of the websites running on Enferno: 
 - `Seven Tides <http://seventides.com>`_ 
 - `DUKES Hotel <http://dukeshotel.com>`_ 
-- `Anantara Residences <http://anantararesidences.com>`_ 
 
 
 Inspiration & Credits
