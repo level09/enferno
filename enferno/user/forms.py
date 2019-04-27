@@ -7,3 +7,6 @@ class ExtendedRegisterForm(ConfirmRegisterForm):
     last_name = StringField('Last Name')
 
 
+class UserInfoForm():
+    pass
+

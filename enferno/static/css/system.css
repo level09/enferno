@@ -1,7 +1,5 @@
 /*! sanitize.css v7.0.3 | CC0 License | github.com/csstools/sanitize.css */
-*,
-:after,
-:before {
+ali {
     background-repeat: no-repeat;
     -webkit-box-sizing: border-box;
     box-sizing: border-box
@@ -562,7 +560,9 @@ select[multiple] {
 }
 label {
     display: inline-block;
-    line-height: 2
+    line-height: 2;
+    display: block;
+    font-size: 14px;
 }
 fieldset {
     border: 0;
@@ -685,13 +685,13 @@ tfoot td {
     padding: 16px 4px
 }
 
-/* Dashboard/User management */
 
-.layout {
-    display: grid;
-
-}
-
-.sidebar {
+html {
+    box-sizing: border-box;
 
 }
+
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+

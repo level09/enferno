@@ -49,6 +49,9 @@ div.content {
 
 }
 
+.content h3 {
+    margin: 20px 0 30px 0;
+}
 .main {
 
     background: #fff;
@@ -80,6 +83,7 @@ input[type="submit"] {
     z-index: 9;
     background-image: linear-gradient(#fff,#f3f2f2);
     justify-content: space-between;
+    box-sizing: border-box;
 }
 
 .navbar .navbar-nav {
@@ -97,7 +101,7 @@ input[type="submit"] {
 .navbar .navbar-nav .nav-item ul {
     width: 160px;
     margin: 0;
-    padding: 10px 0;
+    padding: 10px;
     position: absolute;
     left: 0;
     top: calc(100% + 15px);
@@ -155,4 +159,54 @@ input[type="submit"] {
 .navbar .navbar-nav .nav-item:hover ul {
     opacity: 1;
     visibility: visible;
+}
+
+
+/* flash messages */
+
+.messages {
+    padding: 20px;
+    position: relative;
+    top:0;
+    left: 0;
+    right:0;
+    background: rgba(243, 253, 91, 0.29);
+    text-align: center;
+    display: block;
+}
+.msg {
+    font-style: italic;
+    color: #222;
+    margin: 8px 0;
+}
+
+/* user settings */
+
+.profile-info {
+    width: 100%;
+    max-width: 380px;
+
+}
+
+.field {
+    display: block;
+    margin: 8px 0;
+}
+
+.profile-info label {
+    display: block;
+    font-size: 14px;
+}
+
+.profile-tabs {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+}
+
+.profile-tabs a {
+    display: inline-block;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    margin: 0 4px;
 }

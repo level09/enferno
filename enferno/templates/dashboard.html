@@ -14,7 +14,7 @@
 
             <p>Welcome, {{ g.user.email }}</p>
 
-            <p>Last login at: {{ g.user.last_login_at }}</p>
+            <p>Last login —  {{ g.user.last_login_at.strftime('%b %d, %Y')  }}</p>
             <p><a class="btn" href="/logout">Logout</a></p>
         </div>
 

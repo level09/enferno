@@ -2,35 +2,56 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8">
-  <title>Project Enferno</title>
-  <meta name="description" content="A frameowork for the next decade.">
-  <meta name="author" content="Enferno">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/static/css/system.css">
-  <link rel="stylesheet" href="/static/css/dashboard.css">
-  {% block css %}{% endblock %}
+    <meta charset="utf-8">
+    <title>Project Enferno</title>
+    <meta name="description" content="A frameowork for the next decade.">
+    <meta name="author" content="Enferno">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/css/system.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="stylesheet" href="/static/css/hyperform.css">
+
+    {% block css %}{% endblock %}
 </head>
 
 <body>
 
- <nav class="navbar" >
-        <div class="logo"><img src="/static/img/enferno.svg" width="72" alt=""></div>
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link" href="/">Account</a>
-                <ul>
-                    <li><a href="/settings/">Settings</a></li>
-                    <li><a href="/logout">Logout</a></li>
+  {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="messages">
+                        {% for message in messages %}
+                            <div class="msg">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
 
-                </ul>
-            </li>
-        </ul>
-    </nav>
+
+
+
+<nav class="navbar">
+    <div class="logo"><a href="/"><img src="/static/img/enferno.svg" width="72" alt=""></a></div>
+    <ul class="navbar-nav">
+        <li class="nav-item">
+            <a class="nav-link" href="/">Account</a>
+            <ul>
+                <li><a href="/settings/">Settings</a></li>
+                <li><a href="/logout">Logout</a></li>
+
+            </ul>
+        </li>
+    </ul>
+</nav>
 {% block content %}
 
 {% endblock %}
 
-{% block js %}{% endblock %}
+{% block js %}
+    <script src="/static/js/hyperform.min.js"></script>
+    <script>
+    var wrapper = hyperform(window);
+
+    </script>
+{% endblock %}
 </body>
 </html>
