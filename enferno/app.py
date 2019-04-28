@@ -27,7 +27,7 @@ def register_extensions(app):
     cache.init_app(app)
     db.init_app(app)
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-    security = Security(app, user_datastore, confirm_register_form=ExtendedRegisterForm)
+    security = Security(app, user_datastore, register_form=ExtendedRegisterForm)
     mail.init_app(app)
     debug_toolbar.init_app(app)
     migrate.init_app(app,db)
