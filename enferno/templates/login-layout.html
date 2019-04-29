@@ -31,6 +31,7 @@
 
 <nav class="navbar">
     <div class="logo"><a href="/"><img src="/static/img/enferno.svg" width="72" alt=""></a></div>
+    {% if current_user.is_authenticated %}
     <ul class="navbar-nav">
         <li class="nav-item">
             <a class="nav-link" href="/">Account</a>
@@ -41,6 +42,8 @@
             </ul>
         </li>
     </ul>
+    {% endif %}
+
 </nav>
 {% block content %}
 
