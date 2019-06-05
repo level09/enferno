@@ -1,6 +1,8 @@
 Project Enferno v1.0
 ==================
 
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Flevel09%2Fenferno.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Flevel09%2Fenferno?ref=badge_shield)
+
 A framework for the next decade, this is a collection of cutting-edge libraries and tools based on Flask framework, that will help build any website or web app (SAAS) extremely fast !
 
 http://enferno.io
