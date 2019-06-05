@@ -6,6 +6,9 @@ A framework for the next decade, this is a collection of cutting-edge libraries 
 http://enferno.io
 
 
+![Project Enferno](http://www.enferno.io/blog/content/images/size/w2000/2019/04/127.0.0.1_5000_--1-.png)
+
+
 What's New
 ==================
 - Docker! you can now test the framework directly using docker-compose 
