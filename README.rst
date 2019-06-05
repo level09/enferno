@@ -5,7 +5,7 @@ A framework for the next decade, this is a collection of cutting-edge libraries 
 
 http://enferno.io
 
-![Project enferno](http://www.enferno.io/blog/content/images/size/w2000/2019/04/127.0.0.1_5000_--1-.png)
+[[http://www.enferno.io/blog/content/images/size/w2000/2019/04/127.0.0.1_5000_--1-.png|alt=Project Enferno]]
 
 
 What's New
