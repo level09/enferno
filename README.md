@@ -1,4 +1,4 @@
-Project Enferno v2.2
+Project Enferno v2.4
 ==================
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Flevel09%2Fenferno.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Flevel09%2Fenferno?ref=badge_shield)
