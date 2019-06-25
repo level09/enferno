@@ -7,4 +7,3 @@ local_settings.py
 node_modules/
 .DS_Store
 .sass-cache
-flask_session/
