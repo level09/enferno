@@ -1,5 +1,5 @@
-Project Enferno v2.4
-==================
+Project Enferno 
+=================
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Flevel09%2Fenferno.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Flevel09%2Fenferno?ref=badge_shield)
 
@@ -74,7 +74,6 @@ and follow the instructions, this will create your first user and first admin ro
 
 
 
-
 to run the system, you can use a management command:
 
     $ flask run
@@ -95,21 +94,21 @@ Features
 Showcase
 --------
 Some of the websites running on Enferno: 
-- `Seven Tides <http://seventides.com>`_ 
-- `DUKES Hotel <http://dukeshotel.com>`_ 
+- Seven Tides <http://seventides.com>
+- DUKES Hotel <http://dukeshotel.com>
 
 
 Inspiration & Credits
 ---------------------
 
-- `Cookiecutter Flask <https://github.com/sloria/cookiecutter-flask>`_
-- `Flask Security <https://pythonhosted.org/Flask-Security/>`_
-- `Flask WTF <https://flask-wtf.readthedocs.org/en/latest/>`_
-- `Celery Task Queue <http://www.celeryproject.org/>`_
-- `Redis <http://redis.io/>`_
-- `Flask Mail <https://pythonhosted.org/flask-mail/>`_
-- `Flask Documentation <http://flask.pocoo.org/docs/>`_
-- `Celery Task Queue <http://www.celeryproject.org/>`_
+- Cookiecutter Flask <https://github.com/sloria/cookiecutter-flask>
+- Flask Security <https://pythonhosted.org/Flask-Security/>
+- Flask WTF <https://flask-wtf.readthedocs.org/en/latest/>
+- Celery Task Queue <http://www.celeryproject.org/>
+- Redis <http://redis.io/>
+- Flask Mail <https://pythonhosted.org/flask-mail/>
+- Flask Documentation <http://flask.pocoo.org/docs/>
+- Celery Task Queue <http://www.celeryproject.org/>
 
 
 License
