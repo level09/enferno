@@ -78,6 +78,17 @@ to run the system, you can use a management command:
 
     $ flask run
 
+Running Celery
+-------------
+
+`celery -A enfenro.tasks worker `
+
+you can add `-b` to activate Celery heartbeat (periodic tasks) 
+
+A sample task that runs within the app context has been prepared for you within the `enfenro/tasks/__init__.py` file, this is helpful if you have background tasks that interact with your SQLAlchemy models. 
+
+
+
 
 Features
 --------
