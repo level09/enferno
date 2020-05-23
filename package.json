@@ -1,0 +1,39 @@
+{
+  "name": "Enferno",
+  "version": "2.0.0",
+  "description": "Project Enferno - a framework for the next decade",
+  "main": "index.js",
+  "scripts": {
+    "watch": "parcel watch enferno/src/index.js -d enferno/static/dist",
+    "build": "parcel build enferno/src/index.js -d enferno/static/dist"
+  },
+  "alias": {
+    "vue": "./node_modules/vue/dist/vue.common.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/level09/enferno"
+  },
+  "keywords": [
+    "enferno",
+    "python",
+    "nginx",
+    "flask",
+    "postgresql",
+    "redis"
+  ],
+  "author": "level09 <nidal@level09.com>",
+  "license": "MIT",
+  "dependencies": {
+    "autoprefixer": "^9.8.0",
+    "modern-normalize": "^0.6.0",
+    "parcel-bundler": "^1.12.4",
+    "postcss-modules": "^2.0.0",
+    "vue": "^2.6.11",
+    "vue-hot-reload-api": "^2.3.4"
+  },
+  "devDependencies": {
+    "@vue/component-compiler-utils": "^3.1.2",
+    "vue-template-compiler": "^2.6.11"
+  }
+}

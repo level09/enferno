@@ -1,23 +1,22 @@
 Project Enferno 
 =================
 
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Flevel09%2Fenferno.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Flevel09%2Fenferno?ref=badge_shield)
 
 A framework for the next decade, this is a collection of cutting-edge libraries and tools based on Flask framework, that will help build any website or web app (SAAS) extremely fast !
 
 http://enferno.io
 
 
-![Project Enferno](http://www.enferno.io/blog/content/images/size/w2000/2019/04/127.0.0.1_5000_--1-.png)
 
 
 What's New
 ==================
+- Vue integration!  Vue is now bundled by default with a clean default structure to build and integrate npm modules. 
+- Parcel bundler is now available by default.  
 - Docker! you can now test the framework directly using docker-compose 
-- Removed MongoDB in favour of Postgresql (or Mysql/sqlite) with sqlalchemy. 
 - No more front-end bundlers (feel free to integrate your own : webpack, gulp, parcel, etc ..) 
-- Upgraded all python libraries (also based on flask 1.x)
-- More tutorials will be coming soon. 
+- Upgraded all python libraries 
+ 
 
 Prerequisites
 -------------
@@ -29,21 +28,7 @@ Prerequisites
 
 Quickstart
 ----------
-
-The fastest and easiest way to run the system is by using docker-compose:
-
-::
-
-    $ git clone git@github.com:level09/enferno.git
-
-    $ cd enferno
-
-    $ docker-compose up
-
-https://asciinema.org/a/219755
-
-
-Alternatively, you can install it locally: 
+ 
 
 ::
 
@@ -78,6 +63,22 @@ to run the system, you can use a management command:
 
     $ flask run
 
+  
+
+Using Docker
+------------
+
+
+
+    $ git clone git@github.com:level09/enferno.git
+
+    $ cd enferno
+
+    $ docker-compose up
+
+https://asciinema.org/a/219755
+
+
 Running Celery
 -------------
 
@@ -92,7 +93,7 @@ A sample task that runs within the app context has been prepared for you within 
 
 Features
 --------
-- Flask based
+- Based on Flask. 
 - Fully working user registration and authentication + user roles via Flask security
 - Memory caching via Redis and Flask caching
 - Command line scripting via Click
