@@ -63,7 +63,14 @@ to run the system, you can use a management command:
 
     $ flask run
 
-  
+to use Vue and Parcel bundler for development: 
+
+    $ npm install
+    $ npm run watch
+
+to build for production run:
+ 
+    $ npm run build 
 
 Using Docker
 ------------
