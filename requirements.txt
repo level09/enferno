@@ -20,7 +20,7 @@ Flask-Mail==0.9.1
 Flask-Migrate==2.5.3
 Flask-Principal==0.4.0
 Flask-Script==2.0.6
-Flask-Security==3.0.0
+Flask-Security-Too==3.4.2
 Flask-Session==0.3.2
 Flask-SQLAlchemy==2.4.1
 Flask-WTF==0.14.3
