@@ -127,7 +127,6 @@ Inspiration & Credits
 - Redis <http://redis.io/>
 - Flask Mail <https://pythonhosted.org/flask-mail/>
 - Flask Documentation <http://flask.pocoo.org/docs/>
-- Celery Task Queue <http://www.celeryproject.org/>
 
 
 License
