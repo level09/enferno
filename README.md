@@ -113,8 +113,9 @@ Features
 Showcase
 --------
 Some of the websites running on Enferno: 
-- Seven Tides <http://seventides.com>
-- DUKES Hotel <http://dukeshotel.com>
+- Seven Tides <https://seventides.com>
+- Mixed CRM <https://www.mixedcrm.com>
+- DUKES Hotel <https://dukeshotel.com>
 
 
 Inspiration & Credits
