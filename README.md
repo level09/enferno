@@ -122,7 +122,7 @@ Inspiration & Credits
 ---------------------
 
 - Cookiecutter Flask <https://github.com/sloria/cookiecutter-flask>
-- Flask Security <https://pythonhosted.org/Flask-Security/>
+- Flask Security <https://github.com/Flask-Middleware/flask-security/>
 - Flask WTF <https://flask-wtf.readthedocs.org/en/latest/>
 - Celery Task Queue <http://www.celeryproject.org/>
 - Redis <http://redis.io/>
