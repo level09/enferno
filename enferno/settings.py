@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os
+import os, redis
 
 os_env = os.environ
 
@@ -31,6 +31,7 @@ class Config(object):
     SECURITY_POST_CONFIRM_VIEW = '/dashboard'
 
     SESSION_TYPE = 'redis'
+    SESSION_REDIS = redis.from_url(os.environ.get('SESSION_REDIS','redis://localhost:6379/1'))
     PERMANENT_SESSION_LIFETIME = 3600
 
 
