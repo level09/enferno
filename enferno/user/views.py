@@ -21,8 +21,8 @@ def account():
 def settings():
     if request.method == 'POST':
         name = request.form.get("name")
-        if  name != '':
-            user = User.query.get(session.get('user_id'))
+        if name:
+            user = User.query.get(current_user.id)
             user.name = name
             flash('Save successful. ')
             user.save()
