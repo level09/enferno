@@ -3,7 +3,9 @@
   "version": "2.0.0",
   "description": "Project Enferno - a framework for the next decade",
   "main": "index.js",
+
   "scripts": {
+    "preinstall": "npx npm-force-resolutions",
     "watch": "parcel watch enferno/src/index.js -d enferno/static/dist",
     "build": "parcel build enferno/src/index.js -d enferno/static/dist"
   },
@@ -35,5 +37,8 @@
   "devDependencies": {
     "@vue/component-compiler-utils": "^3.2.0",
     "vue-template-compiler": "^2.6.12"
+  },
+  "resolutions": {
+    "node-forge": "0.10.0"
   }
 }
