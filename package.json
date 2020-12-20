@@ -3,11 +3,10 @@
   "version": "2.0.0",
   "description": "Project Enferno - a framework for the next decade",
   "main": "index.js",
-
   "scripts": {
     "preinstall": "npx npm-force-resolutions",
-    "watch": "parcel watch enferno/src/index.js -d enferno/static/dist",
-    "build": "parcel build enferno/src/index.js -d enferno/static/dist"
+    "watch": "parcel watch enferno/src/index.js -d enferno/static/dist --public-url /static/dist/",
+    "build": "parcel build enferno/src/index.js -d enferno/static/dist --public-url /static/dist/"
   },
   "alias": {
     "vue": "./node_modules/vue/dist/vue.common.js"
