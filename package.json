@@ -6,7 +6,8 @@
   "scripts": {
     "preinstall": "npx npm-force-resolutions",
     "watch": "parcel watch enferno/src/index.js -d enferno/static/dist --public-url /static/dist/",
-    "build": "parcel build enferno/src/index.js -d enferno/static/dist --public-url /static/dist/"
+    "build": "parcel build enferno/src/index.js -d enferno/static/dist --public-url /static/dist/",
+    "favicons": "node favicons.js"
   },
   "alias": {
     "vue": "./node_modules/vue/dist/vue.common.js"
@@ -27,6 +28,7 @@
   "license": "MIT",
   "dependencies": {
     "autoprefixer": "^9.8.0",
+    "favicons": "^6.2.0",
     "modern-normalize": "^0.6.0",
     "parcel-bundler": "^1.12.4",
     "postcss-modules": "^2.0.0",

@@ -66,13 +66,24 @@ to run the system, you can use a management command:
     $ flask run
 
 to use Vue and Parcel bundler for development: 
-
-    $ npm install
-    $ npm run watch
-
+```
+$ npm install -g parcel-bundler
+$ npm install
+$ npm run watch
+```
 to build for production run:
  
     $ npm run build 
+
+Favicons Generator
+----------------- 
+To use the favicons generator, just replace `enferno/src/favicons/enferno.svg` with your own logo and run: 
+```
+$ npm run favicons 
+```
+A full set of favicons will be generated inside `enferno/static/favicons/` directory. 
+
+feel free to modify the script inside `favicons.js` to fit your needs. 
 
 Using Docker
 ------------
@@ -116,6 +127,7 @@ Showcase
 --------
 Some of the websites running on Enferno: 
 - Seven Tides <https://seventides.com>
+- Shamal Communications <https://www.shamalcomms.com/>
 - Mixed CRM <https://www.mixedcrm.com>
 - DUKES Hotel <https://dukeshotel.com>
 
