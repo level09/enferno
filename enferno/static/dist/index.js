@@ -12157,12 +12157,7 @@ if ("development" === 'production') {
 } else {
   module.exports = require('./vue.common.dev.js');
 }
-},{"./vue.common.dev.js":"../../node_modules/vue/dist/vue.common.dev.js"}],"../../node_modules/modern-normalize/modern-normalize.css":[function(require,module,exports) {
-var reloadCSS = require('_css_loader');
-
-module.hot.dispose(reloadCSS);
-module.hot.accept(reloadCSS);
-},{"_css_loader":"../../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"../../node_modules/vue-hot-reload-api/dist/index.js":[function(require,module,exports) {
+},{"./vue.common.dev.js":"../../node_modules/vue/dist/vue.common.dev.js"}],"../../node_modules/vue-hot-reload-api/dist/index.js":[function(require,module,exports) {
 var Vue // late bind
 var version
 var map = Object.create(null)
@@ -12463,7 +12458,7 @@ exports.default = void 0;
 //
 //
 var _default = {
-  props: ['logo']
+  props: []
 };
 exports.default = _default;
         var $2e456f = exports.default || module.exports;
@@ -12486,7 +12481,7 @@ exports.default = _default;
     },
     [
       _c("a", { attrs: { href: "/" } }, [
-        _c("img", { attrs: { src: _vm.logo, alt: "enferno" } })
+        _c("img", { attrs: { src: "/static/img/enferno.svg", alt: "enferno" } })
       ]),
       _vm._v(" "),
       _c("h3", [_vm._v("Welcome!")]),
@@ -12541,108 +12536,26 @@ render._withStripped = true
         
       }
     })();
-},{"_css_loader":"../../node_modules/parcel-bundler/src/builtins/css-loader.js","vue-hot-reload-api":"../../node_modules/vue-hot-reload-api/dist/index.js","vue":"../../node_modules/vue/dist/vue.common.js"}],"App.vue":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-
-require("modern-normalize/modern-normalize.css");
-
-var _Welcome = _interopRequireDefault(require("./components/Welcome"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-//
-//
-//
-//
-//
-//
-//
-//
-//
-var _default = {
-  name: 'app',
-  data: function data() {
-    return {};
-  },
-  components: {
-    Welcome: _Welcome.default
-  }
-};
-exports.default = _default;
-        var $1bd52d = exports.default || module.exports;
-      
-      if (typeof $1bd52d === 'function') {
-        $1bd52d = $1bd52d.options;
-      }
-    
-        /* template */
-        Object.assign($1bd52d, (function () {
-          var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c(
-    "div",
-    { attrs: { id: "app" } },
-    [_c("Welcome", { attrs: { logo: "/static/img/enferno.svg" } })],
-    1
-  )
-}
-var staticRenderFns = []
-render._withStripped = true
-
-          return {
-            render: render,
-            staticRenderFns: staticRenderFns,
-            _compiled: true,
-            _scopeId: null,
-            functional: undefined
-          };
-        })());
-      
-    /* hot reload */
-    (function () {
-      if (module.hot) {
-        var api = require('vue-hot-reload-api');
-        api.install(require('vue'));
-        if (api.compatible) {
-          module.hot.accept();
-          if (!module.hot.data) {
-            api.createRecord('$1bd52d', $1bd52d);
-          } else {
-            api.reload('$1bd52d', $1bd52d);
-          }
-        }
-
-        
-      }
-    })();
-},{"modern-normalize/modern-normalize.css":"../../node_modules/modern-normalize/modern-normalize.css","./components/Welcome":"components/Welcome.vue","vue-hot-reload-api":"../../node_modules/vue-hot-reload-api/dist/index.js","vue":"../../node_modules/vue/dist/vue.common.js"}],"index.js":[function(require,module,exports) {
+},{"_css_loader":"../../node_modules/parcel-bundler/src/builtins/css-loader.js","vue-hot-reload-api":"../../node_modules/vue-hot-reload-api/dist/index.js","vue":"../../node_modules/vue/dist/vue.common.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
 require("./index.css");
 
 var _vue = _interopRequireDefault(require("vue"));
 
-var _App = _interopRequireDefault(require("./App.vue"));
+var _Welcome = _interopRequireDefault(require("./components/Welcome"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-(function () {
-  "use strict";
-
-  new _vue.default({
-    render: function render(h) {
-      return h(_App.default);
-    }
-  }).$mount("#app");
-})();
-},{"./index.css":"index.css","vue":"../../node_modules/vue/dist/vue.common.js","./App.vue":"App.vue"}],"../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+var app = new _vue.default({
+  el: '#app',
+  // workaround Jinja conflict with vue
+  delimiters: ['${', '}'],
+  components: {
+    Welcome: _Welcome.default
+  }
+});
+},{"./index.css":"index.css","vue":"../../node_modules/vue/dist/vue.common.js","./components/Welcome":"components/Welcome.vue"}],"../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -12670,7 +12583,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59574" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "63049" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

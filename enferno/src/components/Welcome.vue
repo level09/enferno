@@ -1,7 +1,7 @@
 <template>
     <div class="main" style="text-align: center; padding:40px;">
 
-        <a href="/"><img :src="logo" alt="enferno"></a>
+        <a href="/"><img :src="'/static/img/enferno.svg'" alt="enferno"></a>
 
         <h3>Welcome!</h3>
 
@@ -18,6 +18,6 @@
 
 <script>
     export default {
-    props : ['logo']
+    props: []
     }
 </script>
