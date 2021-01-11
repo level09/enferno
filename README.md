@@ -14,9 +14,8 @@ http://enferno.io
 What's New
 ==================
 - Vue integration!  Vue is now bundled by default with a clean default structure to build and integrate npm modules. 
-- Parcel bundler is now available by default.  
+- Parcel bundler is now available by default (optional to use).  
 - Docker! you can now test the framework directly using docker-compose 
-- No more front-end bundlers (feel free to integrate your own : webpack, gulp, parcel, etc ..) 
 - Upgraded all python libraries 
  
 
