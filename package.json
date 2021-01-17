@@ -27,11 +27,11 @@
   "author": "level09 <nidal@level09.com>",
   "license": "MIT",
   "dependencies": {
-    "autoprefixer": "^9.8.0",
-    "favicons": "^6.2.0",
-    "modern-normalize": "^0.6.0",
+    "autoprefixer": "^10.2.1",
+    "favicons": "^4.8.2",
+    "modern-normalize": "^1.0.0",
     "parcel-bundler": "^1.12.4",
-    "postcss-modules": "^2.0.0",
+    "postcss-modules": "^4.0.0",
     "vue": "^2.6.12",
     "vue-hot-reload-api": "^2.3.4"
   },
