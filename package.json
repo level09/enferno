@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "preinstall": "npx npm-force-resolutions",
-    "watch": "parcel watch enferno/src/index.js -d enferno/static/dist --public-url /static/dist/",
-    "build": "parcel build enferno/src/index.js -d enferno/static/dist --public-url /static/dist/",
+    "watch": "parcel watch enferno/src/*.js -d enferno/static/dist --public-url /static/dist/",
+    "build": "parcel build enferno/src/*.js -d enferno/static/dist --public-url /static/dist/",
     "favicons": "node favicons.js"
   },
   "alias": {
