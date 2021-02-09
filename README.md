@@ -13,25 +13,37 @@ http://enferno.io
 
 What's New
 ==================
-- Vue integration!  Vue is now bundled by default with a clean default structure to build and integrate npm modules. 
-- Parcel bundler is now available by default (optional to use).  
-- Docker! you can now test the framework directly using docker-compose 
-- Upgraded all python libraries 
+- Better configuration management with python-dotenv support 
+- Favicon generator: just put your logo in enferno/src/favicons dir and automatically generate all favicons adn presets for all platforms. 
+
+
+Features
+--------
+- A Flask based opinionated framework with pre-installed batteries and best practices in mind.  
+- Fully working user registration and authentication,  user roles via Flask security
+- Redis: can be used for Flask caching, or any in-memory/queuing/key-value operations needed. 
+- Command line scripting via Click, feel free to build your own commands easily. 
+- Relational database support with sqlalchemy ORM 
+- Background tasks via Celery
+- Email integration via Flask Mail
+- Vue framework and npm scripts with pre-configured asset bundling. 
+- Sample Vue component (front-page) to help you get started. 
+
  
 
 Prerequisites
 -------------
-
+* Python
 * Redis
 * Postgresql (Default database) sqlite can be used for dev
 * Python Imaging (jpeg/png) support if you would like to work with images
-
+* Nginx (needed for production deployment)
 
 Quickstart
 ----------
- 
 
-::
+
+
 
     $ git clone git@github.com:level09/enferno.git
     
@@ -49,18 +61,17 @@ Edit the settings.py and change the values to suit your needs, specifically you 
 
 If you are installing Enferno locally, you will also need to replace "redis" and "postgres" with "localhost" in connection strings. 
 
-After that, you should create your admin user, run the following command:
-::
-
-    $ export FLASK_APP=run.py
-    $ flask create-db
-    $ flask install 
-
-and follow the instructions, this will create your first user and first admin role.
+After that, copy or rename the file (.env-sample) to (.env) and adjust the settings inside, then run 
 
 
+    flask create-db
+    flask install 
 
-to run the system, you can use a management command:
+and follow the instructions, that will create your database tables, and  first admin user and role.
+
+
+
+to run the system, you can use the following management command:
 
     $ flask run
 
@@ -84,19 +95,6 @@ A full set of favicons will be generated inside `enferno/static/favicons/` direc
 
 feel free to modify the script inside `favicons.js` to fit your needs. 
 
-Using Docker
-------------
-
-
-
-    $ git clone git@github.com:level09/enferno.git
-
-    $ cd enferno
-
-    $ docker-compose up
-
-https://asciinema.org/a/219755
-
 
 Running Celery
 -------------
@@ -109,17 +107,20 @@ A sample task that runs within the app context has been prepared for you within 
 
 
 
+Using Docker
+------------
+Feel free to adjust Docker settings inside the docker-compose.yml and Dockerfile / .env file. 
+then run: 
 
-Features
---------
-- Based on Flask. 
-- Fully working user registration and authentication + user roles via Flask security
-- Memory caching via Redis and Flask caching
-- Command line scripting via Click
-- Relational database support with sql alchemy ORM
-- Background tasks via Celery
-- Email integration via Flask Mail
-- Files are structured based on best practices by utilizing Flask blueprints and development/production configuration
+    $ docker-compose up
+
+https://asciinema.org/a/219755
+
+Looking for more? 
+------------
+check out [Anymal.io](https://anymal.io) which includes pre-configured Vuetify backend, User management/auth fully skinned 
+based on Material Design, and pre-configured Stripe membership integration. 
+
 
 
 Showcase
@@ -129,6 +130,8 @@ Some of the websites running on Enferno:
 - Shamal Communications <https://www.shamalcomms.com/>
 - Mixed CRM <https://www.mixedcrm.com>
 - DUKES Hotel <https://dukeshotel.com>
+
+
 
 
 Inspiration & Credits

@@ -35,6 +35,7 @@ Pillow==8.0.1
 psycopg2-binary==2.8.6
 pycparser==2.20
 python-dateutil==2.8.1
+python-dotenv==0.15.0
 python-editor==1.0.4
 pytz==2020.5
 redis==3.5.3
