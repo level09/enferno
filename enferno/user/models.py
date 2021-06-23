@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from ..extensions import db
 from flask_security import UserMixin, RoleMixin
 import datetime
@@ -17,6 +19,7 @@ class Role(db.Model, RoleMixin):
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False, default=uuid4().hex)
     name = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.datetime.now,  nullable=False)
     email = db.Column(db.String(255),  nullable=False)
