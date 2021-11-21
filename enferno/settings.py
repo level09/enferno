@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import bleach
 import os
 import redis
 
@@ -6,6 +7,11 @@ os_env = os.environ
 
 
 class Config(object):
+
+    def uia_username_mapper(identity):
+        # we allow pretty much anything - but we bleach it.
+        return bleach.clean(identity, strip=True)
+
     SECRET_KEY = os.environ.get('SECRET_KEY', '3nF3Rn0')
     APP_DIR = os.path.abspath(os.path.dirname(__file__))  # This directory
     PROJECT_ROOT = os.path.abspath(os.path.join(APP_DIR, os.pardir))
@@ -26,7 +32,8 @@ class Config(object):
     SECURITY_CONFIRMABLE = False
     SECURITY_TRACKABLE = True
     SECURITY_PASSWORD_HASH = 'bcrypt'
-    SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT','3nF3Rn0')
+    SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', '3nF3Rn0')
+    SECURITY_USER_IDENTITY_ATTRIBUTES = [{"username": {"mapper": uia_username_mapper, "case_insensitive": True}}]
 
     SECURITY_POST_LOGIN_VIEW = '/dashboard'
     SECURITY_POST_CONFIRM_VIEW = '/dashboard'

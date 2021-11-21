@@ -26,22 +26,27 @@ def install():
     """
     # check if admin exists
     from enferno.user.models import Role
-    a = Role.query.filter(Role.name == 'admin').first()
+    # create admin role if it doesn't exist
+    admin_role = Role.query.filter(Role.name == 'admin').first()
+    if not admin_role:
+        admin_role = Role(name='admin').save()
 
-    if a is None:
-        r = Role(name='admin')
-        try:
-            db.session.add(r)
-            db.session.commit()
-            u = click.prompt('Admin Email?', default='admin@enferno.io')
-            p = click.prompt('Admin Password (min 6 characters)?', default='enferno')
-            user = User(email=u, password=hash_password(p), active=1)
-            user.roles.append(r)
-            user.save()
-        except Exception as e:
-            db.session.rollback()
-    else:
-        print('Seems like an Admin is already installed')
+    # check if admin users already installed
+    admin_user = User.query.filter(User.roles.any(Role.name == 'admin')).first()
+    if admin_user:
+        print('An admin user already exists: {}'.format(admin_user.username))
+        return
+
+    # else : create a new admin user
+    username = click.prompt('Admin username', default='admin')
+    password = click.prompt('Admin Password (min 8 characters)?', default='enferno09')
+
+    user = User(username=username, password=hash_password(password), active=1)
+    user.roles.append(admin_role)
+    user.save()
+    print('User {} has been created successfuly'.format(username))
+
+
 
 
 @click.command()

@@ -3,6 +3,7 @@ amqp==5.0.6
 Babel==2.9.1
 bcrypt==3.2.0
 billiard==3.6.4.0
+bleach==4.1.0
 blinker==1.4
 cachelib==0.4.1
 celery==5.1.2
