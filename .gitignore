@@ -10,3 +10,4 @@ node_modules/
 .sass-cache
 .vscode/
 .cache/
+.parcel-cache
