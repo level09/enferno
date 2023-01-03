@@ -11,3 +11,4 @@ node_modules/
 .vscode/
 .cache/
 .parcel-cache
+enferno.sqlite3

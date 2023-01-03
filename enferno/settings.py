@@ -18,9 +18,9 @@ class Config(object):
     DEBUG_TB_ENABLED = False  # Disable Debug toolbar
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     CACHE_TYPE = 'simple'  # Can be "memcached", "redis", etc.
-    # SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/enferno.db'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///enferno.sqlite3'
     # for postgres
-    SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI', 'postgresql:///enferno')
+    #SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI', 'postgresql:///enferno')
     SQLALCHEMY_TRACK_MODIFICATIONS = True
 
     CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/10')
