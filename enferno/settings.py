@@ -37,6 +37,7 @@ class Config(object):
 
     SECURITY_POST_LOGIN_VIEW = '/dashboard'
     SECURITY_POST_CONFIRM_VIEW = '/dashboard'
+    SECURITY_POST_REGISTER_VIEW = '/login'
 
     SESSION_TYPE = 'redis'
     SESSION_REDIS = redis.from_url(os.environ.get('SESSION_REDIS', 'redis://localhost:6379/1'))
