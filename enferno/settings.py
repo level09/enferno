@@ -23,8 +23,8 @@ class Config(object):
     #SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI', 'postgresql:///enferno')
     SQLALCHEMY_TRACK_MODIFICATIONS = True
 
-    CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/10')
-    result_backend = os.environ.get('result_backend', 'redis://localhost:6379/11')
+    CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/2')
+    result_backend = os.environ.get('result_backend', 'redis://localhost:6379/3')
 
     # security
     SECURITY_REGISTERABLE = True
@@ -40,7 +40,8 @@ class Config(object):
     SECURITY_POST_REGISTER_VIEW = '/login'
 
     SESSION_TYPE = 'redis'
-    SESSION_REDIS = redis.from_url(os.environ.get('SESSION_REDIS', 'redis://localhost:6379/1'))
+
+    SESSION_REDIS = redis.from_url(os.environ.get('REDIS_SESSION', 'redis://localhost:6379/1'))
     PERMANENT_SESSION_LIFETIME = 3600
 
     # flask mail settings
