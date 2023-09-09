@@ -1,18 +1,21 @@
-import "./index.css";
-import Vue from "vue";
-import Welcome from "./components/Welcome";
+import { createApp } from 'vue';
+import Index from "./pages/Index.vue";
+import './index.css';
+import 'vuetify/styles';
+import { createVuetify } from 'vuetify';
+import * as components from 'vuetify/components'
+import * as directives from 'vuetify/directives'
+import '@mdi/font/css/materialdesignicons.min.css'
 
+const vuetify = createVuetify({
+    components,
+  directives,
+    icons: {
+        iconfont: 'mdi',
+    },
+});
 
-let app = new Vue({
-    el: '#app',
-    // workaround Jinja conflict with vue
-    delimiters: ['${','}'],
-    components : {
-        Welcome
-    }
+const app = createApp(Index);
 
-})
-
-
-
+app.use(vuetify).mount('#app');
 

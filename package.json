@@ -1,42 +1,21 @@
 {
-  "name": "Enferno",
-  "version": "6.0.0",
-  "description": "Project Enferno - a framework for the next decade",
-  "main": "index.js",
+  "name": "enferno",
+  "private": true,
+  "version": "7.0.0",
+  "type": "module",
   "scripts": {
-    "watch": "parcel watch enferno/src/*.js -d enferno/static/dist --public-url /static/dist/",
-    "build": "parcel build enferno/src/*.js -d enferno/static/dist --public-url /static/dist/",
-    "favicons": "node favicons.js"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
-  "alias": {
-    "vue": "./node_modules/vue/dist/vue.common.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/level09/enferno"
-  },
-  "keywords": [
-    "enferno",
-    "python",
-    "nginx",
-    "flask",
-    "postgresql",
-    "redis"
-  ],
-  "author": "level09 <nidal@level09.com>",
-  "license": "MIT",
   "dependencies": {
-    "autoprefixer": "^10.2.1",
-    "favicons": "^6.2.2",
-    "modern-normalize": "^1.0.0",
-    "parcel-bundler": "^1.12.4",
-    "postcss-modules": "^4.0.0",
-    "vue": "^2.6.12",
-    "vue-hot-reload-api": "^2.3.4"
+    "@mdi/font": "^7.2.96",
+    "favicons": "^7.1.4",
+    "vue": "^3.3.4",
+    "vuetify": "^3.3.14"
   },
   "devDependencies": {
-    "@vue/component-compiler-utils": "^3.2.0",
-    "vue-template-compiler": "^2.6.12"
+    "@vitejs/plugin-vue": "^4.2.3",
+    "vite": "^4.4.5"
   }
-  
 }
