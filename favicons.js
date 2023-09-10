@@ -5,7 +5,7 @@ import fs from 'fs/promises';
 const source = './enferno/src/favicons/enferno.svg';
 
 const configuration = {
-    path: "/static/dist/favicons/",
+    path: "/static/favicons/",
     appName: 'Enferno',
     appShortName: 'Enferno',
     appDescription: 'Enferno Framework',
@@ -37,7 +37,7 @@ async function generateFavicons() {
     try {
         const response = await favicons(source, configuration);
 
-        const target = './enferno/static/dist/favicons/';
+        const target = './enferno/static/favicons/';
         await fs.mkdir(target, { recursive: true });
 
         for (const file of response.files) {
@@ -48,7 +48,7 @@ async function generateFavicons() {
             await fs.writeFile(path.join(target, image.name), image.contents);
         }
 
-        console.log('Successfully generated favicons to enferno/static/dist/favicons/');
+        console.log('Successfully generated favicons to enferno/static/favicons/');
     } catch (error) {
         console.error(error.message);
     }
