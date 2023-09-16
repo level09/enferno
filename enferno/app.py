@@ -1,21 +1,23 @@
 # -*- coding: utf-8 -*-
 
 from flask import Flask, render_template
-from enferno.settings import ProdConfig
+from enferno.settings import Config
 from flask_security import Security, SQLAlchemyUserDatastore
 from enferno.user.models import User, Role
 from enferno.user.forms import ExtendedRegisterForm
-from enferno.extensions import cache, db, mail, debug_toolbar, migrate, session
+from enferno.extensions import cache, db, mail, debug_toolbar, session
 from enferno.public.views import bp_public
 from enferno.user.views import bp_user
 import enferno.commands as commands
 
 
-def create_app(config_object=ProdConfig):
+def create_app(config_object=Config):
     app = Flask(__name__)
     app.config.from_object(config_object)
-    register_extensions(app)
+
     register_blueprints(app)
+    register_extensions(app)
+
     register_errorhandlers(app)
     register_shellcontext(app)
     register_commands(app)
@@ -26,18 +28,17 @@ def register_extensions(app):
     cache.init_app(app)
     db.init_app(app)
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-    security = Security(app, user_datastore, confirm_register_form=ExtendedRegisterForm,
-                        register_form=ExtendedRegisterForm)
+    security = Security(app, user_datastore,  register_form=ExtendedRegisterForm)
     mail.init_app(app)
     debug_toolbar.init_app(app)
-    migrate.init_app(app, db)
     session.init_app(app)
     return None
 
 
 def register_blueprints(app):
-    app.register_blueprint(bp_public)
+
     app.register_blueprint(bp_user)
+    app.register_blueprint(bp_public)
     return None
 
 
