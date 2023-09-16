@@ -16,8 +16,5 @@ from flask_debugtoolbar import DebugToolbarExtension
 debug_toolbar = DebugToolbarExtension()
 
 
-from flask_migrate import Migrate
-migrate = Migrate()
-
 from flask_session import Session
 session = Session()

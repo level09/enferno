@@ -19,11 +19,11 @@ class Role(db.Model, RoleMixin, BaseMixin):
 
 class User(UserMixin, db.Model, BaseMixin):
     id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(255), nullable=True, unique=True)
     fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False, default=uuid4().hex)
     name = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.datetime.now,  nullable=False)
     email = db.Column(db.String(255),  nullable=True)
-    username = db.Column(db.String(255), nullable=True, unique=True)
     password = db.Column(db.String(255),  nullable=False)
     active = db.Column(db.Boolean, default=False)
     roles = db.relationship('Role', secondary=roles_users,
