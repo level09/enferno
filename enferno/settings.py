@@ -2,20 +2,21 @@
 import bleach
 import os
 import redis
-
+from dotenv import load_dotenv
 os_env = os.environ
+load_dotenv()
+
+def uia_username_mapper(identity):
+    # we allow pretty much anything - but we bleach it.
+    return bleach.clean(identity, strip=True)
 
 
 class Config(object):
 
-    def uia_username_mapper(identity):
-        # we allow pretty much anything - but we bleach it.
-        return bleach.clean(identity, strip=True)
-
     SECRET_KEY = os.environ.get('SECRET_KEY', '3nF3Rn0')
     APP_DIR = os.path.abspath(os.path.dirname(__file__))  # This directory
     PROJECT_ROOT = os.path.abspath(os.path.join(APP_DIR, os.pardir))
-    DEBUG_TB_ENABLED = False  # Disable Debug toolbar
+    DEBUG_TB_ENABLED = os.environ.get('DEBUG_TB_ENABLED')
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     CACHE_TYPE = 'simple'  # Can be "memcached", "redis", etc.
     SQLALCHEMY_DATABASE_URI = 'sqlite:///enferno.sqlite3'
@@ -33,7 +34,9 @@ class Config(object):
     SECURITY_TRACKABLE = True
     SECURITY_PASSWORD_HASH = 'bcrypt'
     SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', '3nF3Rn0')
-    SECURITY_USER_IDENTITY_ATTRIBUTES = [{"username": {"mapper": uia_username_mapper, "case_insensitive": True}}]
+    SECURITY_USER_IDENTITY_ATTRIBUTES = [{"username": {"mapper": uia_username_mapper, "case_insensitive": True}},]
+    SECURITY_USERNAME_ENABLE = True
+
 
     SECURITY_POST_LOGIN_VIEW = '/dashboard'
     SECURITY_POST_CONFIRM_VIEW = '/dashboard'
@@ -52,18 +55,3 @@ class Config(object):
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     SECURITY_EMAIL_SENDER = os.environ.get('SECURITY_EMAIL_SENDER', 'info@domain.com')
 
-
-class ProdConfig(Config):
-    """Production configuration."""
-    ENV = 'prod'
-    DEBUG = False
-    # SQLALCHEMY_DATABASE_URI = 'mysql://user:pass@localhost/enferno'
-    DEBUG_TB_ENABLED = False  # Disable Debug toolbar
-
-
-class DevConfig(Config):
-    """Development configuration."""
-    ENV = 'dev'
-    DEBUG = True
-    DEBUG_TB_ENABLED = True
-    CACHE_TYPE = 'simple'  # Can be "memcached", "redis", etc.
