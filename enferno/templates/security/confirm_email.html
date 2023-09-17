@@ -1,0 +1,44 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <v-app id="app" class="justify-center align-center min-vh-100 d-flex">
+        <v-container class="d-flex align-center justify-center">
+            <div class="main">
+                <h2>Thank for your registration</h2>
+                <p>
+                    Please confirm your Email to continue.
+                </p>
+            </div>
+        </v-container>
+        <v-snackbar absolute button v-model="snackBar">
+            ${snackMessage}
+            <v-btn text color="primary" @click.native="value = false">Close</v-btn>
+        </v-snackbar>
+    </v-app>
+{% endblock %}
+
+{% block js %}
+    <script>
+        const {createApp} = Vue;
+        const {createVuetify} = Vuetify;
+        const vuetify = createVuetify();
+
+        const app = createApp({
+            data() {
+                return {
+                    snackBar: false,
+                    snackMessage: '',
+                };
+            },
+            methods: {
+                showSnack(message) {
+                    this.snackMessage = message;
+                    this.snackBar = true;
+                },
+            },
+            delimiters: ['${', '}']
+        });
+
+        app.use(vuetify).mount('#app');
+    </script>
+{% endblock %}

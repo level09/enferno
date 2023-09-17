@@ -1,22 +1,76 @@
-{% extends 'login-layout.html' %}
+{% extends 'layout.html' %}
 {% block content %}
+<v-app id="app">
+<v-card>
+    <v-layout>
+      <!-- <v-system-bar color="deep-purple darken-3"></v-system-bar> -->
 
-    <div class="layout">
-        <aside class="sidebar">
-            <nav class="side-nav">
-                <a href="/dashboard/">Dashboard</a>
-            </nav>
+      <v-app-bar
+        color="primary"
+        prominent
+      >
 
-        </aside>
+        <v-toolbar-title>Dashboard</v-toolbar-title>
 
-        <div class="content">
-            <h3>Account</h3>
+        <v-spacer></v-spacer>
 
-            <p>Welcome, {{ g.user.email }}</p>
+              </v-app-bar>
 
-            <p>Last login —  {{ g.user.last_login_at.strftime('%b %d, %Y')  }}</p>
-            <p><a class="btn" href="/logout">Logout</a></p>
-        </div>
+      <v-navigation-drawer
+              permanent
 
-    </div>
+        v-model="drawer"
+        location="left"
+
+      >
+               <v-list nav>
+          <v-list-item prepend-icon="mdi-email" title="Inbox" value="inbox"></v-list-item>
+               </v-list>
+      </v-navigation-drawer>
+
+      <v-main style="height: 500px;">
+        <v-card-text class="">
+
+                        Welcome, {{ g.user.username }}
+
+
+        </v-card-text>
+          <v-card-text>
+              Last login —  {{ g.user.last_login_at.strftime('%b %d, %Y')  }}
+
+          </v-card-text>
+          <v-card-actions>
+              <v-btn href="/logout" color="primary">Logout</v-btn>
+          </v-card-actions>
+      </v-main>
+    </v-layout>
+  </v-card>
+</v-app>
+{% endblock %}
+
+{% block js %}
+<script>
+    const { createApp } = Vue;
+    const { createVuetify } = Vuetify;
+    const vuetify = createVuetify();
+
+    const app = createApp({
+        data() {
+            return {
+                drawer: true,
+                snackBar: false,
+                snackMessage: '',
+            };
+        },
+        methods: {
+            showSnack(message) {
+                this.snackMessage = message;
+                this.snackBar = true;
+            },
+        },
+        delimiters: ['${', '}']
+    });
+
+    app.use(vuetify).mount('#app');
+</script>
 {% endblock %}

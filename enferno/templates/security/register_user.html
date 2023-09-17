@@ -1,0 +1,77 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<v-app id="app" class="justify-center align-center min-vh-100 d-flex">
+    <v-container class="d-flex align-center justify-center">
+        <form
+                @submit.prevent="submit"
+                action="{{ url_for_security('register') }}"
+                method="post"
+                id="registerForm"
+                ref="form"
+        >
+            <v-card class="pa-5 mt-10" width="600">
+                <v-card-title class="mb-4">
+                    Register a new account
+                </v-card-title>
+                <v-card-text>
+                    {{ register_user_form.hidden_tag() }}
+
+                        <v-text-field required label="First Name" name="first_name" type="text"></v-text-field>
+                        <v-text-field  required label="Last Name" name="last_name" type="text"></v-text-field>
+
+                    <v-text-field required label="Email" name="email"  type="text"></v-text-field>
+                    <v-text-field required id="password" label="Password" name="password" type="password"></v-text-field>
+                    {% if register_user_form.password_confirm %}
+                        <v-text-field required id="confirm-password" label="Confirm Password" name="password_confirm"  type="password"></v-text-field>
+                    {% endif %}
+
+                </v-card-text>
+                {% if register_user_form.email.errors or register_user_form.password.errors %}
+                    <v-card-text>
+                        <v-alert type="error" dense dismissible>
+                            Please check the form for errors: <br>
+                            {{ register_user_form.errors }}
+                        </v-alert>
+                    </v-card-text>
+                {% endif %}
+                <v-card-actions class="justify-end">
+                    <v-btn width="200" height="40" type="submit" color="primary">Sign Up</v-btn>
+                </v-card-actions>
+            </v-card>
+        </form>
+    </v-container>
+    <v-snackbar absolute button v-model="snackBar">
+        ${snackMessage}
+        <v-btn text color="primary" @click.native="value = false">Close</v-btn>
+    </v-snackbar>
+</v-app>
+{% endblock %}
+{% block js %}
+<script>
+    const { createApp } = Vue;
+    const { createVuetify } = Vuetify;
+    const vuetify = createVuetify();
+
+    const app = createApp({
+        data() {
+            return {
+                snackBar: false,
+                snackMessage: '',
+            };
+        },
+        methods: {
+            showSnack(message) {
+                this.snackMessage = message;
+                this.snackBar = true;
+            },
+            submit() {
+                document.getElementById('registerForm').submit();
+            }
+        },
+        delimiters: ['${', '}']
+    });
+
+    app.use(vuetify).mount('#app');
+</script>
+{% endblock %}
