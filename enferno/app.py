@@ -6,7 +6,7 @@ from flask_security import Security, SQLAlchemyUserDatastore
 from enferno.user.models import User, Role
 from enferno.user.forms import ExtendedRegisterForm
 from enferno.extensions import cache, db, mail, debug_toolbar, session
-from enferno.public.views import bp_public
+from enferno.public.views import public
 from enferno.user.views import bp_user
 import enferno.commands as commands
 
@@ -38,7 +38,7 @@ def register_extensions(app):
 def register_blueprints(app):
 
     app.register_blueprint(bp_user)
-    app.register_blueprint(bp_public)
+    app.register_blueprint(public)
     return None
 
 
