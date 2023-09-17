@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import os
 from celery import Celery
-from enferno.settings import  ProdConfig, DevConfig
+
+from enferno.settings import Config as cfg
 
 celery = Celery(__name__)
-
-if os.environ.get("FLASK_DEBUG") == '0':
-    cfg = ProdConfig
-else:
-    cfg = DevConfig
 
 celery = Celery('tasks', broker=cfg.CELERY_BROKER_URL)
 #remove deprecated warning
