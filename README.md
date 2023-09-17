@@ -4,7 +4,9 @@ Project Enferno
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 
-A framework for the next decade, this is a collection of cutting-edge libraries and tools based on Flask framework, that will help build any website or web app (SAAS) extremely fast !
+A framework for the next decade, this assemblage of state-of-the-art libraries and tools, grounded on the Flask framework, facilitates the rapid construction of any website or web-based application (SAAS) with remarkable speed!
+
+
 
 http://enferno.io
 
@@ -13,36 +15,31 @@ http://enferno.io
 
 What's New
 ==================
-- Better configuration management with python-dotenv support 
-- Favicon generator: just put your logo in enferno/src/favicons dir and automatically generate all favicons adn presets for all platforms. 
-
-
+- Eliminated JavaScript build scripts and complex configurations
+- Incorporated Vue3, Vuetify3, and axios through client-side JavaScript without the necessity of build tools
+- Implemented the latest flask-security templates and views utilizing sleek Vuetify templates (Material Design)
+- Streamlined configurations through .env, bypassing the need for distinct classes per environment
+- Cleanup and removed favicon generator 
 Features
 --------
-- A Flask based opinionated framework with pre-installed batteries and best practices in mind.  
-- Fully working user registration and authentication,  user roles via Flask security
-- Redis: can be used for Flask caching, or any in-memory/queuing/key-value operations needed. 
-- Command line scripting via Click, feel free to build your own commands easily. 
-- Relational database support with sqlalchemy ORM 
-- Background tasks via Celery
-- Email integration via Flask Mail
-- Vue framework and npm scripts with pre-configured asset bundling. 
-- Sample Vue component (front-page) to help you get started. 
-
+- An opinionated Flask-based framework designed with pre-integrated utilities and adherence to best practices. 
+- Fully functional user registration and authentication systems, alongside user role management through Flask security.
+- Redis integration: capable of facilitating Flask caching, as well as handling various in-memory, queuing, and key-value operations as needed.
+- Command line scripting facilitated by Click, empowering you to create your own commands with ease.
+- Support for relational databases through the utilization of SQLAlchemy ORM.
+- Efficient management of background tasks using Celery.
+- Smooth email integration facilitated through Flask Mail.
+- Incorporation of the Vue3 framework and Vuetify3, providing an aesthetically pleasing UI grounded in material design principles. 
  
 
 Prerequisites
 -------------
 * Python
 * Redis
-* Postgresql (Default database) sqlite can be used for dev
-* Python Imaging (jpeg/png) support if you would like to work with images
 * Nginx (needed for production deployment)
 
 Quickstart
 ----------
-
-
 
 
     $ git clone git@github.com:level09/enferno.git
@@ -57,43 +54,21 @@ Quickstart
 
 
 
-Edit the settings.py and change the values to suit your needs, specifically you can change Flask security settings, security keys, Redis DB, Mysql settings, and Flask mail.
+Modify the settings.py file to tailor it to your requirements, particularly tweaking Flask security settings, security keys, Redis DB configurations, MySQL settings, and Flask mail options.
 
-If you are installing Enferno locally, you will also need to replace "redis" and "postgres" with "localhost" in connection strings. 
+For a local Enferno installation, remember to replace "redis" and "postgres" with "localhost" in the connection strings. 
 
-After that, copy or rename the file (.env-sample) to (.env) and adjust the settings inside, then run 
-
+Subsequently, duplicate or rename the file (.env-sample) to (.env), and tweak the settings therein. Following this, proceed to run 
 
     flask create-db
     flask install 
 
-and follow the instructions, that will create your database tables, and  first admin user and role.
-
-
+and follow the directions, which will establish your database tables, and set up the initial admin user and role.
 
 to run the system, you can use the following management command:
 
     $ flask run
 
-to use Vue and Parcel bundler for development: 
-```
-$ npm install -g parcel-bundler
-$ npm install
-$ npm run watch
-```
-to build for production run:
- 
-    $ npm run build 
-
-Favicons Generator
------------------ 
-To use the favicons generator, just replace `enferno/src/favicons/enferno.svg` with your own logo and run: 
-```
-$ npm run favicons 
-```
-A full set of favicons will be generated inside `enferno/static/favicons/` directory. 
-
-feel free to modify the script inside `favicons.js` to fit your needs. 
 
 
 Running Celery
@@ -116,22 +91,13 @@ then run:
 
 https://asciinema.org/a/219755
 
-Looking for more? 
-------------
-check out [Anymal.io](https://anymal.io) which includes pre-configured Vuetify backend, User management/auth fully skinned 
-based on Material Design, and pre-configured Stripe membership integration. 
-
-
 
 Showcase
 --------
 Some of the websites running on Enferno: 
 - Seven Tides <https://seventides.com>
-- Shamal Communications <https://www.shamalcomms.com/>
 - Mixed CRM <https://www.mixedcrm.com>
 - DUKES Hotel <https://dukeshotel.com>
-
-
 
 
 Inspiration & Credits
@@ -139,8 +105,6 @@ Inspiration & Credits
 
 - Cookiecutter Flask <https://github.com/sloria/cookiecutter-flask>
 - Flask Security <https://github.com/Flask-Middleware/flask-security/>
-- Flask WTF <https://flask-wtf.readthedocs.org/en/latest/>
-- Celery Task Queue <http://www.celeryproject.org/>
 - Redis <http://redis.io/>
 - Flask Mail <https://pythonhosted.org/flask-mail/>
 - Flask Documentation <http://flask.pocoo.org/docs/>
