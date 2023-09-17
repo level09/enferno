@@ -1,5 +1,44 @@
 {% extends 'layout.html' %}
-
+{% block body_class %}
+    home
+{% endblock %}
 {% block content %}
-    <v-app id="app"></v-app>
+    <v-app id="app" class="d-flex align-center fill-height text-center">
+
+            <v-card class="ma-auto pa-10" width="550">
+                <v-card-title class="text-h4">Welcome To Enferno <span class="text-caption">v7</span></v-card-title>
+                <v-card-text class="mt-4">
+                    Simplicity Meets Excellence: Your Next-Gen Web Framework.
+                </v-card-text>
+
+            </v-card>
+
+    </v-app>
+{% endblock %}
+
+{% block js %}
+    <script>
+        const {createApp} = Vue;
+        const {createVuetify} = Vuetify;
+        const vuetify = createVuetify();
+
+        const app = createApp({
+            data() {
+                return {
+                    drawer: true,
+                    snackBar: false,
+                    snackMessage: '',
+                };
+            },
+            methods: {
+                showSnack(message) {
+                    this.snackMessage = message;
+                    this.snackBar = true;
+                },
+            },
+            delimiters: ['${', '}']
+        });
+
+        app.use(vuetify).mount('#app');
+    </script>
 {% endblock %}
