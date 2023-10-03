@@ -1,4 +1,4 @@
 site_name: Enferno Documentation
-pages:
+nav:
   - Home: index.md
 theme: readthedocs
