@@ -2,6 +2,8 @@ Project Enferno
 =================
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Documentation Status](https://readthedocs.org/projects/enferno/badge/?version=latest)](https://enferno.readthedocs.io/en/latest/?badge=latest)
+
 
 
 A framework for the next decade, this assemblage of state-of-the-art libraries and tools, grounded on the Flask framework, facilitates the rapid construction of any website or web-based application (SAAS) with remarkable speed!
