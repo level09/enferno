@@ -2,9 +2,13 @@
 """Extensions module. Each extension is initialized in the app factory located
 in app.py
 """
+from sqlalchemy.orm import DeclarativeBase
+
+class BaseModel(DeclarativeBase):
+    pass
 
 from flask_sqlalchemy import SQLAlchemy
-db = SQLAlchemy()
+db = SQLAlchemy(model_class=BaseModel)
 
 from flask_caching import Cache
 cache = Cache()
