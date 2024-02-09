@@ -3,7 +3,7 @@ from typing import Dict
 from uuid import uuid4
 from enferno.utils.base import BaseMixin
 from enferno.extensions import db
-from flask_security import UserMixin, RoleMixin
+from flask_security.core import UserMixin, RoleMixin
 from datetime import datetime
 from sqlalchemy import String, DateTime, Integer, Boolean, Column, ForeignKey, Table, ARRAY, LargeBinary, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship, declared_attr
@@ -34,7 +34,7 @@ class User(UserMixin, db.Model, BaseMixin):
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
 
-    roles: Mapped[list[Role]] = relationship('Role', secondary=roles_users, backref="users")
+    roles = relationship('Role', secondary=roles_users, backref="users")
 
     confirmed_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     last_login_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
@@ -104,4 +104,3 @@ class WebAuthn(db.Model):
         Return the mapping from webauthn back to User
         """
         return dict(id=self.user_id)
-
