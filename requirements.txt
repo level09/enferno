@@ -39,3 +39,5 @@ uWSGI==2.0.23
 vine==5.1.0
 Werkzeug==3.0.1
 WTForms==3.1.2
+orjson==3.9.13
+
