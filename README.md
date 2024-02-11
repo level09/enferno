@@ -19,6 +19,7 @@ http://enferno.io
 
 What's New
 ==================
+- Users and Roles Management Dashboard 
 - Eliminated JavaScript build scripts and complex configurations
 - Incorporated Vue3, Vuetify3, and axios through client-side JavaScript without the necessity of build tools
 - Implemented the latest flask-security templates and views utilizing sleek Vuetify templates (Material Design)
