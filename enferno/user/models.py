@@ -29,6 +29,11 @@ class Role(db.Model, RoleMixin, BaseMixin):
             'description': self.description
         }
 
+    def from_dict(self, json_dict):
+        self.name = json_dict.get('name', self.name)
+        self.description = json_dict.get('description', self.description)
+        return self
+
 
 @dataclasses.dataclass
 class User(UserMixin, db.Model, BaseMixin):

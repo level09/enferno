@@ -1,0 +1,191 @@
+{% extends 'layout.html' %}
+{% block css %}
+{% endblock %}
+{% block sidebar %}
+{% endblock %}
+{% block layout_classes %} align-center {% endblock %}
+{% block content %}
+
+    <v-card class="ma-2 mt-12 w-100 h-100">
+        <v-toolbar>
+            <v-toolbar-title>Roles Dashboard</v-toolbar-title>
+            <v-spacer></v-spacer>
+        </v-toolbar>
+        <v-card-text>
+
+            <v-data-table :items="items" :headers="headers">
+
+                <template v-slot:top>
+                    <v-toolbar class="mb-4" dense elevation="0">
+                        <v-btn @click="createItem" size="small" variant="elevated" color="primary"> Add Role</v-btn>
+                    </v-toolbar>
+                </template>
+
+                <template v-slot:item.description="{ item }">
+                    <span>${item.description}</span>
+                </template>
+
+                <template v-slot:item.actions="{ item }">
+                    <v-icon
+                            small
+                            class="mr-2"
+                            @click="editItem(item)"
+                    >
+                        mdi-pencil
+                    </v-icon>
+                    <v-icon
+                            small
+                            @click="deleteItem(item)"
+                    >
+                        mdi-delete
+                    </v-icon>
+                </template>
+
+            </v-data-table>
+
+
+        </v-card-text>
+    </v-card>
+
+    <!--Edit Dialog-->
+    <v-dialog v-model="edialog" width="660">
+        <v-card v-if="edialog" class="pa-6">
+            <v-sheet class="d-flex justify-end">
+                <v-btn @click="edialog=false" size="small" icon="mdi-close" variant="text"></v-btn>
+            </v-sheet>
+            <v-card-title>Role Editor</v-card-title>
+
+            <v-card-text>
+                <!-- fields go here -->
+                <v-text-field label="Name" v-model="eitem.name"></v-text-field>
+                <v-text-field label="Description" v-model="eitem.description" multiline></v-text-field>
+            </v-card-text>
+
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="primary" variant="elevated" @click="saveItem">Save</v-btn>
+            </v-card-actions>
+        </v-card>
+
+    </v-dialog>
+
+    <v-snackbar size="small" class="d-flex" v-model="snackBar" rounded="pill" elevation="25">
+
+        ${snackMessage}
+        <template v-slot:actions>
+            <v-btn @click="snackBar=false" icon="mdi-close" class="ml-auto" variant="text" size="small"></v-btn>
+        </template>
+    </v-snackbar>
+
+{% endblock %} {% block js %}
+
+    <script>
+        const {createApp} = Vue;
+        const {createVuetify} = Vuetify;
+
+        const vuetify = createVuetify();
+
+        window.app = createApp({
+            data() {
+                return {
+                    snackBar: false,
+                    snackMessage: "",
+                    items: [],
+                    itemsLength: 0,
+
+                    headers: [
+                        {title: 'ID', value: 'id'},
+                        {title: 'Name', value: 'name'},
+                        {title: 'Description', value: 'description', sortable: false},
+                        {title: 'Actions', value: 'actions', sortable: false}
+                    ],
+                    edialog: false,
+                    eitem: {
+                        id: "",
+                        name: "",
+                        description: ""
+                    },
+                };
+            },
+
+            mounted() {
+                this.refresh();
+            },
+            delimiters: ["${", "}"],
+
+            methods: {
+
+                showSnack(message) {
+                    this.snackMessage = message;
+                    this.snackBar = true;
+                },
+
+                refresh() {
+
+                    axios.get(`/api/roles`).then(res => {
+                        this.items = res.data.items;
+                        this.itemsLength = res.data.total;
+
+                    });
+                },
+                createItem() {
+                    this.edialog = true;
+                    this.eitem = {};
+
+                },
+
+                editItem(item) {
+
+                    this.eitem = {...item};
+
+                    this.$nextTick(() => {
+                        this.edialog = true;
+                    });
+
+                },
+
+                saveItem() {
+                    if (this.eitem.id) {
+                        // edit mode
+                        axios.post(`/api/role/${this.eitem.id}`, {item: this.eitem}).then(res => {
+                            this.showSnack(res.data?.message);
+                            this.refresh();
+
+                        }).catch(err => {
+
+                            this.showSnack(err.response?.data);
+                        });
+                    } else {
+                        // create mode
+                        axios.post('/api/role/', {item: this.eitem}).then(res => {
+                            this.showSnack(res.data?.message);
+                            this.refresh();
+
+                        }).catch(err => {
+                            this.showSnack(err.response?.data)
+                        });
+
+                    }
+                    this.edialog = false;
+
+                },
+
+                deleteItem(item) {
+                    if (confirm('Are you sure?')) {
+                        axios.delete(`/api/role/${item.id}`).then(res => {
+                            this.showSnack(res.data?.message);
+                            this.refresh();
+
+                        }).catch(err => {
+                            this.showSnack(err.response?.data);
+                        });
+                    }
+
+                }
+            }
+
+        });
+
+        app.use(vuetify).mount("#app");
+    </script>
+{% endblock %}

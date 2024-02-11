@@ -1,106 +1,107 @@
 {% extends 'layout.html' %} {% block css %} {% endblock %} {% block sidebar %}
-{% endblock %} {% block layout_classes %} align-center {% endblock %} {% block
-content %}
-    <v-app app id="app" class="align-center min-vh-100">
+{% endblock %} {% block layout_classes %} align-center {% endblock %}
+{% block content %}
+
+    <v-card class="ma-2 mt-12 w-100 h-100">
+        <v-toolbar>
+            <v-toolbar-title>Users Dashboard</v-toolbar-title>
+            <v-spacer></v-spacer>
+        </v-toolbar>
+        <v-card-text>
+
+            <v-data-table :items="items" :headers="headers">
+
+                <template v-slot:top>
+                    <v-toolbar class="mb-4" dense elevation="0">
+                        <v-btn @click="createItem" size="small" variant="elevated" color="primary"> Add User</v-btn>
+                    </v-toolbar>
+                </template>
+                <template v-slot:item.roles="{ item }">
+                    <v-chip v-for="role in item.roles" :key="role.id" color="primary" class="mr-2">
+                        ${role.name}
+                    </v-chip>
+
+                </template>
+
+                <template v-slot:item.actions="{ item }">
+                    <v-icon
+                            small
+                            class="mr-2"
+                            @click="editItem(item)"
+                    >
+                        mdi-pencil
+                    </v-icon>
+                    <v-icon
+                            small
+                            @click="deleteItem(item)"
+                    >
+                        mdi-delete
+                    </v-icon>
+                </template>
+
+            </v-data-table>
 
 
-        <v-card class="ma-2 w-auto">
-            <v-toolbar color="primary" dark text>
-                <v-toolbar-title>Users Dashboard</v-toolbar-title>
-                <v-spacer></v-spacer>
-            </v-toolbar>
+        </v-card-text>
+    </v-card>
+
+
+    <!--Edit Dialog-->
+    <v-dialog v-model="edialog" width="660">
+        <v-card v-if="edialog" class="pa-6">
+            <v-sheet class="d-flex justify-end">
+                <v-btn @click="edialog=false" size="small" icon="mdi-close" variant="text"></v-btn>
+            </v-sheet>
+            <v-card-title>User Editor</v-card-title>
+
             <v-card-text>
+                <!-- fields go here -->
+                <v-text-field label="Name" v-model="eitem.name"></v-text-field>
+                <v-text-field v-model="eitem.email" type="email" label="Email"></v-text-field>
+                <v-text-field v-model="eitem.username" type="email" label="Username"></v-text-field>
 
 
-                <v-data-table :items="items" :headers="headers">
+                <v-text-field placeholder="Password" type="password" v-model="eitem.password"></v-text-field>
 
-                    <template v-slot:top>
-                        <v-toolbar class="mb-4" dense elevation="0">
-                            <v-btn @click="createItem" size="small" variant="elevated" color="primary"> Add User</v-btn>
-                        </v-toolbar>
-                    </template>
-                    <template v-slot:item.roles="{ item }">
-                        <v-chip v-for="role in item.roles" :key="role.id" color="primary" class="mr-2">
-                            ${role.name}
-                        </v-chip>
+                <v-select label="Roles"
+                          item-title="name"
+                          multiple
+                          v-model="eitem.roles"
+                          return-object
+                          chips
+                          clearable
+                          :items="roles"
+                ></v-select>
 
-                    </template>
-
-                    <template v-slot:item.actions="{ item }">
-                        <v-icon
-                                small
-                                class="mr-2"
-                                @click="editItem(item)"
-                        >
-                            mdi-pencil
-                        </v-icon>
-                        <v-icon
-                                small
-                                @click="deleteItem(item)"
-                        >
-                            mdi-delete
-                        </v-icon>
-                    </template>
-
-                </v-data-table>
-
+                <v-switch color="primary" label="Active" v-model="eitem.active"></v-switch>
 
             </v-card-text>
+
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="primary" variant="elevated" @click="saveItem">Save</v-btn>
+            </v-card-actions>
         </v-card>
 
-
-        <!--Edit Dialog-->
-        <v-dialog v-model="edialog" width="660">
-            <v-card v-if="edialog" class="pa-6">
-                <v-sheet class="d-flex justify-end">
-                    <v-btn @click="edialog=false" size="small" icon="mdi-close" variant="text"></v-btn>
-                </v-sheet>
-                <v-card-title>User Editor</v-card-title>
-
-                <v-card-text>
-                    <!-- fields go here -->
-                    <v-text-field label="Name" v-model="eitem.name"></v-text-field>
-                    <v-text-field v-model="eitem.email" type="email" label="Email"></v-text-field>
-                    <v-text-field v-model="eitem.username" type="email" label="Username"></v-text-field>
+    </v-dialog>
 
 
-                    <v-text-field placeholder="Password" type="password" v-model="eitem.password"></v-text-field>
+    <v-snackbar size="small" class="d-flex" v-model="snackBar" rounded="pill" elevation="25">
 
-                    <v-select label="Roles"
-                              item-title="name"
-                              multiple
-                                v-model="eitem.roles"
-                              return-object
-                              chips
-                              clearable
-                              :items="roles"
-                    ></v-select>
-
-                    <v-switch color="primary" label="Active" v-model="eitem.active"></v-switch>
-
-                </v-card-text>
-
-                <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn color="primary" variant="elevated" @click="saveItem">Save</v-btn>
-                </v-card-actions>
-            </v-card>
-
-        </v-dialog>
+        ${snackMessage}
+        <template v-slot:actions>
+            <v-btn @click="snackBar=false" icon="mdi-close" class="ml-auto" variant="text" size="small"></v-btn>
+        </template>
+    </v-snackbar>
 
 
-        <v-snackbar size="small" class="d-flex" v-model="snackBar" rounded="pill" elevation="25">
-
-            ${snackMessage}
-         <template v-slot:actions>
-         <v-btn  @click="snackBar=false" icon="mdi-close" class="ml-auto" variant="text" size="small"></v-btn>
-         </template>
-        </v-snackbar>
-    </v-app>
-
-
-    <div class="d-none" data-roles='{{ roles|tojson|safe }}' ></div>
 {% endblock %} {% block js %}
+
+    <script type="application/json" id="roles-data">
+    {{ roles|tojson|safe }}
+
+    </script>
+
     <script>
         const {createApp, toRaw} = Vue;
         const {createVuetify} = Vuetify;
@@ -133,7 +134,7 @@ content %}
                         roles: [],
                         active: true
                     },
-                    roles: JSON.parse(document.querySelector('[data-roles]').dataset.roles),
+                    roles: JSON.parse(document.querySelector('#roles-data').textContent)
                 };
             },
 

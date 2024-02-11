@@ -1,4 +1,3 @@
-#import datetime
 from enferno.extensions import db
 
 

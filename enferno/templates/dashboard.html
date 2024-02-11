@@ -1,39 +1,28 @@
 {% extends 'layout.html' %}
 {% block content %}
-    <v-app id="app" class="fill-height">
+    <v-card class="ma-auto pa-10 h-100 w-100">
+        <v-card-text>
+            <div class="text-h5 mb-3">Welcome, {{ current_user.username }}</div>
+            Last login — {{ current_user.last_login_at.strftime('%b %d, %Y') }}
+        </v-card-text>
+        <v-card-actions class="justify-start">
+            <v-btn href="/logout" color="primary">Logout</v-btn>
+        </v-card-actions>
+    </v-card>
 
-        <v-layout class="rounded rounded-md fill-height">
-            <v-app-bar color="primary" title="Enferno Dashboard"></v-app-bar>
-
-            <v-navigation-drawer>
-                <v-list>
-                    <v-list-item title="Welcome"></v-list-item>
-                </v-list>
-            </v-navigation-drawer>
-
-            <v-main class="h-100 v-container--fluid" style="min-height: 300px;">
-                <v-card class="ma-auto pa-10 h-100">
-                    <v-card-text>
-                        <div class="text-h5 mb-3">Welcome, {{ g.user.username }}</div>
-                        Last login — {{ g.user.last_login_at.strftime('%b %d, %Y') }}
-                    </v-card-text>
-                    <v-card-actions class="justify-start">
-                        <v-btn href="/logout" color="primary">Logout</v-btn>
-                    </v-card-actions>
-                </v-card>
-
-            </v-main>
-        </v-layout>
-
-
-    </v-app>
 {% endblock %}
 
 {% block js %}
     <script>
         const {createApp} = Vue;
         const {createVuetify} = Vuetify;
-        const vuetify = createVuetify();
+        const vuetify = createVuetify(
+            {
+                theme: {
+                    dark: false,
+                },
+            }
+        );
 
         const app = createApp({
             data() {
