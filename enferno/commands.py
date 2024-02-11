@@ -56,12 +56,11 @@ def install():
 def create(email, password):
     """Creates a user using an email.
     """
-
     a = User.query.filter(User.email == email).first()
     if a != None:
         print('User already exists!')
     else:
-        user = User(email=email, password=hash_password(password), active=1)
+        user = User(email=email, password=hash_password(password), active=True)
         user.save()
 
 
@@ -78,7 +77,7 @@ def add_role(email, role):
     if u is None:
         print('Sorry, this user does not exist!')
     else:
-        r = Role.query.filter(Role.name == role).first()
+        r = db.session.execute(db.select(Role).filter_by(name=role)).scalar_one()
         if r is None:
             print('Sorry, this role does not exist!')
             u = click.prompt('Would you like to create one? Y/N', default='N')
@@ -112,16 +111,3 @@ def reset(email, password):
             db.session.rollback()
     except Exception as e:
         print('Error resetting user password: %s' % e)
-
-
-@click.command()
-def clean():
-    """Remove *.pyc and *.pyo files recursively starting at current directory.
-    Borrowed from Flask-Script, converted to use Click.
-    """
-    for dirpath, dirnames, filenames in os.walk('.'):
-        for filename in filenames:
-            if filename.endswith('.pyc') or filename.endswith('.pyo'):
-                full_pathname = os.path.join(dirpath, filename)
-                click.echo('Removing {}'.format(full_pathname))
-                os.remove(full_pathname)
