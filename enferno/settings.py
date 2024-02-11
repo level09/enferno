@@ -33,7 +33,7 @@ class Config(object):
     SECURITY_CONFIRMABLE = False
     SECURITY_CHANGEABLE = True
     SECURITY_TRACKABLE = True
-    SECURITY_PASSWORD_HASH = 'bcrypt'
+    SECURITY_PASSWORD_HASH = 'pbkdf2_sha512'
     SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', '3nF3Rn0')
     SECURITY_USER_IDENTITY_ATTRIBUTES = [{"username": {"mapper": uia_username_mapper, "case_insensitive": True}},]
     SECURITY_USERNAME_ENABLE = True
