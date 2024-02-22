@@ -11,6 +11,9 @@ A framework for the next decade, this assemblage of state-of-the-art libraries a
 
 ![alt Enferno Demo](https://github.com/level09/enferno/blob/master/docs/enferno-hero.gif)
 
+![alt Users Management](https://github.com/level09/enferno/blob/master/docs/users-management.jpg)
+
+![alt Roles Management](https://github.com/level09/enferno/blob/master/docs/roles-management.jpg)
 
 http://enferno.io
 
