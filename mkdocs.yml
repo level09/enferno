@@ -1,4 +1,6 @@
 site_name: Enferno Documentation
 nav:
   - Home: index.md
+  - Getting Started: getting-started.md
+
 theme: readthedocs
