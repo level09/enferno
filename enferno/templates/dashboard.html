@@ -2,11 +2,19 @@
 {% block content %}
     <v-card class="ma-auto pa-10 h-100 w-100">
         <v-card-text>
+
+            {% for message in get_flashed_messages() %}
+                <v-alert>{{ message }}</v-alert>
+            {% endfor %}
+
+
+        </v-card-text>
+        <v-card-text>
             <div class="text-h5 mb-3">Welcome, {{ current_user.username }}</div>
             Last login — {{ current_user.last_login_at.strftime('%b %d, %Y') }}
         </v-card-text>
         <v-card-actions class="justify-start">
-            <v-btn href="/logout" color="primary">Logout</v-btn>
+            <v-btn variant="elevated" color="red" href="/logout" color="primary">Logout</v-btn>
         </v-card-actions>
     </v-card>
 

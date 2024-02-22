@@ -55,4 +55,4 @@ class Config(object):
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     SECURITY_EMAIL_SENDER = os.environ.get('SECURITY_EMAIL_SENDER', 'info@domain.com')
-
+    SECURITY_SEND_PASSWORD_CHANGE_EMAIL = False

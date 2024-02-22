@@ -12,8 +12,8 @@
             <v-data-table :items="items" :headers="headers">
 
                 <template v-slot:top>
-                    <v-toolbar class="mb-4" dense elevation="0">
-                        <v-btn @click="createItem" size="small" variant="elevated" color="primary"> Add User</v-btn>
+                    <v-toolbar class="mb-4" dense elevation="0" color="transparent">
+                        <v-btn class="ml-auto" prepend-icon="mdi-plus" @click="createItem" size="small" variant="elevated" color="primary"> Add User</v-btn>
                     </v-toolbar>
                 </template>
                 <template v-slot:item.roles="{ item }">
@@ -62,16 +62,17 @@
 
             <v-card-text>
                 <!-- fields go here -->
-                <v-text-field label="Name" v-model="eitem.name"></v-text-field>
-                <v-text-field v-model="eitem.email" type="email" label="Email"></v-text-field>
-                <v-text-field v-model="eitem.username" type="email" label="Username"></v-text-field>
+                <v-text-field variant="underlined" label="Name" v-model="eitem.name"></v-text-field>
+                <v-text-field variant="underlined" type="email" v-model="eitem.email" type="email" label="Email"></v-text-field>
+                <v-text-field variant="underlined" v-model="eitem.username" type="email" label="Username"></v-text-field>
 
 
-                <v-text-field placeholder="Password" type="password" v-model="eitem.password"></v-text-field>
+                <v-text-field variant="underlined" placeholder="Password" type="password" v-model="eitem.password"></v-text-field>
 
                 <v-select label="Roles"
                           item-title="name"
                           multiple
+                          variant="underlined"
                           v-model="eitem.roles"
                           return-object
                           chips
