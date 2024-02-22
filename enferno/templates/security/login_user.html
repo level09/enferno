@@ -27,6 +27,7 @@
                             name="username"
                             prepend-icon="mdi-account"
                             type="text"
+                            variant="underlined"
                     >
                     </v-text-field>
 
@@ -37,6 +38,7 @@
                             name="password"
                             prepend-icon="mdi-lock-question"
                             type="password"
+                            variant="underlined"
                     ></v-text-field>
 
                 </v-card-text>
@@ -49,9 +51,9 @@
 
                     </v-card-text>
                 {% endif %}
-                <v-card-actions>
+                <v-card-actions class="px-10 pb-8">
                     <v-spacer></v-spacer>
-                    <v-btn block @click="submit" color="primary">Login</v-btn>
+                    <v-btn variant="elevated" block   @click="submit" color="primary">Login</v-btn>
                 </v-card-actions>
             </v-form>
         </v-card>

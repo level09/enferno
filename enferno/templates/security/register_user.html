@@ -17,13 +17,13 @@
                 <v-card-text>
                     {{ register_user_form.hidden_tag() }}
 
-                        <v-text-field required label="First Name" name="first_name" type="text"></v-text-field>
-                        <v-text-field  required label="Last Name" name="last_name" type="text"></v-text-field>
+                        <v-text-field variant="underlined" required label="First Name" name="first_name" type="text"></v-text-field>
+                        <v-text-field variant="underlined"  required label="Last Name" name="last_name" type="text"></v-text-field>
 
-                    <v-text-field required label="Email" name="email"  type="text"></v-text-field>
-                    <v-text-field required id="password" label="Password" name="password" type="password"></v-text-field>
+                    <v-text-field variant="underlined" required label="Email" name="email"  type="text"></v-text-field>
+                    <v-text-field variant="underlined" required id="password" label="Password" name="password" type="password"></v-text-field>
                     {% if register_user_form.password_confirm %}
-                        <v-text-field required id="confirm-password" label="Confirm Password" name="password_confirm"  type="password"></v-text-field>
+                        <v-text-field variant="underlined" required id="confirm-password" label="Confirm Password" name="password_confirm"  type="password"></v-text-field>
                     {% endif %}
 
                 </v-card-text>
