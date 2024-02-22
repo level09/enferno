@@ -13,7 +13,9 @@
                 </v-card-text>
 
                 <v-card-actions class="justify-center">
+                    {% if not current_user.is_authenticated %}
                     <v-btn variant="text" color="primary" href="/login" class="mx-2">Login</v-btn> or <v-btn variant="elevated" color="primary" href="/register" class="mx-2">Create an Account</v-btn>
+                    {%  endif %}
                 </v-card-actions>
 
             </v-card>

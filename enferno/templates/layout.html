@@ -29,7 +29,7 @@
 
         </v-app-bar>
 
-        <v-navigation-drawer>
+        <v-navigation-drawer v-model="drawer">
             <v-list>
                 <v-list-item href="/dashboard" title="Dashboard"></v-list-item>
                 {% if current_user.has_role('admin') %}
