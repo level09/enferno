@@ -16,8 +16,8 @@
             <v-data-table :items="items" :headers="headers">
 
                 <template v-slot:top>
-                    <v-toolbar class="mb-4" dense elevation="0">
-                        <v-btn @click="createItem" size="small" variant="elevated" color="primary"> Add Role</v-btn>
+                    <v-toolbar color="transparent" class="mb-4" dense elevation="0">
+                        <v-btn class="ml-auto" prepend-icon="mdi-plus" @click="createItem" size="small" variant="elevated" color="primary"> Add Role</v-btn>
                     </v-toolbar>
                 </template>
 
@@ -57,8 +57,8 @@
 
             <v-card-text>
                 <!-- fields go here -->
-                <v-text-field label="Name" v-model="eitem.name"></v-text-field>
-                <v-text-field label="Description" v-model="eitem.description" multiline></v-text-field>
+                <v-text-field variant="underlined" label="Name" v-model="eitem.name"></v-text-field>
+                <v-text-field variant="underlined" label="Description" v-model="eitem.description" multiline></v-text-field>
             </v-card-text>
 
             <v-card-actions>
