@@ -25,7 +25,7 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = True
 
     CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/2')
-    result_backend = os.environ.get('result_backend', 'redis://localhost:6379/3')
+    CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/3')
 
     # security
     SECURITY_REGISTERABLE = True
