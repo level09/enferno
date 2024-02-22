@@ -23,6 +23,12 @@
 
                 </template>
 
+                 <template v-slot:item.active="{ item }">
+                    <v-avatar size="16" v-if="item.active" color="green"></v-avatar>
+                     <v-avatar size="16" v-if="!item.active" color="grey"></v-avatar>
+
+                </template>
+
                 <template v-slot:item.actions="{ item }">
                     <v-icon
                             small
@@ -111,6 +117,7 @@
         window.app = createApp({
             data() {
                 return {
+                    menu : null,
                     errors: "",
                     snackBar: false,
                     snackMessage: "",
@@ -124,6 +131,7 @@
                         {title: 'Username', value: 'username'},
                         {title: 'Email', value: 'email'},
                         {title: 'Roles', value: 'roles', sortable: false},
+                        {title: 'Active', value: 'active', sortable: false},
                         {title: 'Actions', value: 'actions', sortable: false}
                     ],
                     edialog: false,
