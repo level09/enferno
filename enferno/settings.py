@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
+from datetime import timedelta
+
 import bleach
 import os
 import redis
 from dotenv import load_dotenv
+
 os_env = os.environ
 load_dotenv()
+
 
 def uia_username_mapper(identity):
     # we allow pretty much anything - but we bleach it.
@@ -12,7 +16,6 @@ def uia_username_mapper(identity):
 
 
 class Config(object):
-
     SECRET_KEY = os.environ.get('SECRET_KEY', '3nF3Rn0')
     APP_DIR = os.path.abspath(os.path.dirname(__file__))  # This directory
     PROJECT_ROOT = os.path.abspath(os.path.join(APP_DIR, os.pardir))
@@ -21,7 +24,7 @@ class Config(object):
     CACHE_TYPE = 'simple'  # Can be "memcached", "redis", etc.
     SQLALCHEMY_DATABASE_URI = 'sqlite:///enferno.sqlite3'
     # for postgres
-    #SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI', 'postgresql:///enferno')
+    # SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI', 'postgresql:///enferno')
     SQLALCHEMY_TRACK_MODIFICATIONS = True
 
     CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/2')
@@ -29,19 +32,44 @@ class Config(object):
 
     # security
     SECURITY_REGISTERABLE = True
-    SECURITY_RECOVERABLE = True
+    SECURITY_RECOVERABLE = False
     SECURITY_CONFIRMABLE = False
     SECURITY_CHANGEABLE = True
     SECURITY_TRACKABLE = True
     SECURITY_PASSWORD_HASH = 'pbkdf2_sha512'
     SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', '3nF3Rn0')
-    SECURITY_USER_IDENTITY_ATTRIBUTES = [{"username": {"mapper": uia_username_mapper, "case_insensitive": True}},]
+    SECURITY_USER_IDENTITY_ATTRIBUTES = [{"username": {"mapper": uia_username_mapper, "case_insensitive": True}}, ]
     SECURITY_USERNAME_ENABLE = True
-
 
     SECURITY_POST_LOGIN_VIEW = '/dashboard'
     SECURITY_POST_CONFIRM_VIEW = '/dashboard'
     SECURITY_POST_REGISTER_VIEW = '/login'
+
+    SECURITY_MULTI_FACTOR_RECOVERY_CODES = True
+    SECURITY_MULTI_FACTOR_RECOVERY_CODES_N = 3
+    SECURITY_MULTI_FACTOR_RECOVERY_CODES_KEYS = None
+    SECURITY_MULTI_FACTOR_RECOVERY_CODE_TTL = None
+
+    SECURITY_TWO_FACTOR_ENABLED_METHODS = [
+        "authenticator"
+    ]
+    SECURITY_TWO_FACTOR = True
+    SECURITY_API_ENABLED_METHODS = ["session"]
+
+    SECURITY_FRESHNESS = timedelta(minutes=60)
+    SECURITY_FRESHNESS_GRACE_PERIOD = timedelta(minutes=60)
+    SECURITY_PASSWORD_LENGTH_MIN = 9
+
+    SECURITY_TOTP_SECRETS = {"1": os.environ.get("SECURITY_TOTP_SECRETS")}
+    SECURITY_TOTP_ISSUER = "Bayanat"
+
+    SECURITY_WEBAUTHN = True
+    SECURITY_WAN_ALLOW_AS_FIRST_FACTOR = False
+    SECURITY_WAN_ALLOW_AS_MULTI_FACTOR = True
+    SECURITY_WAN_ALLOW_AS_VERIFY = ["first", "secondary"]
+    SECURITY_WAN_ALLOW_USER_HINTS = True
+
+    SESSION_PROTECTION = "strong"
 
     SESSION_TYPE = 'redis'
 
