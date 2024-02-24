@@ -3,7 +3,7 @@
 from flask import Flask, render_template
 from enferno.settings import Config
 from flask_security import Security, SQLAlchemyUserDatastore
-from enferno.user.models import User, Role
+from enferno.user.models import User, Role, WebAuthn
 from enferno.user.forms import ExtendedRegisterForm
 from enferno.extensions import cache, db, mail, debug_toolbar, session
 from enferno.public.views import public
@@ -28,7 +28,7 @@ def create_app(config_object=Config):
 def register_extensions(app):
     cache.init_app(app)
     db.init_app(app)
-    user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+    user_datastore = SQLAlchemyUserDatastore(db, User, Role, webauthn_model=WebAuthn)
     security = Security(app, user_datastore,  register_form=ExtendedRegisterForm)
     mail.init_app(app)
     debug_toolbar.init_app(app)

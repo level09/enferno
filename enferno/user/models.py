@@ -3,12 +3,14 @@ from typing import Dict
 from uuid import uuid4
 from enferno.utils.base import BaseMixin
 from enferno.extensions import db
+
 from flask_security.core import UserMixin, RoleMixin
 from datetime import datetime
 from sqlalchemy import String, DateTime, Integer, Boolean, Column, ForeignKey, Table, ARRAY, LargeBinary, JSON
 from flask_security.utils import hash_password
 from sqlalchemy.orm import Mapped, mapped_column, relationship, declared_attr
-
+from sqlalchemy.ext.mutable import MutableList
+from flask_security import AsaList
 roles_users: Table = db.Table(
     'roles_users',
     Column('user_id', Integer, ForeignKey('user.id'), primary_key=True),
@@ -18,9 +20,9 @@ roles_users: Table = db.Table(
 
 @dataclasses.dataclass
 class Role(db.Model, RoleMixin, BaseMixin):
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(80), unique=True, nullable=True)
-    description: Mapped[str] = mapped_column(String(255), nullable=True)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), unique=True, nullable=True)
+    description = db.Column(db.String(255), nullable=True)
 
     def to_dict(self) -> Dict:
         return {
@@ -37,31 +39,34 @@ class Role(db.Model, RoleMixin, BaseMixin):
 
 @dataclasses.dataclass
 class User(UserMixin, db.Model, BaseMixin):
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    username: Mapped[str] = mapped_column(String(255), unique=True, nullable=True)
-    fs_uniquifier: Mapped[str] = mapped_column(String(255), unique=True, nullable=False,
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(255), unique=True, nullable=True)
+    fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False,
                                                default=(lambda _: uuid4().hex))
-    name: Mapped[str] = mapped_column(String(255), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, nullable=False)
-    email: Mapped[str] = mapped_column(String(255), nullable=True)
-    password: Mapped[str] = mapped_column(String(255), nullable=False)
-    active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
+    name = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    email = db.Column(db.String(255), nullable=True)
+    password = db.Column(db.String(255), nullable=False)
+    active = db.Column(db.Boolean, default=False, nullable=True)
 
     roles = relationship('Role', secondary=roles_users, backref="users")
 
-    confirmed_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
-    last_login_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
-    current_login_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
-    last_login_ip: Mapped[str] = mapped_column(String(255), nullable=True)
-    current_login_ip: Mapped[str] = mapped_column(String(255), nullable=True)
-    login_count: Mapped[int] = mapped_column(Integer, nullable=True)
+    confirmed_at = db.Column(db.DateTime, nullable=True)
+    last_login_at = db.Column(db.DateTime, nullable=True)
+    current_login_at = db.Column(db.DateTime, nullable=True)
+    last_login_ip = db.Column(db.String(255), nullable=True)
+    current_login_ip = db.Column(db.String(255), nullable=True)
+    login_count = db.Column(db.Integer, nullable=True)
 
     # web authn
-    fs_webauthn_user_handle: Mapped[str] = mapped_column(String(64), unique=True, nullable=True)
-    tf_phone_number: Mapped[str] = mapped_column(String(64), nullable=True)
-    tf_primary_method: Mapped[str] = mapped_column(String(140), nullable=True)
-    tf_totp_secret: Mapped[str] = mapped_column(String(255), nullable=True)
-    mf_recovery_codes: Mapped[json] = mapped_column(JSON, nullable=True)
+    fs_webauthn_user_handle = db.Column(db.String(64), unique=True, nullable=True)
+    tf_phone_number = db.Column(db.String(64), nullable=True)
+    tf_primary_method = db.Column(db.String(140), nullable=True)
+    tf_totp_secret = db.Column(db.String(255), nullable=True)
+    mf_recovery_codes = db.Column(db.JSON, nullable=True)
+
+
+
 
     @declared_attr
     def webauthn(cls):
@@ -109,25 +114,27 @@ class User(UserMixin, db.Model, BaseMixin):
     }
 
 
+
+
 class WebAuthn(db.Model):
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    credential_id: Mapped[bytes] = mapped_column(LargeBinary(1024), index=True, nullable=False, unique=True)
-    public_key: Mapped[bytes] = mapped_column(LargeBinary(1024), nullable=False)
-    sign_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    transports: Mapped[json] = mapped_column(JSON, nullable=True)
-    extensions: Mapped[str] = mapped_column(String(255), nullable=True)
-    lastuse_datetime: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    name: Mapped[str] = mapped_column(String(64), nullable=False)
-    usage: Mapped[str] = mapped_column(String(64), nullable=False)
-    backup_state: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    device_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    credential_id = db.Column(db.LargeBinary(1024), index=True, nullable=False, unique=True)
+    public_key = db.Column(db.LargeBinary(1024), nullable=False)
+    sign_count = db.Column(db.Integer, default=0, nullable=False)
+    transports = db.Column(MutableList.as_mutable(AsaList()), nullable=True)
+    extensions = db.Column(db.String(255), nullable=True)
+    lastuse_datetime = db.Column(db.DateTime, nullable=False)
+    name = db.Column(db.String(64), nullable=False)
+    usage = db.Column(db.String(64), nullable=False)
+    backup_state = db.Column(db.Boolean, nullable=False)
+    device_type = db.Column(db.String(64), nullable=False)
 
     @declared_attr
     def user_id(cls):
         return db.Column(
-            db.Integer,
-            db.ForeignKey("user.id", ondelete="CASCADE"),
-            nullable=False,
+            db.String(64),
+            db.ForeignKey("user.fs_webauthn_user_handle", ondelete="CASCADE"),
+            nullable=False
         )
 
     def get_user_mapping(self):

@@ -22,7 +22,7 @@ class Config(object):
     DEBUG_TB_ENABLED = os.environ.get('DEBUG_TB_ENABLED')
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     CACHE_TYPE = 'simple'  # Can be "memcached", "redis", etc.
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///enferno.sqlite3'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI', 'postgresql:///enferno')
     # for postgres
     # SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI', 'postgresql:///enferno')
     SQLALCHEMY_TRACK_MODIFICATIONS = True
