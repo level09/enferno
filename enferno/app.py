@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+import inspect
 
+import click
 from flask import Flask, render_template
 from enferno.settings import Config
 from flask_security import Security, SQLAlchemyUserDatastore
@@ -21,7 +23,7 @@ def create_app(config_object=Config):
 
     register_errorhandlers(app)
     register_shellcontext(app)
-    register_commands(app)
+    register_commands(app, commands)
     return app
 
 
@@ -68,11 +70,14 @@ def register_shellcontext(app):
     app.shell_context_processor(shell_context)
 
 
-def register_commands(app):
-    """Register Click commands."""
+def register_commands(app: Flask, commands_module):
+    """
+    Automatically register all Click commands in the given module.
 
-    app.cli.add_command(commands.create_db)
-    app.cli.add_command(commands.install)
-    app.cli.add_command(commands.create)
-    app.cli.add_command(commands.add_role)
-    app.cli.add_command(commands.reset)
+    Args:
+    - app: Flask application instance to register commands to.
+    - commands_module: The module containing Click commands.
+    """
+    for name, obj in inspect.getmembers(commands_module):
+        if isinstance(obj, click.Command):
+            app.cli.add_command(obj)

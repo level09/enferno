@@ -5,6 +5,7 @@ import os
 import click
 from flask.cli import with_appcontext
 from flask_security.utils import hash_password
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from enferno.extensions import db
 from enferno.user.models import User
@@ -111,3 +112,115 @@ def reset(email, password):
             db.session.rollback()
     except Exception as e:
         print('Error resetting user password: %s' % e)
+
+
+
+@click.command()
+@click.option('--class_name', default='Item', help='The name of the class')
+@click.option('--fields', default='', help='Fields in a format: name:type name:type')
+@with_appcontext
+def generate_template(class_name, fields):
+    """Generates a dynamic dashboard template for a specified class and fields."""
+    # Parse fields input into a list of dictionaries
+    fields_list = []
+    for field in fields.split():
+        name, type_ = field.split(':')
+        fields_list.append({"name": name, "label": name.capitalize(), "type": type_})
+
+    # Singular form of class_name for display purposes (simple naive approach)
+    class_name_singular = class_name[:-1] if class_name.lower().endswith('s') else class_name
+
+    # Setup Jinja2 environment
+    env = Environment(
+        loader=FileSystemLoader('enferno/templates'),
+        autoescape=select_autoescape(['html', 'xml'])
+    )
+
+    # Load template
+    template = env.get_template('core/dashboard.jinja2')
+
+    # Render template with dynamic values
+    rendered_template = template.render(class_name=class_name, class_name_singular=class_name_singular, fields=fields_list)
+
+    # ASCII border
+    border_line = '+' + '-' * 78 + '+'
+
+    # Print the rendered template with ASCII borders
+    print(border_line)
+    print("| Generated Template:\n")
+    print(rendered_template)
+    print(border_line)
+    print("\nCopy the template between the ASCII lines above.")
+
+
+@click.command()
+@click.option('--class_name', default='Item', help='The name of the class')
+@click.option('--fields', default='', help='Optional: Fields in a format: name:type name:type')
+@with_appcontext
+def generate_api(class_name, fields):
+    """Generates Flask view functions for API endpoints of a specified class."""
+    # Setup Jinja2 environment
+    env = Environment(
+        loader=FileSystemLoader('enferno/templates'),
+        autoescape=select_autoescape(['html', 'xml'])
+    )
+
+    # Load and render the API views template
+    template = env.get_template('core/api.jinja2')
+    rendered_template = template.render(class_name=class_name)
+
+    # ASCII border for output
+    border_line = '+' + '-' * 78 + '+'
+
+    # Print the rendered template with ASCII borders
+    print(border_line)
+    print(rendered_template)
+    print(border_line)
+    print("\nCopy the API views from the ASCII lines above.")
+
+import click
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+from flask.cli import with_appcontext
+
+import click
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+from flask.cli import with_appcontext
+
+
+@click.command()
+@click.option('--class_name', prompt=True, help='The name of the class')
+@click.option('--fields', prompt=True, help='Fields in a format: name:type separated by spaces')
+@with_appcontext
+def generate_model(class_name, fields):
+    """Generates a Flask model class with simplified field specifications."""
+    # Default id field assumed for every model
+    fields_list = [{'name': 'id', 'type': 'Integer', 'primary_key': True, 'unique': False, 'nullable': False}]
+
+    # Process additional fields
+    for field_str in fields.split():
+        name, type_ = field_str.split(':')
+        field = {
+            'name': name,
+            'type': type_,
+            'primary_key': False,
+            'unique': False,
+            'nullable': True,  # Default to True, adjust as needed
+        }
+        fields_list.append(field)
+
+    # Setup Jinja2 environment
+    env = Environment(
+        loader=FileSystemLoader('enferno/templates'),
+        autoescape=select_autoescape(['python'])
+    )
+
+    # Load and render the model template
+    template = env.get_template('core/model.jinja2')
+    rendered_template = template.render(class_name=class_name, fields=fields_list)
+
+    # Print the rendered template
+    border_line = '+' + '-' * 78 + '+'
+    print(border_line)
+    print(rendered_template)
+    print(border_line)
+    print("\nCopy and paste the model class from the ASCII lines above.")

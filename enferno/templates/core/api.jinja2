@@ -1,0 +1,55 @@
+@bp_user.route('/{{ class_name | lower }}s/')
+def {{ class_name | lower }}s():
+    return render_template('cms/{{ class_name | lower }}s.html')
+
+@bp_user.route('/api/{{ class_name | lower }}s', methods=['GET'])
+def api_{{ class_name | lower }}s():
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', PER_PAGE, type=int)
+
+    query = db.session.query({{ class_name }})
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+    items = [item.to_dict() for item in pagination.items]
+
+    response_data = {
+        'items': items,
+        'perPage': pagination.per_page,
+        'page': pagination.page,
+        'total': pagination.total,
+        'pages': pagination.pages,
+        'has_prev': pagination.has_prev,
+        'has_next': pagination.has_next,
+        'prev_num': pagination.prev_num,
+        'next_num': pagination.next_num
+    }
+
+    return Response(json.dumps(response_data), content_type='application/json')
+
+@bp_user.route('/api/{{ class_name | lower }}/', methods=['POST'])
+def api_{{ class_name | lower }}_create():
+    item_data = request.json.get('item', {})
+    item = {{ class_name }}()
+    item.from_dict(item_data)
+    db.session.add(item)
+    try:
+        db.session.commit()
+        return {'message': '{{ class_name }} successfully created!'}
+    except Exception as e:
+        db.session.rollback()
+        return {'message': 'Error creating {{ class_name | lower }}', 'error': str(e)}, 412
+
+@bp_user.post('/api/{{ class_name | lower }}/<int:id>')
+def api_{{ class_name | lower }}_update(id):
+    item = db.get_or_404({{ class_name }}, id)
+    item_data = request.json.get('item', {})
+    item.from_dict(item_data)
+    db.session.commit()
+    return {'message': '{{ class_name }} successfully updated!'}
+
+@bp_user.route('/api/{{ class_name | lower }}/<int:id>', methods=['DELETE'])
+def api_{{ class_name | lower }}_delete(id):
+    item = db.session.query({{ class_name }}).get_or_404(id)
+    db.session.delete(item)
+    db.session.commit()
+    return {'message': '{{ class_name }} successfully deleted!'}

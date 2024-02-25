@@ -1,0 +1,176 @@
+{% raw %}
+    {% extends 'layout.html' %}
+    {% block css %}
+    {% endblock %}
+    {% block sidebar %}
+    {% endblock %}
+    {% block layout_classes %} align-center {% endblock %}
+{% endraw %}
+{% block content %}
+
+    <v-card class="ma-2 mt-12 w-100 h-100">
+        <v-toolbar>
+            <v-toolbar-title>{{ class_name }} Dashboard</v-toolbar-title>
+            <v-spacer></v-spacer>
+        </v-toolbar>
+        <v-card-text>
+
+            <v-data-table :items="items" :headers="headers">
+
+                <template v-slot:top>
+                    <v-toolbar color="transparent" class="mb-4" dense elevation="0">
+                        <v-btn class="ml-auto" prepend-icon="mdi-plus" @click="createItem" size="small"
+                               variant="elevated" color="primary"> Add {{ class_name_singular }}</v-btn>
+                    </v-toolbar>
+                </template>
+
+                {% for field in fields %}
+                    <template v-slot:item.{{ field.name }}="{ item }">
+                        <span>{{ '{{' }}item.{{ field.name }}{{ '}}' }}</span>
+                    </template>
+                {% endfor %}
+
+                <template v-slot:item.actions="{ item }">
+                    <v-icon
+                            small
+                            class="mr-2"
+                            @click="editItem(item)"
+                    >
+                        mdi-pencil
+                    </v-icon>
+                    <v-icon
+                            small
+                            @click="deleteItem(item)"
+                    >
+                        mdi-delete
+                    </v-icon>
+                </template>
+
+            </v-data-table>
+        </v-card-text>
+    </v-card>
+
+    <!--Edit Dialog-->
+    <v-dialog v-model="edialog" width="660">
+        <v-card v-if="edialog" class="pa-6">
+            <v-sheet class="d-flex justify-end">
+                <v-btn @click="edialog=false" size="small" icon="mdi-close" variant="text"></v-btn>
+            </v-sheet>
+            <v-card-title>{{ class_name }} Editor</v-card-title>
+
+            <v-card-text>
+                <!-- Dynamic fields go here -->
+                {% for field in fields %}
+                    <v-text-field variant="underlined" label="{{ field.label }}"
+                                  v-model="eitem.{{ field.name }}" {{ 'multiline' if field.type == 'text' else '' }}></v-text-field>
+                {% endfor %}
+            </v-card-text>
+
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="primary" variant="elevated" @click="saveItem">Save</v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
+
+    <v-snackbar size="small" class="d-flex" v-model="snackBar" rounded="pill" elevation="25">
+        {{ snackMessage }}
+        <template v-slot:actions>
+            <v-btn @click="snackBar=false" icon="mdi-close" class="ml-auto" variant="text" size="small"></v-btn>
+        </template>
+    </v-snackbar>
+
+{% endblock %}
+{% block js %}
+    <script>
+        const {createApp} = Vue;
+        const {createVuetify} = Vuetify;
+
+        const vuetify = createVuetify();
+
+        window.app = createApp({
+            data() {
+                return {
+                    menu: null,
+                    snackBar: false,
+                    snackMessage: "",
+                    items: [],
+                    itemsLength: 0,
+                    drawer: true,
+
+                    headers: [
+                        {% for field in fields %}
+                            {
+                                title: '{{ field.label }}',
+                                value: '{{ field.name }}'
+                                {{ ', sortable: false' if field.type == 'actions' else '' }}
+                            },
+                        {% endfor %}
+                    ],
+                    edialog: false,
+                    eitem: {},
+                };
+            },
+            mounted() {
+                this.refresh();
+            },
+            delimiters: ["${", "}"],
+
+            methods: {
+                showSnack(message) {
+                    this.snackMessage = message;
+                    this.snackBar = true;
+                },
+
+                refresh() {
+                    // Example API call to fetch items
+                    axios.get(`/api/{{class_name|lower}}`).then(res => {
+                        this.items = res.data.items;
+                        this.itemsLength = res.data.total;
+                    }).catch(err => {
+                        this.showSnack(err.response?.data?.message || 'Error fetching data');
+                    });
+                },
+
+                createItem() {
+                    this.edialog = true;
+                    this.eitem = {}; // Reset the item to be a clean object
+                },
+
+                editItem(item) {
+                    this.eitem = {...item}; // Copy the item to be edited
+                    this.edialog = true; // Show the edit dialog
+                },
+
+                saveItem() {
+                    const apiUrl = this.eitem.id ? `/api/{{ class_name | lower }}/${this.eitem.id}` : `/api/{{ class_name | lower }}/`;
+                    const method = this.eitem.id ? 'put' : 'post';
+
+                    axios[method](apiUrl, {item: this.eitem}).then(res => {
+                        this.showSnack(res.data?.message || `{{ class_name_singular | lower }} saved successfully`);
+                        this.refresh();
+                        this.edialog = false;
+                    }).catch(err => {
+                        this.showSnack(err.response?.data?.message || 'Error saving data');
+                    });
+                },
+
+
+                deleteItem(item) {
+                    if (confirm(`Are you sure you want to delete this {{ class_name_singular | lower }}?`)) {
+                        axios.delete(`/api/{{ class_name | lower }}/${item.id}`).then(res => {
+                            this.showSnack(res.data?.message || `{{ class_name_singular | lower }} deleted successfully`);
+                            this.refresh();
+                        }).catch(err => {
+                            this.showSnack(err.response?.data?.message || 'Error deleting data');
+                        });
+                    }
+                }
+
+
+            }
+        });
+
+        app.use(vuetify).mount("#app");
+    </script>
+{% endblock %}

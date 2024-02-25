@@ -1,0 +1,20 @@
+@dataclasses.dataclass
+class {{ class_name }}(db.Model, BaseMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    {% for field in fields %}
+    {{ field.name }} = db.Column(db.{{ field.type | capitalize }}{% if field.primary_key %}, primary_key=True{% endif %}{% if field.unique %}, unique=True{% endif %}{% if not field.nullable %}, nullable=False{% else %}, nullable=True{% endif %})
+    {% endfor %}
+
+    def to_dict(self) -> Dict:
+        return {
+            {% for field in fields %}
+            '{{ field.name }}': self.{{ field.name }},
+            {% endfor %}
+        }
+
+    def from_dict(self, json_dict):
+        {% for field in fields %}
+        if '{{ field.name }}' in json_dict:
+            self.{{ field.name }} = json_dict.get('{{ field.name }}')
+        {% endfor %}
+        return self
