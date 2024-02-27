@@ -107,6 +107,13 @@
                                 {{ ', sortable: false' if field.type == 'actions' else '' }}
                             },
                         {% endfor %}
+                         {
+                            text: 'Actions',
+                            align: 'center',
+                            sortable: false,
+                            value: 'actions'
+                        }
+
                     ],
                     edialog: false,
                     eitem: {},
@@ -125,7 +132,7 @@
 
                 refresh() {
                     // Example API call to fetch items
-                    axios.get(`/api/{{class_name|lower}}`).then(res => {
+                    axios.get(`/api/{{class_name|lower}}s`).then(res => {
                         this.items = res.data.items;
                         this.itemsLength = res.data.total;
                     }).catch(err => {
