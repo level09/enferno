@@ -5,9 +5,9 @@
     {% block sidebar %}
     {% endblock %}
     {% block layout_classes %} align-center {% endblock %}
-{% endraw %}
-{% block content %}
 
+{% block content %}
+{% endraw %}
     <v-card class="ma-2 mt-12 w-100 h-100">
         <v-toolbar>
             <v-toolbar-title>{{ class_name }} Dashboard</v-toolbar-title>
@@ -26,7 +26,7 @@
 
                 {% for field in fields %}
                     <template v-slot:item.{{ field.name }}="{ item }">
-                        <span>{{ '{{' }}item.{{ field.name }}{{ '}}' }}</span>
+                        <span>{{ '${' }}item.{{ field.name }}{{ '}' }}</span>
                     </template>
                 {% endfor %}
 
@@ -79,9 +79,10 @@
             <v-btn @click="snackBar=false" icon="mdi-close" class="ml-auto" variant="text" size="small"></v-btn>
         </template>
     </v-snackbar>
-
+{% raw %}
 {% endblock %}
 {% block js %}
+{% endraw %}
     <script>
         const {createApp} = Vue;
         const {createVuetify} = Vuetify;
@@ -173,4 +174,8 @@
 
         app.use(vuetify).mount("#app");
     </script>
+
+{% raw %}
 {% endblock %}
+{% endraw %}
+

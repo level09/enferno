@@ -1,8 +1,8 @@
-@bp_user.route('/{{ class_name | lower }}s/')
+@portal.route('/{{ class_name | lower }}s/')
 def {{ class_name | lower }}s():
     return render_template('cms/{{ class_name | lower }}s.html')
 
-@bp_user.route('/api/{{ class_name | lower }}s', methods=['GET'])
+@portal.route('/api/{{ class_name | lower }}s', methods=['GET'])
 def api_{{ class_name | lower }}s():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', PER_PAGE, type=int)
@@ -26,7 +26,7 @@ def api_{{ class_name | lower }}s():
 
     return Response(json.dumps(response_data), content_type='application/json')
 
-@bp_user.route('/api/{{ class_name | lower }}/', methods=['POST'])
+@portal.route('/api/{{ class_name | lower }}/', methods=['POST'])
 def api_{{ class_name | lower }}_create():
     item_data = request.json.get('item', {})
     item = {{ class_name }}()
@@ -39,7 +39,7 @@ def api_{{ class_name | lower }}_create():
         db.session.rollback()
         return {'message': 'Error creating {{ class_name | lower }}', 'error': str(e)}, 412
 
-@bp_user.post('/api/{{ class_name | lower }}/<int:id>')
+@portal.post('/api/{{ class_name | lower }}/<int:id>')
 def api_{{ class_name | lower }}_update(id):
     item = db.get_or_404({{ class_name }}, id)
     item_data = request.json.get('item', {})
@@ -47,7 +47,7 @@ def api_{{ class_name | lower }}_update(id):
     db.session.commit()
     return {'message': '{{ class_name }} successfully updated!'}
 
-@bp_user.route('/api/{{ class_name | lower }}/<int:id>', methods=['DELETE'])
+@portal.route('/api/{{ class_name | lower }}/<int:id>', methods=['DELETE'])
 def api_{{ class_name | lower }}_delete(id):
     item = db.session.query({{ class_name }}).get_or_404(id)
     db.session.delete(item)
