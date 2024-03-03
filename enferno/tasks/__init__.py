@@ -4,8 +4,6 @@ from celery import Celery
 
 from enferno.settings import Config as cfg
 
-celery = Celery(__name__)
-
 celery = Celery('tasks', broker=cfg.CELERY_BROKER_URL, backend=cfg.CELERY_RESULT_BACKEND,
                 broker_connection_retry_on_startup=True)
 # remove deprecated warning

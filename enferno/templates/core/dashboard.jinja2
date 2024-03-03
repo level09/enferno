@@ -74,7 +74,7 @@
     </v-dialog>
 
     <v-snackbar size="small" class="d-flex" v-model="snackBar" rounded="pill" elevation="25">
-        {{ snackMessage }}
+        ${snackMessage}
         <template v-slot:actions>
             <v-btn @click="snackBar=false" icon="mdi-close" class="ml-auto" variant="text" size="small"></v-btn>
         </template>
