@@ -13,9 +13,29 @@
             <v-toolbar-title>{{ class_name }} Dashboard</v-toolbar-title>
             <v-spacer></v-spacer>
         </v-toolbar>
+    <v-card-text>
+      <v-text-field
+        class="my-2"
+        v-model="q"
+        label="Search"
+        prepend-inner-icon="mdi-magnify"
+        variant="outlined"
+        hide-details
+        single-line
+      ></v-text-field>
+
+    </v-card-text>
         <v-card-text>
 
-            <v-data-table :items="items" :headers="headers">
+            <v-data-table-server
+                    hover
+                    :items-length="itemsLength"
+                    :items-per-page="itemsPerPage"
+                    :items="items"
+                    :headers="headers"
+                    @click:row=""
+                    @update:options="refresh"
+            >
 
                 <template v-slot:top>
                     <v-toolbar color="transparent" class="mb-4" dense elevation="0">
@@ -46,7 +66,7 @@
                     </v-icon>
                 </template>
 
-            </v-data-table>
+            </v-data-table-server>
         </v-card-text>
     </v-card>
 
@@ -95,8 +115,11 @@
                     menu: null,
                     snackBar: false,
                     snackMessage: "",
+                    loading: false,
                     items: [],
+                    itemsPerPage: 20,
                     itemsLength: 0,
+                    q: "",
                     drawer: true,
 
                     headers: [
@@ -130,14 +153,25 @@
                     this.snackBar = true;
                 },
 
-                refresh() {
+                refresh(options) {
+                    if (this.loading) return;
+                    this.loading = true;
+
+                    const payload = {
+                        q: this.q,
+                        options: options
+                    };
+
                     // Example API call to fetch items
-                    axios.get(`/api/{{class_name|lower}}s`).then(res => {
+                    axios.post(`/api/{{class_name|lower}}s`,payload).then(res => {
                         this.items = res.data.items;
+                        this.itemsPerPage = res.data.perPage;
                         this.itemsLength = res.data.total;
                     }).catch(err => {
                         this.showSnack(err.response?.data?.message || 'Error fetching data');
-                    });
+                    }).finally(() => {
+                        this.loading = false;
+                    })
                 },
 
                 createItem() {

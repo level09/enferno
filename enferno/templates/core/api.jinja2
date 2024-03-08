@@ -2,12 +2,22 @@
 def {{ class_name | lower }}s():
     return render_template('cms/{{ class_name | lower }}s.html')
 
-@portal.route('/api/{{ class_name | lower }}s', methods=['GET'])
+@portal.post('/api/{{ class_name | lower }}s')
 def api_{{ class_name | lower }}s():
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', PER_PAGE, type=int)
+
+    options = request.json.get('options', {})
+    page = options.get('page', 1)
+    per_page = options.get('itemsPerPage', PER_PAGE)
+    q = request.json.get('q', '')
 
     query = db.session.query({{ class_name }})
+
+    if q:
+        search_term = f"%{q}%"
+        #query = query.filter({{ class_name }}.xxx.ilike(search_term))
+
+
+
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
 
     items = [item.to_dict() for item in pagination.items]
