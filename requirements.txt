@@ -42,4 +42,4 @@ Werkzeug==3.0.1
 webauthn==2.0.0
 WTForms==3.1.2
 orjson==3.9.15
-
+flask-babel==4.0.0

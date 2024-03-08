@@ -22,3 +22,6 @@ debug_toolbar = DebugToolbarExtension()
 
 from flask_session import Session
 session = Session()
+
+from flask_babel import Babel
+babel = Babel()

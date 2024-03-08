@@ -7,7 +7,7 @@ from enferno.settings import Config
 from flask_security import Security, SQLAlchemyUserDatastore
 from enferno.user.models import User, Role, WebAuthn
 from enferno.user.forms import ExtendedRegisterForm
-from enferno.extensions import cache, db, mail, debug_toolbar, session
+from enferno.extensions import cache, db, mail, debug_toolbar, session, babel
 from enferno.public.views import public
 from enferno.user.views import bp_user
 from enferno.portal.views import portal
@@ -26,6 +26,8 @@ def create_app(config_object=Config):
     register_commands(app, commands)
     return app
 
+def get_locale():
+    return 'en'
 
 def register_extensions(app):
     cache.init_app(app)
@@ -35,6 +37,7 @@ def register_extensions(app):
     mail.init_app(app)
     debug_toolbar.init_app(app)
     session.init_app(app)
+    babel.init_app(app)
     return None
 
 
