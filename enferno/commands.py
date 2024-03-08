@@ -147,7 +147,6 @@ def generate_template(class_name, fields):
 
     # Print the rendered template with ASCII borders
     print(border_line)
-    print("| Generated Template:\n")
     print(rendered_template)
     print(border_line)
     print("\nCopy the template between the ASCII lines above.")
