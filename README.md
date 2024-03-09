@@ -1,13 +1,14 @@
-Project Enferno 
+Project Enferno
 =================
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Documentation Status](https://readthedocs.org/projects/enferno/badge/?version=latest)](https://enferno.readthedocs.io/en/latest/?badge=latest)
 
-
-
-A framework for the next decade, this assemblage of state-of-the-art libraries and tools, grounded on the Flask framework, facilitates the rapid construction of any website or web-based application (SAAS) with remarkable speed!
-
+This collection of modern libraries and tools, built on top of the Flask framework, allows you to quickly create any
+website or web-based application (SaaS) with impressive speed. The framework is highly opinionated and comes with
+pre-configured user accounts, authentication, and a management dashboard out of the box. It also integrates seamlessly
+with Vue 3 and Vuetify 3 on the frontend, enabling the rapid development of interactive and visually appealing user
+interfaces.
 
 ![alt Enferno Demo](https://github.com/level09/enferno/blob/master/docs/enferno-hero.gif)
 
@@ -17,38 +18,46 @@ A framework for the next decade, this assemblage of state-of-the-art libraries a
 
 http://enferno.io
 
+Enferno Framework Update: OpenAI Integration 🚀
+==============
+I'm excited to introduce OpenAI integration within the Enferno framework! This feature allows for rapid generation of
+Flask Views, Templates, and Models using just natural language. Streamline your development process by creating base
+code samples that can be customized to fit your needs, saving you valuable time.
+
+New Commands:
+
+- flask generate-model: Instantly generate models with natural language.
+- flask generate-dashboard: Create dashboards by simply describing your requirements.
+- flask generate-api: Speed up API development with verbal descriptions.
+
+This update is aimed at boosting your productivity by reducing development time and making the coding process more
+intuitive. Experience the next level of efficient programming with Enferno and OpenAI!
 
 
 
-What's New
-==================
-- Users and Roles Management Dashboard 
-- Eliminated JavaScript build scripts and complex configurations
-- Incorporated Vue3, Vuetify3, and axios through client-side JavaScript without the necessity of build tools
-- Implemented the latest flask-security templates and views utilizing sleek Vuetify templates (Material Design)
-- Streamlined configurations through .env, bypassing the need for distinct classes per environment
-- Cleanup and removed favicon generator 
+
 Features
---------
-- An opinionated Flask-based framework designed with pre-integrated utilities and adherence to best practices. 
-- Fully functional user registration and authentication systems, alongside user role management through Flask security.
-- Redis integration: capable of facilitating Flask caching, as well as handling various in-memory, queuing, and key-value operations as needed.
-- Command line scripting facilitated by Click, empowering you to create your own commands with ease.
-- Support for relational databases through the utilization of SQLAlchemy ORM.
-- Efficient management of background tasks using Celery.
-- Smooth email integration facilitated through Flask Mail.
-- Incorporation of the Vue3 framework and Vuetify3, providing an aesthetically pleasing UI grounded in material design principles. 
- 
+==================
+
+- A Flask-based framework with built-in tools and best practices.
+- User registration, login, and role management features.
+- Redis integration for caching and handling in-memory operations.
+- Easy command line scripting with Click.
+- Support for relational databases using SQLAlchemy.
+- Background task management with Celery.
+- Easy email sending with Flask Mail.
+- Beautiful user interface using Vue3 and Vuetify3 frameworks.
+- Internationalization support using Flask-Babel for multi-language apps
 
 Prerequisites
 -------------
+
 * Python
 * Redis
 * Nginx (needed for production deployment)
 
 Quickstart
 ----------
-
 
     $ git clone git@github.com:level09/enferno.git
     
@@ -60,13 +69,13 @@ Quickstart
     
     $ pip install -r requirements.txt
 
+Modify the settings.py file to tailor it to your requirements, particularly tweaking Flask security settings, security
+keys, Redis DB configurations, MySQL settings, and Flask mail options.
 
+For a local Enferno installation, remember to replace "redis" and "postgres" with "localhost" in the connection strings.
 
-Modify the settings.py file to tailor it to your requirements, particularly tweaking Flask security settings, security keys, Redis DB configurations, MySQL settings, and Flask mail options.
-
-For a local Enferno installation, remember to replace "redis" and "postgres" with "localhost" in the connection strings. 
-
-Subsequently, duplicate or rename the file (.env-sample) to (.env), and tweak the settings therein. Following this, proceed to run 
+Subsequently, duplicate or rename the file (.env-sample) to (.env), and tweak the settings therein. Following this,
+proceed to run
 
     flask create-db
     flask install 
@@ -77,23 +86,22 @@ to run the system, you can use the following management command:
 
     $ flask run
 
-
-
 Running Celery
 -------------
 
 `celery -A enfenro.tasks worker `
 
-you can add `-b` to activate Celery heartbeat (periodic tasks) 
+you can add `-b` to activate Celery heartbeat (periodic tasks)
 
-A sample task that runs within the app context has been prepared for you within the `enfenro/tasks/__init__.py` file, this is helpful if you have background tasks that interact with your SQLAlchemy models. 
+A sample task that runs within the app context has been prepared for you within the `enfenro/tasks/__init__.py` file,
+this is helpful if you have background tasks that interact with your SQLAlchemy models.
 
 
 
 Using Docker
 ------------
-Feel free to adjust Docker settings inside the docker-compose.yml and Dockerfile / .env file. 
-then run: 
+Feel free to adjust Docker settings inside the docker-compose.yml and Dockerfile / .env file.
+then run:
 
     $ docker-compose up
 
@@ -102,11 +110,11 @@ https://asciinema.org/a/219755
 
 Showcase
 --------
-Some of the websites running on Enferno: 
+Some of the websites running on Enferno:
+
 - Seven Tides <https://seventides.com>
 - Mixed CRM <https://www.mixedcrm.com>
 - DUKES Hotel <https://dukeshotel.com>
-
 
 Inspiration & Credits
 ---------------------
@@ -116,7 +124,6 @@ Inspiration & Credits
 - Redis <http://redis.io/>
 - Flask Mail <https://pythonhosted.org/flask-mail/>
 - Flask Documentation <http://flask.pocoo.org/docs/>
-
 
 License
 -------
