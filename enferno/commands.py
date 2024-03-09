@@ -5,9 +5,10 @@ import click
 from flask.cli import with_appcontext
 from flask_security.utils import hash_password
 from rich.console import Console
-from rich.markdown import Markdown
+
 from enferno.extensions import db, openai
 from enferno.user.models import User
+from rich.progress import Progress, SpinnerColumn
 
 console = Console()
 
@@ -114,67 +115,98 @@ def reset(email, password):
 
 
 @click.command()
-@click.option('--class_name', default='Item', help='The name of the class')
-@click.option('--fields', default='', help='Fields in a format: name:type name:type')
+@click.option('--class_name', prompt=True, help='The name of the class')
+@click.option('--fields', prompt=True, help='Describe your fields in a natural language')
 @with_appcontext
-def generate_template(class_name, fields):
+def generate_dashboard(class_name, fields):
     """Generates a dynamic dashboard template for a specified class and fields."""
     # Parse fields input into a list of dictionaries
-    fields_list = []
-    for field in fields.split():
-        name, type_ = field.split(':')
-        fields_list.append({"name": name, "label": name.capitalize(), "type": type_})
 
-    # Singular form of class_name for display purposes (simple naive approach)
-    class_name_singular = class_name[:-1] if class_name.lower().endswith('s') else class_name
+    sample = open('enferno/templates/core/dashboard.jinja2').read()
 
-    # Setup Jinja2 environment
-    env = Environment(
-        loader=FileSystemLoader('enferno/templates'),
-        autoescape=select_autoescape(['html', 'xml'])
-    )
+    with Progress(SpinnerColumn(), "[progress.description]{task.description}") as progress:
+        task = progress.add_task("[cyan]Generating dashboard...", total=None)  # total=None for indefinite tasks
 
-    # Load template
-    template = env.get_template('core/dashboard.jinja2')
+        # Simulate progress
+        progress.update(task, advance=30)  # Start the task with some progress
 
-    # Render template with dynamic values
-    rendered_template = template.render(class_name=class_name, class_name_singular=class_name_singular,
-                                        fields=fields_list)
+        response = openai.client.chat.completions.create(
+            model="gpt-4-1106-preview",
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"""
+                    Generate an jinja template by copying exactly the following SAMPLE,
+                    Note the delimiters being used, you will need to replace project and their attributes with the 
+                    following class name and fields,
+                    class name: {class_name}
+                    Fields: {fields}
+                    Sample: {sample} 
+                     no yap, just output code
+                    """
+                },
+                {
+                    "role": "user",
+                    "content": f"The class name is {class_name}  and fields are describe here: {fields}"
+                },
 
-    # ASCII border
-    border_line = '+' + '-' * 78 + '+'
+            ],
+            temperature=0,
+            max_tokens=4096,
+
+            # response_format={"type": "json_object"}
+        )
+        progress.remove_task(task)  # Remove or complete the task once the API call is done
+
+        generated_code = response.choices[0].message.content
 
     # Print the rendered template with ASCII borders
-    print(border_line)
-    console.print(rendered_template)
-    print(border_line)
-    print("\nCopy the template between the ASCII lines above.")
+    console.print(generated_code)
+
+
 
 
 @click.command()
-@click.option('--class_name', default='Item', help='The name of the class')
-@click.option('--fields', default='', help='Optional: Fields in a format: name:type name:type')
+@click.option('--class_name', prompt=True, help='The name of the class')
+@click.option('--fields', prompt=True, help='Describe your fields in a natural language')
 @with_appcontext
 def generate_api(class_name, fields):
     """Generates Flask view functions for API endpoints of a specified class."""
-    # Setup Jinja2 environment
-    env = Environment(
-        loader=FileSystemLoader('enferno/templates'),
-        autoescape=select_autoescape(['html', 'xml'])
-    )
+
+    sample = open('enferno/templates/core/api.jinja2').read()
+
+    with Progress(SpinnerColumn(), "[progress.description]{task.description}") as progress:
+        task = progress.add_task("[cyan]Generating API Endpoints ...", total=None)  # total=None for indefinite tasks
+
+        response = openai.client.chat.completions.create(
+            model="gpt-4-1106-preview",
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"""Generate Flask Endpoints by copying and modifying the following sample,
+                     you will need to replace project and adapt the attributes with the given class name and fields,
+                        sample: {sample}
+                      no yap, don't import libs,  just output code
+                    """
+                },
+                {
+                    "role": "user",
+                    "content": f"The class name is {class_name}  and fields are describe here: {fields}"
+                },
+
+            ],
+            temperature=0,
+            max_tokens=4096,
+
+            # response_format={"type": "json_object"}
+        )
 
     # Load and render the API views template
-    template = env.get_template('core/api.jinja2')
-    rendered_template = template.render(class_name=class_name)
+    progress.remove_task(task)  # Remove or complete the task once the API call is done
 
-    # ASCII border for output
-    border_line = '+' + '-' * 78 + '+'
+    generated_code = response.choices[0].message.content
+    console.print(generated_code)
 
-    # Print the rendered template with ASCII borders
-    print(border_line)
-    console.print(rendered_template)
-    print(border_line)
-    print("\nCopy the API views from the ASCII lines above.")
 
 
 import click
@@ -183,39 +215,35 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 @click.command()
 @click.option('--class_name', prompt=True, help='The name of the class')
-@click.option('--fields', prompt=True, help='Describe your fields')
+@click.option('--fields', prompt=True, help='Describe your fields in a natural language')
 def generate_model(class_name, fields):
     """Generates a Flask model class using OpenAI."""
-    client = openai.client
     # Adjust the parsing to accommodate the new format
 
     sample = open('enferno/templates/core/model.jinja2').read()
 
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {
-                "role": "system",
-                "content": f"Generate an Flask-SQLAlchemy model class including from_json and to_dict methods, dont import anything, use the following as a sample \n {sample}, no yap"
-            },
-            {
-                "role": "user",
-                "content": f"The class name is {class_name}  and fields are describe here: {fields}"
-            },
+    with Progress(SpinnerColumn(), "[progress.description]{task.description}") as progress:
+        task = progress.add_task("[cyan]Generating SqlAlchemy Model ...", total=None)  # total=None for indefinite tasks
 
-        ],
-        temperature=1,
-        max_tokens=1024,
+        response = openai.client.chat.completions.create(
+            model="gpt-4-1106-preview",
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"Generate an Flask-SQLAlchemy model class including from_json and to_dict methods, dont import anything, use the following as a sample \n {sample}, no yap, just output code"
+                },
+                {
+                    "role": "user",
+                    "content": f"The class name is {class_name}  and fields are describe here: {fields}"
+                },
 
-        # response_format={"type": "json_object"}
-    )
+            ],
+            temperature=0,
+            max_tokens=1024,
 
-    generated_code = response.choices[0].message.content
+            # response_format={"type": "json_object"}
+        )
+        progress.remove_task(task)  # Remove or complete the task once the API call is done
 
-    # Print the generated code
-    border_line = '+' + '-' * 78 + '+'
-    print(border_line)
-
-    console.print(generated_code)
-    print(border_line)
-    print("\nCopy and paste the model class from the ASCII lines above.")
+        generated_code = response.choices[0].message.content
+        console.print(generated_code)

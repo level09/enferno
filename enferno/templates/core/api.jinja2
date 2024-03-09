@@ -1,26 +1,22 @@
-@portal.route('/{{ class_name | lower }}s/')
-def {{ class_name | lower }}s():
-    return render_template('cms/{{ class_name | lower }}s.html')
+@portal.route('/projects/')
+def projects():
+    return render_template('cms/projects.html')
 
-@portal.post('/api/{{ class_name | lower }}s')
-def api_{{ class_name | lower }}s():
+@portal.post('/api/projects')
+def api_projects():
 
     options = request.json.get('options', {})
     page = options.get('page', 1)
     per_page = options.get('itemsPerPage', PER_PAGE)
     q = request.json.get('q', '')
 
-    query = db.session.query({{ class_name }})
-
-    if q:
-        search_term = f"%{q}%"
-        #query = query.filter({{ class_name }}.xxx.ilike(search_term))
+    query = db.session.query(Project)
 
 
 
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
 
-    items = [item.to_dict() for item in pagination.items]
+    items =
 
     response_data = {
         'items': items,
@@ -36,30 +32,30 @@ def api_{{ class_name | lower }}s():
 
     return Response(json.dumps(response_data), content_type='application/json')
 
-@portal.route('/api/{{ class_name | lower }}/', methods=['POST'])
-def api_{{ class_name | lower }}_create():
+@portal.route('/api/project/', methods=['POST'])
+def api_project_create():
     item_data = request.json.get('item', {})
-    item = {{ class_name }}()
+    item = Project()
     item.from_dict(item_data)
     db.session.add(item)
     try:
         db.session.commit()
-        return {'message': '{{ class_name }} successfully created!'}
+        return {'message': 'Project successfully created!'}
     except Exception as e:
         db.session.rollback()
-        return {'message': 'Error creating {{ class_name | lower }}', 'error': str(e)}, 412
+        return {'message': 'Error creating project', 'error': str(e)}, 412
 
-@portal.post('/api/{{ class_name | lower }}/<int:id>')
-def api_{{ class_name | lower }}_update(id):
-    item = db.get_or_404({{ class_name }}, id)
+@portal.post('/api/project/<int:id>')
+def api_project_update(id):
+    item = db.get_or_404(Project, id)
     item_data = request.json.get('item', {})
     item.from_dict(item_data)
     db.session.commit()
-    return {'message': '{{ class_name }} successfully updated!'}
+    return {'message': 'Project successfully updated!'}
 
-@portal.route('/api/{{ class_name | lower }}/<int:id>', methods=['DELETE'])
-def api_{{ class_name | lower }}_delete(id):
-    item = db.session.query({{ class_name }}).get_or_404(id)
+@portal.route('/api/project/<int:id>', methods=['DELETE'])
+def api_project_delete(id):
+    item = db.session.query(Project).get_or_404(id)
     db.session.delete(item)
     db.session.commit()
-    return {'message': '{{ class_name }} successfully deleted!'}
+    return {'message': 'Project successfully deleted!'}
