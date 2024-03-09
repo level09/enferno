@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 """Click commands."""
-import os
 
 import click
 from flask.cli import with_appcontext
 from flask_security.utils import hash_password
-from jinja2 import Environment, FileSystemLoader, select_autoescape
-
-from enferno.extensions import db
+from rich.console import Console
+from rich.markdown import Markdown
+from enferno.extensions import db, openai
 from enferno.user.models import User
+
+console = Console()
 
 
 @click.command()
@@ -46,8 +47,6 @@ def install():
     user.roles.append(admin_role)
     user.save()
     print('User {} has been created successfuly'.format(username))
-
-
 
 
 @click.command()
@@ -114,7 +113,6 @@ def reset(email, password):
         print('Error resetting user password: %s' % e)
 
 
-
 @click.command()
 @click.option('--class_name', default='Item', help='The name of the class')
 @click.option('--fields', default='', help='Fields in a format: name:type name:type')
@@ -140,14 +138,15 @@ def generate_template(class_name, fields):
     template = env.get_template('core/dashboard.jinja2')
 
     # Render template with dynamic values
-    rendered_template = template.render(class_name=class_name, class_name_singular=class_name_singular, fields=fields_list)
+    rendered_template = template.render(class_name=class_name, class_name_singular=class_name_singular,
+                                        fields=fields_list)
 
     # ASCII border
     border_line = '+' + '-' * 78 + '+'
 
     # Print the rendered template with ASCII borders
     print(border_line)
-    print(rendered_template)
+    console.print(rendered_template)
     print(border_line)
     print("\nCopy the template between the ASCII lines above.")
 
@@ -173,53 +172,50 @@ def generate_api(class_name, fields):
 
     # Print the rendered template with ASCII borders
     print(border_line)
-    print(rendered_template)
+    console.print(rendered_template)
     print(border_line)
     print("\nCopy the API views from the ASCII lines above.")
 
-import click
-from jinja2 import Environment, FileSystemLoader, select_autoescape
-from flask.cli import with_appcontext
 
 import click
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from flask.cli import with_appcontext
 
 
 @click.command()
 @click.option('--class_name', prompt=True, help='The name of the class')
-@click.option('--fields', prompt=True, help='Fields in a format: name:type separated by spaces')
-@with_appcontext
+@click.option('--fields', prompt=True, help='Describe your fields')
 def generate_model(class_name, fields):
-    """Generates a Flask model class with simplified field specifications."""
-    # Default id field assumed for every model
-    fields_list = [{'name': 'id', 'type': 'Integer', 'primary_key': True, 'unique': False, 'nullable': False}]
+    """Generates a Flask model class using OpenAI."""
+    client = openai.client
+    # Adjust the parsing to accommodate the new format
 
-    # Process additional fields
-    for field_str in fields.split():
-        name, type_ = field_str.split(':')
-        field = {
-            'name': name,
-            'type': type_,
-            'primary_key': False,
-            'unique': False,
-            'nullable': True,  # Default to True, adjust as needed
-        }
-        fields_list.append(field)
+    sample = open('enferno/templates/core/model.jinja2').read()
 
-    # Setup Jinja2 environment
-    env = Environment(
-        loader=FileSystemLoader('enferno/templates'),
-        autoescape=select_autoescape(['python'])
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {
+                "role": "system",
+                "content": f"Generate an Flask-SQLAlchemy model class including from_json and to_dict methods, dont import anything, use the following as a sample \n {sample}, no yap"
+            },
+            {
+                "role": "user",
+                "content": f"The class name is {class_name}  and fields are describe here: {fields}"
+            },
+
+        ],
+        temperature=1,
+        max_tokens=1024,
+
+        # response_format={"type": "json_object"}
     )
 
-    # Load and render the model template
-    template = env.get_template('core/model.jinja2')
-    rendered_template = template.render(class_name=class_name, fields=fields_list)
+    generated_code = response.choices[0].message.content
 
-    # Print the rendered template
+    # Print the generated code
     border_line = '+' + '-' * 78 + '+'
     print(border_line)
-    print(rendered_template)
+
+    console.print(generated_code)
     print(border_line)
     print("\nCopy and paste the model class from the ASCII lines above.")

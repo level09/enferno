@@ -7,7 +7,7 @@ from enferno.settings import Config
 from flask_security import Security, SQLAlchemyUserDatastore
 from enferno.user.models import User, Role, WebAuthn
 from enferno.user.forms import ExtendedRegisterForm
-from enferno.extensions import cache, db, mail, debug_toolbar, session, babel
+from enferno.extensions import cache, db, mail, debug_toolbar, session, babel, openai
 from enferno.public.views import public
 from enferno.user.views import bp_user
 from enferno.portal.views import portal
@@ -38,6 +38,7 @@ def register_extensions(app):
     debug_toolbar.init_app(app)
     session.init_app(app)
     babel.init_app(app)
+    openai.init_app(app)
     return None
 
 

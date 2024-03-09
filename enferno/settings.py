@@ -84,3 +84,5 @@ class Config(object):
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     SECURITY_EMAIL_SENDER = os.environ.get('SECURITY_EMAIL_SENDER', 'info@domain.com')
     SECURITY_SEND_PASSWORD_CHANGE_EMAIL = False
+
+    OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
