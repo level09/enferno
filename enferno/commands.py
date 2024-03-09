@@ -131,7 +131,7 @@ def generate_dashboard(class_name, fields):
         progress.update(task, advance=30)  # Start the task with some progress
 
         response = openai.client.chat.completions.create(
-            model="gpt-4-1106-preview",
+            model="gpt-4-0125-preview",
             messages=[
                 {
                     "role": "system",
@@ -179,7 +179,7 @@ def generate_api(class_name, fields):
         task = progress.add_task("[cyan]Generating API Endpoints ...", total=None)  # total=None for indefinite tasks
 
         response = openai.client.chat.completions.create(
-            model="gpt-4-1106-preview",
+            model="gpt-4-0125-preview",
             messages=[
                 {
                     "role": "system",
@@ -226,7 +226,7 @@ def generate_model(class_name, fields):
         task = progress.add_task("[cyan]Generating SqlAlchemy Model ...", total=None)  # total=None for indefinite tasks
 
         response = openai.client.chat.completions.create(
-            model="gpt-4-1106-preview",
+            model="gpt-4-0125-preview",
             messages=[
                 {
                     "role": "system",
