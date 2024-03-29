@@ -37,7 +37,7 @@ def register_extensions(app):
     mail.init_app(app)
     debug_toolbar.init_app(app)
     session.init_app(app)
-    babel.init_app(app)
+    babel.init_app(app, get_locale=get_locale, default_domain="messages", default_locale="en")
     openai.init_app(app)
     return None
 

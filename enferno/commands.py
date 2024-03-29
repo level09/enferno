@@ -2,7 +2,7 @@
 """Click commands."""
 
 import click
-from flask.cli import with_appcontext
+from flask.cli import with_appcontext, AppGroup
 from flask_security.utils import hash_password
 from rich.console import Console
 
