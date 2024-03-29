@@ -26,7 +26,7 @@ def create_app(config_object=Config):
     register_commands(app, commands)
     return app
 
-def get_locale():
+def locale_selector():
     return 'en'
 
 def register_extensions(app):
@@ -37,7 +37,7 @@ def register_extensions(app):
     mail.init_app(app)
     debug_toolbar.init_app(app)
     session.init_app(app)
-    babel.init_app(app, get_locale=get_locale, default_domain="messages", default_locale="en")
+    babel.init_app(app, locale_selector=locale_selector, default_domain="messages", default_locale="en")
     openai.init_app(app)
     return None
 
