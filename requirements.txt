@@ -45,3 +45,4 @@ orjson==3.10.6
 flask-babel==4.0.0
 flask-openai==0.5.0
 rich==13.7.1
+setuptools>=65.5.0
