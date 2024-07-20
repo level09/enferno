@@ -28,7 +28,7 @@
 
             </v-app-bar-title>
             <v-spacer></v-spacer>
-
+            {% if current_user.is_authenticated %}
             <v-menu
       v-model="menu"
       :close-on-content-click="false"
@@ -48,7 +48,7 @@
         </v-btn>
       </template>
 
-      <v-card min-width="300">
+      <v-card min-width="300" >
         <v-list>
           <v-list-item
             title="{{ current_user.name }}"
@@ -78,6 +78,8 @@
 
       </v-card>
     </v-menu>
+
+            {% endif  %}
         </v-app-bar>
 
         <v-navigation-drawer v-model="drawer">
