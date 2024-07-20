@@ -42,6 +42,13 @@
                     ></v-text-field>
 
                 </v-card-text>
+            </v-card-text>
+            {% for message in get_flashed_messages() %}
+
+                <v-alert>{{ message }}</v-alert>
+            {% endfor %}
+            </v-card-text>
+
                 {% if login_user_form.username.errors or login_user_form.password.errors %}
                     <v-card-text>
 
