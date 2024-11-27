@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from celery import Celery
-
 from enferno.settings import Config as cfg
 
-celery = Celery('tasks', broker=cfg.CELERY_BROKER_URL, backend=cfg.CELERY_RESULT_BACKEND,
+celery = Celery('enferno.tasks', broker=cfg.CELERY_BROKER_URL, backend=cfg.CELERY_RESULT_BACKEND,
                 broker_connection_retry_on_startup=True)
-# remove deprecated warning
+
 celery.conf.add_defaults(cfg)
 
 
