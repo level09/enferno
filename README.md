@@ -42,12 +42,27 @@ Core Features:
 - **Internationalization**: Multi-language support via Flask-Babel
 - **CLI Tools**: Powerful command-line utilities for common tasks
 
-AI-Powered Features:
-- Natural language model generation
-- Automated dashboard creation
-- API endpoint generation
-- Smart code suggestions
-- Template generation
+AI-Powered Features
+-----------------
+
+Enferno comes with built-in AI commands that help you generate code using natural language:
+
+1. Generate a Model:
+```bash
+flask generate-model --class_name User --fields "name as string, email as string unique, age as integer, created_at as datetime"
+```
+
+2. Generate an API:
+```bash
+flask generate-api --class_name Product --fields "name, description as text, price as decimal, stock as integer"
+```
+
+3. Generate a Dashboard:
+```bash
+flask generate-dashboard --class_name Order --fields "order_number, customer_name, total_amount as decimal, status as string"
+```
+
+The AI commands use OpenAI's GPT models to generate boilerplate code while following best practices and project conventions. Make sure to set your OpenAI API key in the environment variables.
 
 Prerequisites
 -------------
@@ -122,24 +137,6 @@ celery -A enferno.tasks worker -l info
 ### Docker Environment
 Background tasks are automatically handled by the Celery container.
 
-AI-Powered Code Generation
--------------------------
-
-Generate code using natural language with OpenAI integration:
-
-```bash
-# Generate database models
-flask generate-model "Create a blog post model with title, content, and timestamps"
-
-# Generate dashboard views
-flask generate-dashboard "Create an analytics dashboard for user activities"
-
-# Generate API endpoints
-flask generate-api "Create CRUD endpoints for managing blog posts"
-```
-
-Note: Requires OpenAI API key in .env file.
-
 Environment Variables
 -------------------
 
@@ -184,4 +181,3 @@ Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md)
 License
 -------
 MIT licensed.
-
