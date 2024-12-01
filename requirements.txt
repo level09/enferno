@@ -6,7 +6,7 @@ blinker==1.9.0
 celery==5.4.0
 cffi==1.17.1
 click==8.1.7
-cryptography==43.0.3
+cryptography==44.0.0
 email-validator==2.2.0
 Flask==3.1.0
 Flask-Caching==2.3.0
