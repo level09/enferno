@@ -90,9 +90,10 @@ source env/bin/activate  # On Windows: env\Scripts\activate
 pip install -r requirements.txt
 ```
 
-3. Generate secure environment configuration:
+3. Copy the sample environment file and generate secure configuration:
 ```bash
-flask generate-env  # Creates .env with secure random keys
+cp .env-sample .env  # Copy the sample environment file
+flask generate-env  # Creates secure random keys in .env
 # Edit additional settings in .env
 ```
 
