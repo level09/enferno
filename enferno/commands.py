@@ -296,22 +296,26 @@ i18n_cli = AppGroup("translate", short_help="commands to help with translation m
 @i18n_cli.command()
 @click.argument('lang')
 def init(lang):
+    """Initialize a new language"""
     if os.system(f'pybabel init -i messages.pot -d enferno/translations -l {lang}'):
         raise RuntimeError("Init command failed")
 
 @i18n_cli.command()
 def extract():
+    """Extract messages from code"""
     if os.system("pybabel extract -F babel.cfg -k _l -o messages.pot ."):
         raise RuntimeError("Extract command failed")
 
 
 @i18n_cli.command()
 def update():
+    """Update translations"""
     if os.system("pybabel update -i messages.pot -d enferno/translations"):
         raise RuntimeError("Update command failed")
 
 
 @i18n_cli.command()
 def compile():
+    """Compile translations"""
     if os.system("pybabel compile -d enferno/translations"):
         raise RuntimeError("Compile command failed")
