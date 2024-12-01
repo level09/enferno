@@ -1,31 +1,32 @@
-FROM ubuntu:latest
+# Use Python slim image
+FROM python:3.12-slim
 
-
-RUN apt update -y && apt install -yq  python3-dev python3-pip
-
-# We copy just the requirements.txt first to leverage Docker cache
-COPY ./requirements.txt /app/requirements.txt
-
+# Set working directory
 WORKDIR /app
 
-RUN pip install -r requirements.txt
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY . /app
+# Create and activate virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
-ENV FLASK_APP=run.py
-ENV C_FORCE_ROOT="true"
-ENV SQLALCHEMY_DATABASE_URI="postgresql://enferno:verystrongpass@postgres/enferno"
-ENV CELERY_BROKER_URL="redis://:verystrongpass@redis:6379/10"
-ENV CELERY_RESULT_BACKEND="redis://:verystrongpass@redis:6379/11"
-ENV SESSION_REDIS="redis://:verystrongpass@redis:6379/1"
+# Create non-root user
+RUN useradd -m -u 1000 enferno && \
+    chown -R enferno:enferno /app /opt/venv
 
-RUN echo 'alias act="source env/bin/activate"' >> ~/.bashrc
-RUN echo 'alias ee="export FLASK_APP=run.py && export FLASK_DEBUG=0"' >> ~/.bashrc
+# Install Python dependencies
+COPY --chown=enferno:enferno requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy project files
+COPY --chown=enferno:enferno . .
 
+# Switch to non-root user
+USER enferno
 
-CMD [ "uwsgi", "--http", "0.0.0.0:5000", \
-               "--protocol", "uwsgi", \
-               "--master", \
-               "--wsgi", "run:app" ]
-
+# Run the application
+CMD ["uwsgi", "--http", "0.0.0.0:5000", "--master", "--wsgi", "run:app", "--uid", "1000"]

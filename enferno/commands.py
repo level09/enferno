@@ -5,10 +5,13 @@ import click
 from flask.cli import with_appcontext, AppGroup
 from flask_security.utils import hash_password
 from rich.console import Console
+from rich.progress import Progress, SpinnerColumn
+import secrets
+import string
+import os
 
 from enferno.extensions import db, openai
 from enferno.user.models import User
-from rich.progress import Progress, SpinnerColumn
 
 console = Console()
 
@@ -247,6 +250,43 @@ def generate_model(class_name, fields):
 
         generated_code = response.choices[0].message.content
         console.print(generated_code)
+
+
+@click.command()
+def generate_env():
+    """Generate a .env file from .env-sample with secure random keys."""
+    try:
+        with open('.env-sample', 'r') as sample_file:
+            content = sample_file.read()
+            
+        # Check if .env already exists
+        try:
+            with open('.env', 'r') as env_file:
+                click.confirm('A .env file already exists. Do you want to overwrite it?', abort=True)
+        except FileNotFoundError:
+            pass
+            
+        # Generate secure keys
+        secret_key = ''.join(secrets.choice(string.ascii_letters + string.digits + '@#$%^&*') for _ in range(32))
+        totp_secrets = ','.join(''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(32)) for _ in range(2))
+        password_salt = ''.join(secrets.choice(string.ascii_letters + string.digits + '@#$%^&*') for _ in range(32))
+        
+        # Replace default values with secure keys (wrapped in quotes)
+        content = content.replace('SECRET_KEY=3nF3Rn@', f'SECRET_KEY="{secret_key}"')
+        content = content.replace('SECURITY_TOTP_SECRETS=secret1,secret2', f'SECURITY_TOTP_SECRETS="{totp_secrets}"')
+        content = content.replace('SECURITY_PASSWORD_SALT=3nF3Rn0', f'SECURITY_PASSWORD_SALT="{password_salt}"')
+            
+        with open('.env', 'w') as env_file:
+            env_file.write(content)
+            
+        click.echo('Successfully generated .env file with secure keys')
+        click.echo('Generated secure values for: SECRET_KEY, SECURITY_TOTP_SECRETS, SECURITY_PASSWORD_SALT')
+        click.echo('Please update the remaining configuration values in your .env file')
+            
+    except FileNotFoundError:
+        click.echo('Error: .env-sample file not found')
+    except Exception as e:
+        click.echo(f'Error: {str(e)}')
 
 
 # Translations Management
