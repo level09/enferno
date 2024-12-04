@@ -83,27 +83,22 @@ git clone git@github.com:level09/enferno.git
 cd enferno
 ```
 
-2. Set up a virtual environment:
+2. Set up environment and install dependencies:
 ```bash
 python -m venv env
 source env/bin/activate  # On Windows: env\Scripts\activate
 pip install -r requirements.txt
-```
-
-3. Copy the sample environment file and generate secure configuration:
-```bash
-cp .env-sample .env  # Copy the sample environment file
-flask generate-env  # Creates secure random keys in .env
+./generate-env.sh  # Creates .env file with secure random keys
 # Edit additional settings in .env
 ```
 
-4. Initialize the database:
+3. Initialize the database:
 ```bash
 flask create-db
 flask install
 ```
 
-5. Run the development server:
+4. Run the development server:
 ```bash
 flask run
 ```
@@ -114,7 +109,7 @@ flask run
 ```bash
 git clone git@github.com:level09/enferno.git
 cd enferno
-flask generate-env  # Creates secure .env file
+./generate-env.sh  # Creates .env file with secure random keys
 # Edit additional settings in .env
 ```
 
