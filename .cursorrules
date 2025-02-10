@@ -1,0 +1,18 @@
+Our approach is pythonic, minimal and readable code. Follow these guidelines:
+
+1. Use Vuetify components for UI (refer to vuetify.min.js)
+2. Leverage Material Design Icons (refer to materialdesignicons.css)
+3. Follow Vue.js patterns for state management and reactivity
+4. Use the snackbar pattern for user feedback (refer to roles.html lines 120-123)
+5. For data tables, use the headers pattern (refer to roles.html lines 98-103)
+6. Keep components modular and reusable
+7. Use the mounted() lifecycle hook for initial data loading (refer to roles.html lines 113-115)
+8. For forms, use the edialog pattern with eitem object (refer to roles.html lines 104-109)
+9. Maintain consistent error handling and user feedback
+10. Use Vue's reactivity system for state management
+11. Keep API calls in methods and use async/await
+12. Use the refresh pattern for data updates (refer to roles.html line 125)
+13. When using Jinja templates, set Vue custom delimiters to "${ }" to avoid conflict with Jinja's {{ }} (refer to roles.html line 116)
+14. Use the drawer pattern for navigation (refer to roles.html line 96)
+15. Keep styles minimal and use Vuetify's built-in classes
+16. Write Vue code directly in client-side JavaScript without build tools
