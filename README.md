@@ -89,13 +89,13 @@ python -m venv env
 source env/bin/activate  # On Windows: env\Scripts\activate
 pip install -r requirements.txt
 ./generate-env.sh  # Creates .env file with secure random keys
-# Edit additional settings in .env
 ```
 
-3. Initialize the database:
+3. Configure and initialize:
 ```bash
-flask create-db
-flask install
+# Update mail settings, redis URLs in .env
+flask create-db  # Initialize the database
+flask install    # Create the first admin user
 ```
 
 4. Run the development server:
@@ -110,7 +110,7 @@ flask run
 git clone git@github.com:level09/enferno.git
 cd enferno
 ./generate-env.sh  # Creates .env file with secure random keys
-# Edit additional settings in .env
+# Update mail settings, redis URLs in .env
 ```
 
 2. Build and run with Docker Compose:
@@ -168,7 +168,8 @@ Security Notes
 - Sensitive data is managed through environment variables
 - Static files are served through Nginx
 - Redis is password-protected
-- Secure key generation via `flask generate-env`
+- Secure key generation via `generate-env.sh` script
+- Auto-generated secure passwords for admin users
 
 Contributing
 -----------
