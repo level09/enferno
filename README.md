@@ -175,6 +175,8 @@ Contributing
 -----------
 Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
+For development, refer to the `.cursorrules` and `.windsurfrules` files. These files provide valuable instructions for AI-based IDEs, detailing how Enferno integrates technologies like Jinja and Vue, and ensuring consistency and quality in the codebase.
+
 License
 -------
 MIT licensed.
