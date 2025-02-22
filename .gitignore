@@ -4,6 +4,7 @@
 celerybeat-schedule
 env
 .env
+.env.backup*
 local_settings.py
 node_modules/
 .DS_Store
