@@ -71,10 +71,13 @@ class Config(object):
 
     SESSION_PROTECTION = "strong"
 
+    # Session configuration
     SESSION_TYPE = 'redis'
-
     SESSION_REDIS = redis.from_url(os.environ.get('REDIS_SESSION', 'redis://localhost:6379/1'))
     PERMANENT_SESSION_LIFETIME = 3600
+    SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'False').lower() == 'true'
+    SESSION_COOKIE_HTTPONLY = os.environ.get('SESSION_COOKIE_HTTPONLY', 'True').lower() == 'true'
+    SESSION_COOKIE_SAMESITE = os.environ.get('SESSION_COOKIE_SAMESITE', 'Lax')
 
     # flask mail settings
     MAIL_SERVER = os.environ.get('MAIL_SERVER')
@@ -86,3 +89,9 @@ class Config(object):
     SECURITY_SEND_PASSWORD_CHANGE_EMAIL = False
 
     OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+
+    # Google OAuth Settings
+    GOOGLE_OAUTH_CLIENT_ID = os.environ.get('GOOGLE_OAUTH_CLIENT_ID')
+    GOOGLE_OAUTH_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET')
+    GOOGLE_OAUTH_REDIRECT_URI = os.environ.get('GOOGLE_OAUTH_REDIRECT_URI')  # Let the OAuth handler construct it dynamically
+    OAUTHLIB_INSECURE_TRANSPORT = os.environ.get('OAUTHLIB_INSECURE_TRANSPORT', '1')  # Remove in production
