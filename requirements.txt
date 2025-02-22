@@ -10,6 +10,7 @@ cryptography==44.0.1
 email-validator==2.2.0
 Flask==3.1.0
 Flask-Caching==2.3.0
+Flask-Dance==7.0.0
 Flask-DebugToolbar==0.16.0
 Flask-Login==0.6.3
 Flask-Mail==0.10.0
