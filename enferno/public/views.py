@@ -3,7 +3,7 @@ from flask.templating import render_template
 from flask_security import login_user, current_user, logout_user
 from flask_dance.consumer import oauth_authorized, oauth_error
 from sqlalchemy.orm.exc import NoResultFound
-from enferno.extensions import db, google_bp
+from enferno.extensions import db
 from enferno.user.models import User, OAuth
 import datetime
 from oauthlib.oauth2.rfc6749.errors import OAuth2Error
@@ -60,6 +60,9 @@ def create_oauth_user(provider_data, oauth_token, ip_address):
 
 def get_oauth_user_data(blueprint):
     """Get user data from OAuth provider."""
+    if not blueprint:
+        return None
+        
     if blueprint.name == 'google':
         resp = blueprint.session.get("/oauth2/v2/userinfo")
         if not resp.ok:
@@ -100,11 +103,13 @@ def static_from_root():
     return send_from_directory(public.static_folder, request.path[1:])
 
 # Handle pre-OAuth login check
-@google_bp.before_app_request
-def before_google_login():
-    if request.endpoint == 'google.login' and current_user.is_authenticated:
+def before_oauth_login():
+    if request.endpoint in ['google.login', 'github.login'] and current_user.is_authenticated:
         flash("Please sign out before proceeding.", category="warning")
         return redirect(url_for('portal.dashboard'))
+
+# Register the check for all OAuth routes
+public.before_app_request(before_oauth_login)
 
 @oauth_authorized.connect
 def oauth_logged_in(blueprint, token):
