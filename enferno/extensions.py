@@ -3,6 +3,7 @@
 in app.py
 """
 from sqlalchemy.orm import DeclarativeBase
+import os
 
 class BaseModel(DeclarativeBase):
     pass
@@ -28,3 +29,17 @@ babel = Babel()
 
 from flask_openai import OpenAI
 openai = OpenAI()
+
+from flask_dance.contrib.google import make_google_blueprint
+
+# Create blueprint without storage - we'll configure it in app.py
+google_bp = make_google_blueprint(
+    client_id=os.environ.get("GOOGLE_OAUTH_CLIENT_ID"),
+    client_secret=os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET"),
+    scope=[
+        "https://www.googleapis.com/auth/userinfo.profile",
+        "https://www.googleapis.com/auth/userinfo.email",
+        "openid"
+    ],
+    reprompt_select_account=False
+)

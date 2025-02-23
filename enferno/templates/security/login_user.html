@@ -59,8 +59,14 @@
                     </v-card-text>
                 {% endif %}
                 <v-card-actions class="px-10 pb-8">
-                    <v-spacer></v-spacer>
                     <v-btn variant="elevated" block   @click="submit" color="primary">Login</v-btn>
+                </v-card-actions>
+                <v-card-actions class="px-10 pb-8">
+                    {% if config.GOOGLE_AUTH_ENABLED %}
+                    <v-btn variant="elevated" prepend-icon="mdi-google" block href="{{ url_for('google.login') }}" color="red">
+                        Continue with Google
+                    </v-btn>
+                    {% endif %}
                 </v-card-actions>
             </v-form>
         </v-card>

@@ -7,7 +7,7 @@ from enferno.settings import Config
 from flask_security import Security, SQLAlchemyUserDatastore
 from enferno.user.models import User, Role, WebAuthn
 from enferno.user.forms import ExtendedRegisterForm
-from enferno.extensions import cache, db, mail, debug_toolbar, session, babel, openai
+from enferno.extensions import cache, db, mail, debug_toolbar, session, babel, openai, google_bp
 from enferno.public.views import public
 from enferno.user.views import bp_user
 from enferno.portal.views import portal
@@ -20,7 +20,6 @@ def create_app(config_object=Config):
 
     register_blueprints(app)
     register_extensions(app)
-
     register_errorhandlers(app)
     register_shellcontext(app)
     register_commands(app, commands)
@@ -36,17 +35,27 @@ def register_extensions(app):
     security = Security(app, user_datastore,  register_form=ExtendedRegisterForm)
     mail.init_app(app)
     debug_toolbar.init_app(app)
+    
+    # Session initialization
     session.init_app(app)
+    
     babel.init_app(app, locale_selector=locale_selector, default_domain="messages", default_locale="en")
     openai.init_app(app)
+    
+    # Configure OAuth storage
+    from flask_dance.consumer.storage.sqla import SQLAlchemyStorage
+    from flask_security import current_user
+    from enferno.user.models import OAuth
+    google_bp.storage = SQLAlchemyStorage(OAuth, db.session, user=current_user)
+    
     return None
 
 
 def register_blueprints(app):
-
     app.register_blueprint(bp_user)
     app.register_blueprint(public)
     app.register_blueprint(portal)
+    app.register_blueprint(google_bp, url_prefix="/login")
     return None
 
 

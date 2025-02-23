@@ -3,6 +3,8 @@ from typing import Dict
 from uuid import uuid4
 from enferno.utils.base import BaseMixin
 from enferno.extensions import db
+import secrets
+import string
 
 from flask_security.core import UserMixin, RoleMixin
 from datetime import datetime
@@ -11,6 +13,8 @@ from flask_security.utils import hash_password
 from sqlalchemy.orm import Mapped, mapped_column, relationship, declared_attr
 from sqlalchemy.ext.mutable import MutableList
 from flask_security import AsaList
+from flask_dance.consumer.storage.sqla import OAuthConsumerMixin
+
 roles_users: Table = db.Table(
     'roles_users',
     Column('user_id', Integer, ForeignKey('user.id'), primary_key=True),
@@ -113,6 +117,12 @@ class User(UserMixin, db.Model, BaseMixin):
         'ordering': ['-created_at']
     }
 
+    @staticmethod
+    def random_password(length=32):
+        alphabet = string.ascii_letters + string.digits + string.punctuation
+        password = ''.join(secrets.choice(alphabet) for i in range(length))
+        return hash_password(password)
+
 
 
 
@@ -142,3 +152,9 @@ class WebAuthn(db.Model):
         Return the mapping from webauthn back to User
         """
         return dict(id=self.user_id)
+
+class OAuth(OAuthConsumerMixin, db.Model):
+    __tablename__ = 'oauth'
+    provider_user_id = db.Column(db.String(256), unique=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+    user = db.relationship(User)
