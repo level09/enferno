@@ -6,16 +6,7 @@ repo_name: level09/enferno
 edit_uri: edit/master/docs/
 
 theme:
-  name: material
-  features:
-    - navigation.tabs
-    - navigation.sections
-    - navigation.expand
-    - search.highlight
-  palette:
-    scheme: default
-    primary: indigo
-    accent: indigo
+  name: readthedocs
 
 nav:
   - Home: index.md
