@@ -13,18 +13,9 @@ theme:
     - navigation.expand
     - search.highlight
   palette:
-    - scheme: default
-      primary: indigo
-      accent: indigo
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-    - scheme: slate
-      primary: indigo
-      accent: indigo
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
+    scheme: default
+    primary: indigo
+    accent: indigo
 
 nav:
   - Home: index.md
@@ -38,18 +29,10 @@ markdown_extensions:
   - admonition
   - codehilite
   - footnotes
-  - meta
   - toc:
       permalink: true
-  - pymdownx.highlight:
-      anchor_linenums: true
-  - pymdownx.inlinehilite
-  - pymdownx.snippets
+  - pymdownx.highlight
   - pymdownx.superfences
-  - pymdownx.tabbed:
-      alternate_style: true
 
 plugins:
   - search
-  - minify:
-      minify_html: true
