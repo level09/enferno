@@ -7,7 +7,7 @@ from enferno.settings import Config
 from flask_security import Security, SQLAlchemyUserDatastore
 from enferno.user.models import User, Role, WebAuthn
 from enferno.user.forms import ExtendedRegisterForm
-from enferno.extensions import cache, db, mail, debug_toolbar, session, babel, openai, google_bp
+from enferno.extensions import cache, db, mail, debug_toolbar, session, babel, openai, google_bp, github_bp
 from enferno.public.views import public
 from enferno.user.views import bp_user
 from enferno.portal.views import portal
@@ -47,6 +47,7 @@ def register_extensions(app):
     from flask_security import current_user
     from enferno.user.models import OAuth
     google_bp.storage = SQLAlchemyStorage(OAuth, db.session, user=current_user)
+    github_bp.storage = SQLAlchemyStorage(OAuth, db.session, user=current_user)
     
     return None
 
@@ -56,6 +57,7 @@ def register_blueprints(app):
     app.register_blueprint(public)
     app.register_blueprint(portal)
     app.register_blueprint(google_bp, url_prefix="/login")
+    app.register_blueprint(github_bp, url_prefix="/login")
     return None
 
 

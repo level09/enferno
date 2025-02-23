@@ -157,4 +157,6 @@ class OAuth(OAuthConsumerMixin, db.Model):
     __tablename__ = 'oauth'
     provider_user_id = db.Column(db.String(256), unique=True, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
-    user = db.relationship(User)
+    user = db.relationship(User, backref=db.backref('oauth_accounts', 
+                                                   cascade='all, delete-orphan',
+                                                   lazy='dynamic'))

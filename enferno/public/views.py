@@ -66,7 +66,29 @@ def get_oauth_user_data(blueprint):
             current_app.logger.error(f"Failed to fetch user info: {resp.text}")
             return None
         return resp.json()
-    # Add other providers here
+    elif blueprint.name == 'github':
+        # Get user profile
+        resp = blueprint.session.get("/user")
+        if not resp.ok:
+            current_app.logger.error(f"Failed to fetch GitHub user info: {resp.text}")
+            return None
+        data = resp.json()
+        
+        # GitHub doesn't return email in basic profile if private, need separate call
+        if not data.get('email'):
+            email_resp = blueprint.session.get("/user/emails")
+            if email_resp.ok:
+                emails = email_resp.json()
+                primary_email = next((email['email'] for email in emails if email['primary']), None)
+                if primary_email:
+                    data['email'] = primary_email
+        
+        # Normalize the data structure to match our needs
+        return {
+            'id': str(data['id']),  # Convert to string to match Google's ID format
+            'email': data.get('email'),
+            'name': data.get('name') or data.get('login'),  # Fallback to username if name not set
+        }
     return None
 
 @public.route('/')
@@ -100,7 +122,7 @@ def oauth_logged_in(blueprint, token):
         user_id = provider_data["id"]
         real_ip = get_real_ip()
 
-        # Find or create OAuth token
+        # First check if we already have OAuth entry
         query = OAuth.query.filter_by(
             provider=blueprint.name,
             provider_user_id=user_id
@@ -120,13 +142,25 @@ def oauth_logged_in(blueprint, token):
             update_user_login_info(oauth.user, real_ip)
             login_user(oauth.user)
         else:
-            user = create_oauth_user(provider_data, token, real_ip)
-            oauth.user = user
-            db.session.add_all([user, oauth])
-            db.session.commit()
-            login_user(user)
+            # Check if user exists with this email
+            existing_user = User.query.filter_by(email=provider_data.get("email")).first()
+            if existing_user:
+                # Link OAuth to existing user
+                oauth.user = existing_user
+                db.session.add(oauth)
+                db.session.commit()
+                update_user_login_info(existing_user, real_ip)
+                login_user(existing_user)
+                flash("Account linked successfully.", category="success")
+            else:
+                # Create new user
+                user = create_oauth_user(provider_data, token, real_ip)
+                oauth.user = user
+                db.session.add_all([user, oauth])
+                db.session.commit()
+                login_user(user)
+                flash("Successfully signed in.")
 
-        flash("Successfully signed in.")
         return redirect(url_for("portal.dashboard"))
 
     except OAuth2Error as e:

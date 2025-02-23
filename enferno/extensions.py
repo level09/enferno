@@ -31,6 +31,7 @@ from flask_openai import OpenAI
 openai = OpenAI()
 
 from flask_dance.contrib.google import make_google_blueprint
+from flask_dance.contrib.github import make_github_blueprint
 
 # Create blueprint without storage - we'll configure it in app.py
 google_bp = make_google_blueprint(
@@ -42,4 +43,10 @@ google_bp = make_google_blueprint(
         "openid"
     ],
     reprompt_select_account=False
+)
+
+github_bp = make_github_blueprint(
+    client_id=os.environ.get("GITHUB_OAUTH_CLIENT_ID"),
+    client_secret=os.environ.get("GITHUB_OAUTH_CLIENT_SECRET"),
+    scope=["user:email"]  # Minimum scope needed for email
 )

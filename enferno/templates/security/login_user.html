@@ -68,6 +68,13 @@
                     </v-btn>
                     {% endif %}
                 </v-card-actions>
+                {% if config.GITHUB_AUTH_ENABLED %}
+                <v-card-actions class="px-10 pb-8">
+                    <v-btn prepend-icon="mdi-github" variant="elevated" block href="{{ url_for('github.login') }}" color="grey-darken-3">
+                        Continue with GitHub
+                    </v-btn>
+                </v-card-actions>
+                {% endif %}
             </v-form>
         </v-card>
 
