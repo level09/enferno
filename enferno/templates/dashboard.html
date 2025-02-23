@@ -11,7 +11,7 @@
         </v-card-text>
         <v-card-text>
             <div class="text-h5 mb-3">Welcome, {{ current_user.username }}</div>
-            Last login — {{ current_user.last_login_at.strftime('%b %d, %Y') }}
+            Last login — {{ current_user.last_login_at.strftime('%B %-d, %Y at %-I:%M %p') if current_user.last_login_at else 'Never' }}
         </v-card-text>
         <v-card-actions class="justify-start">
             <v-btn variant="elevated" color="red" href="/logout" color="primary">Logout</v-btn>

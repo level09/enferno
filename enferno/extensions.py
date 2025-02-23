@@ -19,7 +19,6 @@ mail = Mail()
 from flask_debugtoolbar import DebugToolbarExtension
 debug_toolbar = DebugToolbarExtension()
 
-
 from flask_session import Session
 session = Session()
 

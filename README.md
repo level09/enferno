@@ -14,33 +14,28 @@ A modern Python web framework built on top of Flask, designed for rapid developm
 
 http://enferno.io
 
-Enferno Framework Update: OpenAI Integration 
+What's New
 ==============
-Enferno now includes powerful OpenAI integration! This feature allows for rapid generation of Flask Views, Templates, and Models using natural language. Streamline your development process by creating base code samples that can be customized to fit your needs.
-
-New Commands:
-- `flask generate-model`: Instantly generate models with natural language
-- `flask generate-dashboard`: Create dashboards by describing your requirements
-- `flask generate-api`: Speed up API development with verbal descriptions
-- `flask generate-env`: Generate secure environment files with random keys
-
-This update boosts your productivity by reducing development time and making the coding process more intuitive.
+- **Social Authentication**: OAuth integration with Google and GitHub
+- **OpenAI Integration**: AI-powered code generation tools
+- **Modern UI**: Updated Vue 3 and Vuetify components
 
 Features
 ==================
 
 Core Features:
 - **Modern Stack**: Built on Flask with Python 3.12 support
-- **User Management**: Built-in authentication, registration, and role-based access control
-- **Frontend**: Integrated Vue 3 and Vuetify 3 for modern, responsive UIs
+- **User Management**: Authentication, registration, and role-based access control
+- **Social Login**: OAuth integration with Google and GitHub
+- **Frontend**: Vue 3 and Vuetify 3
 - **Database**: SQLAlchemy ORM with PostgreSQL support
-- **Task Queue**: Background job processing with Celery
-- **Email**: Easy email integration with Flask-Mail
-- **Security**: Best practices out of the box
-- **Docker**: Production-ready Docker configuration with non-root security
-- **AI Integration**: OpenAI-powered code generation tools
-- **Internationalization**: Multi-language support via Flask-Babel
-- **CLI Tools**: Powerful command-line utilities for common tasks
+- **Task Queue**: Celery integration
+- **Email**: Flask-Mail integration
+- **Security**: Flask-Security integration
+- **Docker**: Docker configuration included
+- **AI Integration**: OpenAI integration
+- **Internationalization**: Flask-Babel integration
+- **CLI Tools**: Flask CLI commands
 
 AI-Powered Features
 -----------------
@@ -93,7 +88,7 @@ pip install -r requirements.txt
 
 3. Configure and initialize:
 ```bash
-# Update mail settings, redis URLs in .env
+# Update settings in .env file
 flask create-db  # Initialize the database
 flask install    # Create the first admin user
 ```
@@ -103,14 +98,14 @@ flask install    # Create the first admin user
 flask run
 ```
 
-### Using Docker (Recommended for Production)
+### Docker Setup
 
 1. Clone and configure:
 ```bash
 git clone git@github.com:level09/enferno.git
 cd enferno
 ./generate-env.sh  # Creates .env file with secure random keys
-# Update mail settings, redis URLs in .env
+# Update settings in .env file
 ```
 
 2. Build and run with Docker Compose:
@@ -118,25 +113,18 @@ cd enferno
 docker compose up --build
 ```
 
-The application will be available at:
-- Web: http://localhost
-
 Running Background Tasks
 ----------------------
 
-### Local Development
+Start Celery worker:
 ```bash
 celery -A enferno.tasks worker -l info
-# Add -b flag to enable Celery heartbeat (periodic tasks)
 ```
-
-### Docker Environment
-Background tasks are automatically handled by the Celery container.
 
 Environment Variables
 -------------------
 
-Key configuration options in `.env`:
+Available configuration options in `.env`:
 
 ```bash
 # Core Settings
@@ -156,26 +144,63 @@ CELERY_RESULT_BACKEND=redis://:password@localhost:6379/3
 # OpenAI Integration
 OPENAI_API_KEY=your_openai_key
 
+# OAuth Settings
+GOOGLE_AUTH_ENABLED=true  # Enable/disable Google OAuth
+GOOGLE_OAUTH_CLIENT_ID=your_google_client_id
+GOOGLE_OAUTH_CLIENT_SECRET=your_google_client_secret
+
+GITHUB_AUTH_ENABLED=true  # Enable/disable GitHub OAuth
+GITHUB_OAUTH_CLIENT_ID=your_github_client_id
+GITHUB_OAUTH_CLIENT_SECRET=your_github_client_secret
+
 # Security
 SECURITY_PASSWORD_SALT=your_secure_salt
 SECURITY_TOTP_SECRETS=your_totp_secrets
 ```
 
-Security Notes
--------------
-- All Docker services run as non-root users
-- Configuration files are mounted read-only
-- Sensitive data is managed through environment variables
-- Static files are served through Nginx
-- Redis is password-protected
-- Secure key generation via `generate-env.sh` script
-- Auto-generated secure passwords for admin users
+OAuth Configuration
+-----------------
+
+### Google OAuth
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing one
+3. Enable the Google+ API
+4. Configure OAuth consent screen
+5. Create OAuth 2.0 credentials
+6. Add authorized redirect URI: `http://your-domain/login/google/authorized`
+7. Set environment variables:
+```bash
+GOOGLE_AUTH_ENABLED=true
+GOOGLE_OAUTH_CLIENT_ID=your_client_id
+GOOGLE_OAUTH_CLIENT_SECRET=your_client_secret
+```
+
+### GitHub OAuth
+
+1. Go to GitHub Settings > Developer Settings > OAuth Apps
+2. Create New OAuth App
+3. Set Homepage URL to your domain
+4. Set Authorization callback URL: `http://your-domain/login/github/authorized`
+5. Set environment variables:
+```bash
+GITHUB_AUTH_ENABLED=true
+GITHUB_OAUTH_CLIENT_ID=your_client_id
+GITHUB_OAUTH_CLIENT_SECRET=your_client_secret
+```
+
+### Adding New Providers
+
+The OAuth system supports additional providers through Flask-Dance. To add a new provider:
+
+1. Add provider configuration to `settings.py`
+2. Create and register the provider blueprint in `app.py`
+3. Add provider-specific data fetching in `get_oauth_user_data()`
+4. Update the login template to add the new provider button
 
 Contributing
 -----------
 Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
-
-For development, refer to the `.cursorrules` and `.windsurfrules` files. These files provide valuable instructions for AI-based IDEs, detailing how Enferno integrates technologies like Jinja and Vue, and ensuring consistency and quality in the codebase.
 
 License
 -------

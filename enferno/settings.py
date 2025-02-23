@@ -37,7 +37,7 @@ class Config(object):
     SECURITY_CHANGEABLE = True
     SECURITY_TRACKABLE = True
     SECURITY_PASSWORD_HASH = 'pbkdf2_sha512'
-    SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', '3nF3Rn0')
+    SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', 'e89c4039b51f72b0519d1ee033ff537c7c48902e1f497f74c7a0923c9e4e0996')
     SECURITY_USER_IDENTITY_ATTRIBUTES = [{"username": {"mapper": uia_username_mapper, "case_insensitive": True}}, ]
     SECURITY_USERNAME_ENABLE = True
 
@@ -71,10 +71,15 @@ class Config(object):
 
     SESSION_PROTECTION = "strong"
 
+    # Session configuration
     SESSION_TYPE = 'redis'
-
     SESSION_REDIS = redis.from_url(os.environ.get('REDIS_SESSION', 'redis://localhost:6379/1'))
+    SESSION_KEY_PREFIX = 'session:'
+    SESSION_USE_SIGNER = True
     PERMANENT_SESSION_LIFETIME = 3600
+    SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'False').lower() == 'true'
+    SESSION_COOKIE_HTTPONLY = os.environ.get('SESSION_COOKIE_HTTPONLY', 'True').lower() == 'true'
+    SESSION_COOKIE_SAMESITE = os.environ.get('SESSION_COOKIE_SAMESITE', 'Lax')
 
     # flask mail settings
     MAIL_SERVER = os.environ.get('MAIL_SERVER')
@@ -86,3 +91,15 @@ class Config(object):
     SECURITY_SEND_PASSWORD_CHANGE_EMAIL = False
 
     OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+
+    # Google OAuth Settings
+    GOOGLE_AUTH_ENABLED = os.environ.get('GOOGLE_AUTH_ENABLED', 'False').lower() == 'true'
+    GOOGLE_OAUTH_CLIENT_ID = os.environ.get('GOOGLE_OAUTH_CLIENT_ID')
+    GOOGLE_OAUTH_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET')
+    GOOGLE_OAUTH_REDIRECT_URI = os.environ.get('GOOGLE_OAUTH_REDIRECT_URI')  # Let the OAuth handler construct it dynamically
+    OAUTHLIB_INSECURE_TRANSPORT = os.environ.get('OAUTHLIB_INSECURE_TRANSPORT', '1')  # Remove in production
+
+    # GitHub OAuth Settings
+    GITHUB_AUTH_ENABLED = os.environ.get('GITHUB_AUTH_ENABLED', 'False').lower() == 'true'
+    GITHUB_OAUTH_CLIENT_ID = os.environ.get('GITHUB_OAUTH_CLIENT_ID')
+    GITHUB_OAUTH_CLIENT_SECRET = os.environ.get('GITHUB_OAUTH_CLIENT_SECRET')
