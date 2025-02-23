@@ -6,201 +6,179 @@ Project Enferno
 
 A modern Python web framework built on top of Flask, designed for rapid development of secure and scalable web applications. Enferno combines best practices with pre-configured components to help you build production-ready applications quickly.
 
-![alt Enferno Demo](https://github.com/level09/enferno/blob/master/docs/enferno-hero.gif)
+![Enferno Demo](https://github.com/level09/enferno/blob/master/docs/enferno-hero.gif)
 
-![alt Users Management](https://github.com/level09/enferno/blob/master/docs/users-management.jpg)
+Key Features
+===========
+- **Modern Stack**: Python 3.11+, Flask, Vue 3, Vuetify 3
+- **Authentication**: Flask-Security with role-based access control
+- **OAuth Integration**: Google and GitHub login via Flask-Dance
+- **Database**: SQLAlchemy ORM with PostgreSQL/SQLite support
+- **Task Queue**: Celery with Redis for background tasks
+- **Frontend**: Client-side Vue.js with Vuetify components
+- **Security**: CSRF protection, secure session handling
+- **Docker Ready**: Production-grade Docker configuration
+- **AI Code Generation**: OpenAI-powered code scaffolding
 
-![alt Roles Management](https://github.com/level09/enferno/blob/master/docs/roles-management.jpg)
+Frontend Features
+---------------
+- Vue.js without build tools - direct browser integration
+- Vuetify Material Design components
+- Axios for API calls
+- Snackbar notifications pattern
+- Dialog forms pattern
+- Data table server pattern
+- Authentication state integration
+- Material Design Icons
 
-http://enferno.io
+AI Code Generation
+----------------
+Generate boilerplate code using natural language:
 
-What's New
-==============
-- **Social Authentication**: OAuth integration with Google and GitHub
-- **OpenAI Integration**: AI-powered code generation tools
-- **Modern UI**: Updated Vue 3 and Vuetify components
-
-Features
-==================
-
-Core Features:
-- **Modern Stack**: Built on Flask with Python 3.12 support
-- **User Management**: Authentication, registration, and role-based access control
-- **Social Login**: OAuth integration with Google and GitHub
-- **Frontend**: Vue 3 and Vuetify 3
-- **Database**: SQLAlchemy ORM with PostgreSQL support
-- **Task Queue**: Celery integration
-- **Email**: Flask-Mail integration
-- **Security**: Flask-Security integration
-- **Docker**: Docker configuration included
-- **AI Integration**: OpenAI integration
-- **Internationalization**: Flask-Babel integration
-- **CLI Tools**: Flask CLI commands
-
-AI-Powered Features
------------------
-
-Enferno comes with built-in AI commands that help you generate code using natural language:
-
-1. Generate a Model:
 ```bash
-flask generate-model --class_name User --fields "name as string, email as string unique, age as integer, created_at as datetime"
+# Generate a model
+flask generate-model --class_name User --fields "name:string, email:string:unique"
+
+# Generate an API
+flask generate-api --class_name Product --fields "name, price:decimal"
+
+# Generate a dashboard
+flask generate-dashboard --class_name Order --fields "order_number, total:decimal"
 ```
 
-2. Generate an API:
-```bash
-flask generate-api --class_name Product --fields "name, description as text, price as decimal, stock as integer"
-```
+OAuth Integration
+---------------
+Supports social login with:
+- Google (profile and email scope)
+- GitHub (user:email scope)
 
-3. Generate a Dashboard:
+Configure in `.env`:
 ```bash
-flask generate-dashboard --class_name Order --fields "order_number, customer_name, total_amount as decimal, status as string"
-```
+# Google OAuth
+GOOGLE_AUTH_ENABLED=true
+GOOGLE_OAUTH_CLIENT_ID=your_client_id
+GOOGLE_OAUTH_CLIENT_SECRET=your_client_secret
 
-The AI commands use OpenAI's GPT models to generate boilerplate code while following best practices and project conventions. Make sure to set your OpenAI API key in the environment variables.
+# GitHub OAuth
+GITHUB_AUTH_ENABLED=true
+GITHUB_OAUTH_CLIENT_ID=your_client_id
+GITHUB_OAUTH_CLIENT_SECRET=your_client_secret
+```
 
 Prerequisites
--------------
-
-* Python 3.12+
-* Redis
-* PostgreSQL
-* Node.js (for frontend development)
+------------
+- Python 3.11+
+- Redis (for caching and sessions)
+- PostgreSQL (optional, SQLite works for development)
+- Git
 
 Quick Start
 ----------
 
-### Local Development
+### Local Setup
 
-1. Clone the repository:
+1. Clone and setup environment:
 ```bash
 git clone git@github.com:level09/enferno.git
 cd enferno
-```
-
-2. Set up environment and install dependencies:
-```bash
 python -m venv env
-source env/bin/activate  # On Windows: env\Scripts\activate
+source env/bin/activate  # Windows: env\Scripts\activate
 pip install -r requirements.txt
-./generate-env.sh  # Creates .env file with secure random keys
 ```
 
-3. Configure and initialize:
+2. Configure environment:
 ```bash
-# Update settings in .env file
-flask create-db  # Initialize the database
-flask install    # Create the first admin user
+./generate-env.sh  # Creates .env file with secure keys
+# Edit .env with your settings
 ```
 
-4. Run the development server:
+3. Initialize application:
+```bash
+flask create-db  # Setup database
+flask install    # Create admin user
+```
+
+4. Run development server:
 ```bash
 flask run
 ```
 
 ### Docker Setup
 
-1. Clone and configure:
-```bash
-git clone git@github.com:level09/enferno.git
-cd enferno
-./generate-env.sh  # Creates .env file with secure random keys
-# Update settings in .env file
-```
-
-2. Build and run with Docker Compose:
+One-command setup with Docker:
 ```bash
 docker compose up --build
 ```
 
-Running Background Tasks
-----------------------
+The Docker setup includes:
+- Redis for caching and session management
+- PostgreSQL database
+- Nginx for serving static files
+- Celery for background tasks
 
-Start Celery worker:
-```bash
-celery -A enferno.tasks worker -l info
-```
+Configuration
+------------
 
-Environment Variables
--------------------
-
-Available configuration options in `.env`:
+Key environment variables (.env):
 
 ```bash
-# Core Settings
-SECRET_KEY=your_secret_key
+# Core
 FLASK_APP=run.py
-FLASK_DEBUG=1  # Set to 0 in production
+FLASK_DEBUG=1  # 0 in production
+SECRET_KEY=your_secret_key
 
-# Database
-SQLALCHEMY_DATABASE_URI=postgresql://username:password@localhost/dbname
+# Database (choose one)
+SQLALCHEMY_DATABASE_URI=sqlite:///enferno.sqlite3
+# Or for PostgreSQL:
+# SQLALCHEMY_DATABASE_URI=postgresql://username:password@localhost/dbname
 
-# Redis
-REDIS_PASSWORD=your_redis_password
-SESSION_REDIS=redis://:password@localhost:6379/1
-CELERY_BROKER_URL=redis://:password@localhost:6379/2
-CELERY_RESULT_BACKEND=redis://:password@localhost:6379/3
+# Redis & Celery
+REDIS_URL=redis://localhost:6379/0
+CELERY_BROKER_URL=redis://localhost:6379/1
+CELERY_RESULT_BACKEND=redis://localhost:6379/2
 
-# OpenAI Integration
+# Email Settings (optional)
+MAIL_SERVER=smtp.example.com
+MAIL_PORT=465
+MAIL_USE_SSL=True
+MAIL_USERNAME=your_email
+MAIL_PASSWORD=your_password
+SECURITY_EMAIL_SENDER=noreply@example.com
+
+# OAuth (optional)
+GOOGLE_AUTH_ENABLED=true
+GOOGLE_OAUTH_CLIENT_ID=your_client_id
+GOOGLE_OAUTH_CLIENT_SECRET=your_client_secret
+
+GITHUB_AUTH_ENABLED=true
+GITHUB_OAUTH_CLIENT_ID=your_client_id
+GITHUB_OAUTH_CLIENT_SECRET=your_client_secret
+
+# AI Features (optional)
 OPENAI_API_KEY=your_openai_key
 
-# OAuth Settings
-GOOGLE_AUTH_ENABLED=true  # Enable/disable Google OAuth
-GOOGLE_OAUTH_CLIENT_ID=your_google_client_id
-GOOGLE_OAUTH_CLIENT_SECRET=your_google_client_secret
-
-GITHUB_AUTH_ENABLED=true  # Enable/disable GitHub OAuth
-GITHUB_OAUTH_CLIENT_ID=your_github_client_id
-GITHUB_OAUTH_CLIENT_SECRET=your_github_client_secret
-
-# Security
+# Security Settings
 SECURITY_PASSWORD_SALT=your_secure_salt
 SECURITY_TOTP_SECRETS=your_totp_secrets
 ```
 
-OAuth Configuration
------------------
+Security Features
+---------------
+- Two-factor authentication (2FA)
+- WebAuthn support
+- OAuth integration
+- Password policies
+- Session protection
+- CSRF protection
+- Secure cookie settings
+- Rate limiting
+- XSS protection
 
-### Google OAuth
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing one
-3. Enable the Google+ API
-4. Configure OAuth consent screen
-5. Create OAuth 2.0 credentials
-6. Add authorized redirect URI: `http://your-domain/login/google/authorized`
-7. Set environment variables:
-```bash
-GOOGLE_AUTH_ENABLED=true
-GOOGLE_OAUTH_CLIENT_ID=your_client_id
-GOOGLE_OAUTH_CLIENT_SECRET=your_client_secret
-```
-
-### GitHub OAuth
-
-1. Go to GitHub Settings > Developer Settings > OAuth Apps
-2. Create New OAuth App
-3. Set Homepage URL to your domain
-4. Set Authorization callback URL: `http://your-domain/login/github/authorized`
-5. Set environment variables:
-```bash
-GITHUB_AUTH_ENABLED=true
-GITHUB_OAUTH_CLIENT_ID=your_client_id
-GITHUB_OAUTH_CLIENT_SECRET=your_client_secret
-```
-
-### Adding New Providers
-
-The OAuth system supports additional providers through Flask-Dance. To add a new provider:
-
-1. Add provider configuration to `settings.py`
-2. Create and register the provider blueprint in `app.py`
-3. Add provider-specific data fetching in `get_oauth_user_data()`
-4. Update the login template to add the new provider button
+For detailed documentation, visit [enferno.readthedocs.io](https://enferno.readthedocs.io)
 
 Contributing
 -----------
-Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+Contributions welcome! Please read our [Contributing Guide](CONTRIBUTING.md).
 
 License
 -------

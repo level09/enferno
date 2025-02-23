@@ -1,6 +1,55 @@
-site_name: Enferno Documentation
+site_name: Enferno Framework
+site_description: A modern Python web framework built on Flask
+site_url: https://enferno.readthedocs.io
+repo_url: https://github.com/level09/enferno
+repo_name: level09/enferno
+edit_uri: edit/master/docs/
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - search.highlight
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Authentication: authentication.md
+  - AI Features: ai-features.md
+  - Deployment: deployment.md
+  - Development: development.md
 
-theme: readthedocs
+markdown_extensions:
+  - admonition
+  - codehilite
+  - footnotes
+  - meta
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search
+  - minify:
+      minify_html: true
