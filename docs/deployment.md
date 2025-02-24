@@ -24,16 +24,17 @@ Before deploying:
 
 ### Quick Start
 
-1. Clone and configure:
+1. Clone and setup:
 ```bash
 git clone git@github.com:level09/enferno.git
 cd enferno
-./generate-env.sh  # Edit .env with production settings
+./setup.sh  # Creates Python environment and secure .env
+# Edit .env with production settings
 ```
 
-2. Build and start:
+2. Build and run:
 ```bash
-docker compose up -d --build
+docker compose up --build
 ```
 
 3. Initialize database:

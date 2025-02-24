@@ -4,7 +4,7 @@ This guide will help you set up Enferno for local development or production depl
 
 ## Prerequisites
 
-- Python 3.11 or higher
+- Python 3.7 or higher (3.11+ recommended)
 - Redis
 - PostgreSQL (optional, SQLite works for development)
 - Git
@@ -30,21 +30,21 @@ git clone git@github.com:level09/enferno.git
 cd enferno
 ```
 
-### 2. Set Up Python Environment
+### 2. Run Setup Script
 
 ```bash
-python -m venv env
-source env/bin/activate  # Windows: env\Scripts\activate
-pip install -r requirements.txt
+./setup.sh
 ```
+
+This script will:
+- Find the latest Python 3.x version on your system
+- Create a virtual environment
+- Install requirements
+- Generate a secure `.env` file with random keys
 
 ### 3. Configure Environment
 
-```bash
-./generate-env.sh  # Creates .env file with secure keys
-```
-
-Edit `.env` file with your settings. Key configurations:
+Review and edit `.env` file with your settings. Key configurations:
 
 ```bash
 # Core Settings
@@ -120,7 +120,7 @@ For a quick start with Docker:
 # Clone and configure
 git clone git@github.com:level09/enferno.git
 cd enferno
-./generate-env.sh
+./setup.sh  # Creates environment and secure .env
 
 # Build and run
 docker compose up --build

@@ -77,28 +77,20 @@ Quick Start
 
 ### Local Setup
 
-1. Clone and setup environment:
+1. Clone and setup:
 ```bash
 git clone git@github.com:level09/enferno.git
 cd enferno
-python -m venv env
-source env/bin/activate  # Windows: env\Scripts\activate
-pip install -r requirements.txt
+./setup.sh  # Creates Python environment, installs requirements, and generates secure .env
 ```
 
-2. Configure environment:
-```bash
-./generate-env.sh  # Creates .env file with secure keys
-# Edit .env with your settings
-```
-
-3. Initialize application:
+2. Initialize application:
 ```bash
 flask create-db  # Setup database
 flask install    # Create admin user
 ```
 
-4. Run development server:
+3. Run development server:
 ```bash
 flask run
 ```

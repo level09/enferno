@@ -6,6 +6,44 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m'
 
+# Find latest Python 3 version
+PYTHON_CMD=""
+for cmd in python3.13 python3.12 python3.11 python3.10 python3.9 python3.8 python3.7 python3; do
+    if command -v $cmd &> /dev/null; then
+        PYTHON_CMD=$cmd
+        break
+    fi
+done
+
+if [ -z "$PYTHON_CMD" ]; then
+    echo -e "${RED}Error: No Python 3.x installation found${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}Using Python: $($PYTHON_CMD --version)${NC}"
+
+# Create and activate virtual environment
+if [ -d "env" ]; then
+    read -p "Virtual environment 'env' already exists. Recreate? (y/N) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        rm -rf env
+    else
+        echo -e "${RED}Aborting setup${NC}"
+        exit 1
+    fi
+fi
+
+echo -e "${GREEN}Creating virtual environment...${NC}"
+$PYTHON_CMD -m venv env
+
+# Activate virtual environment
+source env/bin/activate
+
+# Install requirements
+echo -e "${GREEN}Installing requirements...${NC}"
+pip install -r requirements.txt
+
 # Check for required commands
 for cmd in tr openssl awk; do
     if ! command -v $cmd &> /dev/null; then
@@ -13,12 +51,6 @@ for cmd in tr openssl awk; do
         exit 1
     fi
 done
-
-# Check if .env-sample exists
-if [ ! -f .env-sample ]; then
-    echo -e "${RED}Error: .env-sample file not found${NC}"
-    exit 1
-fi
 
 # Function to generate secure random string
 generate_secure_string() {
@@ -29,6 +61,12 @@ generate_secure_string() {
         LC_ALL=C tr -dc 'A-Za-z0-9@#$%^&*' < /dev/urandom | head -c $length
     fi
 }
+
+# Check if .env-sample exists
+if [ ! -f .env-sample ]; then
+    echo -e "${RED}Error: .env-sample file not found${NC}"
+    exit 1
+fi
 
 # Check if .env already exists
 if [ -f .env ]; then
@@ -108,4 +146,4 @@ echo
 echo -e "${GREEN}Next steps:${NC}"
 echo -e "1. Update the remaining values in your .env file (mail settings, redis, etc.)"
 echo -e "2. Run ${GREEN}flask create-db${NC} to initialize the database"
-echo -e "3. Run ${GREEN}flask install${NC} to create the first admin user"
+echo -e "3. Run ${GREEN}flask install${NC} to create the first admin user" 
