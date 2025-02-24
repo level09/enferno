@@ -48,7 +48,7 @@ def install():
     # Generate a secure password
     password = ''.join(secrets.choice(string.ascii_letters + string.digits + '@#$%^&*') for _ in range(32))
 
-    user = User(username=username, password=hash_password(password), active=1)
+    user = User(username=username, name='Super Admin', password=hash_password(password), active=1)
     user.roles.append(admin_role)
     user.save()
     
