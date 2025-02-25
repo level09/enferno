@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Project Enferno</title>
+    <meta name="description" content="A framework for the next decade">
+    <meta name="author" content="Enferno">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href="/static/css/vuetify.min.css">
+    <link rel="stylesheet" href="/static/mdi/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="/static/css/app.css">
+
+    {% block css %}{% endblock %}
+</head>
+<body>
+    {% block content %}{% endblock %}
+    
+    <script src="/static/js/vue.min.js"></script>
+    <script src="/static/js/vuetify.min.js"></script>
+    <script src="/static/js/axios.min.js"></script>
+    {% block js %}{% endblock %}
+</body>
+</html> 

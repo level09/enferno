@@ -1,78 +1,288 @@
-{% extends 'layout.html' %}
+{% extends 'auth_layout.html' %}
+
+{% block css %}
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+    #app, .v-application, .v-application__wrap {
+        height: 100vh;
+        min-height: 100vh;
+    }
+    .auth-image {
+        background-image: url('/static/img/auth-bg.webp');
+        background-size: cover;
+        background-position: center;
+        height: 100vh;
+    }
+    .auth-overlay {
+        background-color: rgba(0, 0, 0, 0.5);
+        height: 100%;
+    }
+    @media (max-width: 960px) {
+        .auth-image {
+            height: 40vh;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block sidebar %}
+{% endblock %}
+
+{% block layout_classes %}
+{% endblock %}
 
 {% block content %}
-<v-app id="app" class="justify-center align-center min-vh-100 d-flex">
-    <v-container class="d-flex align-center justify-center">
-        <form
-                @submit.prevent="submit"
-                action="{{ url_for_security('register') }}"
-                method="post"
-                id="registerForm"
-                ref="form"
+    <div id="app">
+        <v-container fluid class="pa-0 ma-0 h-100" style="height: 100vh;">
+            <v-row no-gutters style="height: 100vh;">
+                <!-- Register Form Column -->
+                <v-col cols="12" md="6" class="d-flex align-center justify-center">
+                    <v-card width="500" elevation="0" class="mx-auto">
+                        <v-card-title>
+                            <div class="d-flex align-center mb-5">
+                                <img src="/static/img/enferno.svg" alt="Logo" height="40" class="mr-3">
+                                <span class="text-h5 font-weight-bold">Create an account</span>
+                            </div>
+                        </v-card-title>
+                        
+                        <v-card-text>
+                            <!-- Social Login Buttons -->
+                            <div class="d-flex flex-column gap-3 mb-4">
+                                {% if config.GOOGLE_AUTH_ENABLED %}
+                                <v-btn 
+                                    variant="text" 
+                                    block 
+                                    href="{{ url_for('google.login') }}"
+                                    class="mb-3 border rounded"
+                                    color="default"
+                                    height="48"
+                                >
+                                    <template v-slot:prepend>
+                                        <svg width="19" height="18" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg" class="mr-2">
+                                            <path d="M17 8.18371C17 7.63989 16.9551 7.09314 16.8591 6.55814H9.16046V9.63879H13.5691C13.3862 10.6324 12.7983 11.5113 11.9376 12.0698V14.0687H14.5678C16.1123 12.6754 17 10.6177 17 8.18371Z" fill="#4285F4"></path>
+                                            <path d="M9.16042 16C11.3617 16 13.2182 15.2916 14.5707 14.0687L11.9406 12.0698C11.2088 12.5578 10.2641 12.8341 9.16342 12.8341C7.03409 12.8341 5.22865 11.4261 4.58085 9.53299H1.8667V11.5936C3.25227 14.2951 6.07438 16 9.16042 16V16Z" fill="#34A853"></path>
+                                            <path d="M4.57786 9.53298C4.23596 8.53941 4.23596 7.46353 4.57786 6.46996V4.40933H1.8667C0.709065 6.66985 0.709065 9.33309 1.8667 11.5936L4.57786 9.53298V9.53298Z" fill="#FBBC04"></path>
+                                            <path d="M9.16042 3.16589C10.3241 3.14825 11.4487 3.57743 12.2914 4.36523L14.6217 2.0812C13.1462 0.72312 11.1878 -0.0235267 9.16042 -1.02057e-05C6.07438 -1.02057e-05 3.25227 1.70493 1.8667 4.40932L4.57785 6.46995C5.22265 4.57394 7.03109 3.16589 9.16042 3.16589V3.16589Z" fill="#EA4335"></path>
+                                        </svg>
+                                    </template>
+                                    Continue with Google
+                                </v-btn>
+                                {% endif %}
+                                
+                                {% if config.GITHUB_AUTH_ENABLED %}
+                                <v-btn 
+                                    variant="text" 
+                                    block 
+                                    href="{{ url_for('github.login') }}"
+                                    class="mb-3 border rounded"
+                                    color="default"
+                                    height="48"
+                                >
+                                    <template v-slot:prepend>
+                                        <svg width="19" height="19" viewBox="0 0 16 16" version="1.1" class="mr-2">
+                                            <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                                        </svg>
+                                    </template>
+                                    Continue with GitHub
+                                </v-btn>
+                                {% endif %}
+                                
+                                <div class="d-flex align-center my-4">
+                                    <v-divider></v-divider>
+                                    <span class="mx-3 text-medium-emphasis text-caption">or</span>
+                                    <v-divider></v-divider>
+                                </div>
+                                
+                                <v-btn 
+                                    variant="text" 
+                                    block 
+                                    class="border rounded"
+                                    color="default"
+                                    height="48"
+                                    @click="showEmailForm = true"
+                                    v-if="!showEmailForm"
+                                >
+                                    <template v-slot:prepend>
+                                        <v-icon class="mr-2">mdi-email</v-icon>
+                                    </template>
+                                    Continue with Email
+                                </v-btn>
+                            </div>
+                            
+                            <!-- Email/Password Form -->
+                            <v-form 
+                                action="{{ url_for_security('register') }}" 
+                                method="post" 
+                                id="registerForm" 
+                                ref="form"
+                                v-if="showEmailForm"
+                            >
+                                {{ register_user_form.hidden_tag() }}
+                                
+                                <v-text-field
+                                    density="compact"
+                                    label="First Name"
+                                    name="first_name"
+                                    prepend-inner-icon="mdi-account"
+                                    type="text"
+                                    variant="outlined"
+                                    
+                                    required
+                                ></v-text-field>
+
+                                <v-text-field
+                                    density="compact"
+                                    label="Last Name"
+                                    name="last_name"
+                                    prepend-inner-icon="mdi-account"
+                                    type="text"
+                                    variant="outlined"
+                                    
+                                    required
+                                ></v-text-field>
+
+                                <v-text-field
+                                    density="compact"
+                                    label="Email"
+                                    name="email"
+                                    prepend-inner-icon="mdi-email"
+                                    type="email"
+                                    variant="outlined"
+                                    
+                                    required
+                                ></v-text-field>
+
+                                <v-text-field
+                                    density="compact"
+                                    id="password"
+                                    label="Password"
+                                    name="password"
+                                    prepend-inner-icon="mdi-lock"
+                                    type="password"
+                                    variant="outlined"
+                                    
+                                    required
+                                ></v-text-field>
+                                
+                                {% if register_user_form.password_confirm %}
+                                <v-text-field
+                                    density="compact"
+                                    id="confirm-password"
+                                    label="Confirm Password"
+                                    name="password_confirm"
+                                    prepend-inner-icon="mdi-lock-check"
+                                    type="password"
+                                    variant="outlined"
+                                    
+                                    required
+                                ></v-text-field>
+                                {% endif %}
+                                
+                                {% if register_user_form.email.errors or register_user_form.password.errors %}
+                                <v-alert type="error" density="compact" class="mb-4">
+                                    Please check the form for errors: <br>
+                                    {{ register_user_form.errors }}
+                                </v-alert>
+                                {% endif %}
+                                
+                                <v-btn 
+                                    block 
+                                    color="primary" 
+                                    size="large" 
+                                    @click="submit" 
+                                    class="mb-4"
+                                >
+                                    Create Account
+                                </v-btn>
+                            </v-form>
+                            
+                            <div class="text-center mt-4 mb-4">
+                                <p class="text-caption text-medium-emphasis">
+                                    By continuing, you agree to Enferno's 
+                                    <a href="#" class="text-decoration-none">Terms of Service</a> and 
+                                    <a href="#" class="text-decoration-none">Privacy Policy</a>.
+                                </p>
+                            </div>
+                            
+                            <div class="text-center mt-6">
+                                <span class="text-medium-emphasis">Already have an account? </span>
+                                <a href="{{ url_for_security('login') }}" class="text-decoration-none">Log in</a>
+                            </div>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+                
+                <!-- Image Column -->
+                <v-col cols="12" md="6" class="auth-image d-none d-md-block">
+                    <v-container fluid class="auth-overlay pa-0 ma-0">
+                        <v-row align="center" justify="center" style="height: 100vh;">
+                            <v-col cols="12" class="text-center">
+                                <div class="text-h2 font-weight-bold text-white">Secure. Scalable. Swift.</div>
+                            </v-col>
+                        </v-row>
+                    </v-container>
+                </v-col>
+            </v-row>
+        </v-container>
+        
+        <v-snackbar 
+            v-model="snackBar"
+            :timeout="3000"
         >
-            <v-card class="pa-5 mt-10" width="600">
-                <v-card-title class="mb-4">
-                    Register a new account
-                </v-card-title>
-                <v-card-text>
-                    {{ register_user_form.hidden_tag() }}
-
-                        <v-text-field variant="underlined" required label="First Name" name="first_name" type="text"></v-text-field>
-                        <v-text-field variant="underlined"  required label="Last Name" name="last_name" type="text"></v-text-field>
-
-                    <v-text-field variant="underlined" required label="Email" name="email"  type="text"></v-text-field>
-                    <v-text-field variant="underlined" required id="password" label="Password" name="password" type="password"></v-text-field>
-                    {% if register_user_form.password_confirm %}
-                        <v-text-field variant="underlined" required id="confirm-password" label="Confirm Password" name="password_confirm"  type="password"></v-text-field>
-                    {% endif %}
-
-                </v-card-text>
-                {% if register_user_form.email.errors or register_user_form.password.errors %}
-                    <v-card-text>
-                        <v-alert type="error" dense dismissible>
-                            Please check the form for errors: <br>
-                            {{ register_user_form.errors }}
-                        </v-alert>
-                    </v-card-text>
-                {% endif %}
-                <v-card-actions class="justify-end">
-                    <v-btn width="200" height="40" type="submit" variant="elevated" color="primary">Create an Account</v-btn>
-                </v-card-actions>
-            </v-card>
-        </form>
-    </v-container>
-    <v-snackbar absolute button v-model="snackBar">
-        ${snackMessage}
-        <v-btn text color="primary" @click.native="value = false">Close</v-btn>
-    </v-snackbar>
-</v-app>
+            ${snackMessage}
+            <template v-slot:actions>
+                <v-btn 
+                    color="primary" 
+                    variant="text" 
+                    @click="snackBar = false"
+                >
+                    Close
+                </v-btn>
+            </template>
+        </v-snackbar>
+    </div>
 {% endblock %}
+
 {% block js %}
-<script>
-    const { createApp } = Vue;
-    const { createVuetify } = Vuetify;
-    const vuetify = createVuetify();
+    <script>
+        const {createApp} = Vue;
+        const {createVuetify} = Vuetify;
+        const vuetify = createVuetify();
 
-    const app = createApp({
-        data() {
-            return {
-                menu: null,
-                snackBar: false,
-                snackMessage: '',
-            };
-        },
-        methods: {
-            showSnack(message) {
-                this.snackMessage = message;
-                this.snackBar = true;
+        const app = createApp({
+            data() {
+                return {
+                    menu: null,
+                    errors: '',
+                    snackBar: false,
+                    snackMessage: '',
+                    showEmailForm: false
+                };
             },
-            submit() {
-                document.getElementById('registerForm').submit();
-            }
-        },
-        delimiters: ['${', '}']
-    });
+            methods: {
+                showSnack(message) {
+                    this.snackMessage = message;
+                    this.snackBar = true;
+                },
+                submit() {
+                    document.getElementById('registerForm').submit();
+                }
+            },
+            mounted() {
+                // Check if there are form errors, if so, show the email form
+                const hasErrors = {% if register_user_form.email.errors or register_user_form.password.errors %}true{% else %}false{% endif %};
+                if (hasErrors) {
+                    this.showEmailForm = true;
+                }
+            },
+            delimiters: ['${', '}']
+        });
 
-    app.use(vuetify).mount('#app');
-</script>
+        app.use(vuetify).mount('#app');
+    </script>
 {% endblock %}
