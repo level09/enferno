@@ -1,3 +1,8 @@
+---
+description: When working with UI, Vuetify , Vue, Components
+globs: 
+alwaysApply: false
+---
 # UI Components and Patterns
 
 ## Vuetify Components

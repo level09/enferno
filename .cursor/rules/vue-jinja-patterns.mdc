@@ -1,3 +1,8 @@
+---
+description: When working with Flask Jinja Templates that has Vue and Vuetify integrations 
+globs: 
+alwaysApply: false
+---
 # Vue and Jinja Integration Patterns
 
 ## Vue Delimiters with Jinja

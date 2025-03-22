@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 # Python Coding Standards
 
 ## General Principles
@@ -30,7 +35,3 @@
 - Log errors appropriately
 - Provide user-friendly error messages
 
-## Testing
-- Write unit tests for critical functionality
-- Use pytest for testing
-- Maintain good test coverage 
