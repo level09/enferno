@@ -103,21 +103,27 @@ def add_role(email, role):
 
 
 @click.command()
-@click.option('-e', '--email', prompt=True, default=None)
-@click.option('-p', '--password', hide_input=True, confirmation_prompt=True, prompt=True, default=None)
+@click.option('-e', '--email', prompt='Email or username', default=None)
+@click.option('-p', '--password', hide_input=True, prompt=True, default=None)
 @with_appcontext
 def reset(email, password):
-    """Reset a user password
+    """Reset a user password using email or username
     """
     try:
         pwd = hash_password(password)
-        u = User.query.filter(User.email == email).first()
+        # Check if user exists with provided email or username
+        u = User.query.filter((User.email == email) | (User.username == email)).first()
+        if not u:
+            print(f'User with email or username "{email}" not found.')
+            return
+        
         u.password = pwd
         try:
             db.session.commit()
             print('User password has been reset successfully.')
         except:
             db.session.rollback()
+            print('Error committing to database.')
     except Exception as e:
         print('Error resetting user password: %s' % e)
 
