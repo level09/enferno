@@ -9,11 +9,12 @@
         </v-toolbar>
         <v-card-text>
 
-            <v-data-table :items="items" :headers="headers">
+            <v-data-table-server :items="items" :headers="headers">
 
                 <template v-slot:top>
                     <v-toolbar class="mb-4" dense elevation="0" color="transparent">
-                        <v-btn class="ml-auto" prepend-icon="mdi-plus" @click="createItem" size="small" variant="elevated" color="primary"> Add User</v-btn>
+                        <v-btn class="ml-auto" prepend-icon="mdi-plus" @click="createItem" size="small" color="primary" variant="elevated">Add User</v-btn>
+                        
                     </v-toolbar>
                 </template>
                 <template v-slot:item.roles="{ item }">
@@ -45,7 +46,7 @@
                     </v-icon>
                 </template>
 
-            </v-data-table>
+            </v-data-table-server>
 
 
         </v-card-text>
@@ -54,25 +55,27 @@
 
     <!--Edit Dialog-->
     <v-dialog v-model="edialog" width="660">
-        <v-card v-if="edialog" class="pa-6">
-            <v-sheet class="d-flex justify-end">
-                <v-btn @click="edialog=false" size="small" icon="mdi-close" variant="text"></v-btn>
-            </v-sheet>
-            <v-card-title>User Editor</v-card-title>
+        <v-card v-if="edialog">
+            <v-toolbar>
+                <v-toolbar-title>User Editor</v-toolbar-title>
+                <template v-slot:append>
+                    <v-btn @click="edialog=false" size="small" icon="mdi-close" variant="text"></v-btn>
+                </template>
+            </v-toolbar>
+            
+            
 
             <v-card-text>
                 <!-- fields go here -->
-                <v-text-field variant="underlined" label="Name" v-model="eitem.name"></v-text-field>
-                <v-text-field variant="underlined" type="email" v-model="eitem.email" type="email" label="Email"></v-text-field>
-                <v-text-field variant="underlined" v-model="eitem.username" type="email" label="Username"></v-text-field>
+                <v-text-field label="Name" v-model="eitem.name"></v-text-field>
+                <v-text-field type="email" v-model="eitem.email" label="Email"></v-text-field>
+                <v-text-field v-model="eitem.username" label="Username"></v-text-field>
 
-
-                <v-text-field variant="underlined" placeholder="Password" type="password" v-model="eitem.password"></v-text-field>
+                <v-text-field placeholder="Password" type="password" v-model="eitem.password"></v-text-field>
 
                 <v-select label="Roles"
                           item-title="name"
                           multiple
-                          variant="underlined"
                           v-model="eitem.roles"
                           return-object
                           chips
@@ -86,7 +89,7 @@
 
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="primary" variant="elevated" @click="saveItem">Save</v-btn>
+                <v-btn color="primary" @click="saveItem" variant="elevated">Save</v-btn>
             </v-card-actions>
         </v-card>
 
@@ -97,7 +100,7 @@
 
         ${snackMessage}
         <template v-slot:actions>
-            <v-btn @click="snackBar=false" icon="mdi-close" class="ml-auto" variant="text" size="small"></v-btn>
+            <v-btn @click="snackBar=false" icon="mdi-close" class="ml-auto" size="small" variant="text"></v-btn>
         </template>
     </v-snackbar>
 
@@ -113,7 +116,7 @@
         const {createApp, toRaw} = Vue;
         const {createVuetify} = Vuetify;
 
-        const vuetify = createVuetify();
+        const vuetify = createVuetify(config.vuetifyConfig);
 
         window.app = createApp({
             data() {
@@ -151,7 +154,7 @@
             mounted() {
                 this.refresh();
             },
-            delimiters: ["${", "}"],
+            delimiters: config.delimiters,
 
             methods: {
 
@@ -161,12 +164,14 @@
                 },
 
                 refresh() {
-
-                    axios.get(`/api/users`).then(res => {
-                        this.items = res.data.items;
-                        this.itemsLength = res.data.total;
-
-                    });
+                    axios.get(`/api/users`)
+                        .then(res => {
+                            this.items = res.data.items;
+                            this.itemsLength = res.data.total;
+                        })
+                        .catch(err => {
+                            console.error('Error fetching users:', err);
+                        });
                 },
                 createItem() {
                     this.edialog = true;
@@ -187,40 +192,39 @@
                 saveItem(item) {
                     if (this.eitem.id) {
                         // edit mode
-                        axios.post(`/api/user/${this.eitem.id}`, {item: this.eitem}).then(res => {
-                            this.showSnack(res.data?.message);
-                            this.refresh();
-
-                        }).catch(err => {
-
-                            this.showSnack(err.response?.data);
-                        });
+                        axios.post(`/api/user/${this.eitem.id}`, {item: this.eitem})
+                            .then(res => {
+                                this.showSnack(res.data?.message);
+                                this.refresh();
+                            })
+                            .catch(err => {
+                                console.error('Error updating user:', err);
+                            });
                     } else {
                         // create mode
-                        axios.post('/api/user/', {item: this.eitem}).then(res => {
-                            this.showSnack(res.data?.message);
-                            this.refresh();
-
-                        }).catch(err => {
-                            this.showSnack(err.response?.data)
-                        });
-
+                        axios.post('/api/user/', {item: this.eitem})
+                            .then(res => {
+                                this.showSnack(res.data?.message);
+                                this.refresh();
+                            })
+                            .catch(err => {
+                                console.error('Error creating user:', err);
+                            });
                     }
                     this.edialog = false;
-
                 },
 
                 deleteItem(item) {
                     if (confirm('Are you sure?')) {
-                        axios.delete(`/api/user/${item.id}`).then(res => {
-                            this.showSnack(res.data?.message);
-                            this.refresh();
-
-                        }).catch(err => {
-                            this.showSnack(err.response?.data);
-                        });
+                        axios.delete(`/api/user/${item.id}`)
+                            .then(res => {
+                                this.showSnack(res.data?.message);
+                                this.refresh();
+                            })
+                            .catch(err => {
+                                console.error('Error deleting user:', err);
+                            });
                     }
-
                 }
             }
 

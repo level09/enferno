@@ -17,7 +17,7 @@
 
                 <template v-slot:top>
                     <v-toolbar color="transparent" class="mb-4" dense elevation="0">
-                        <v-btn class="ml-auto" prepend-icon="mdi-plus" @click="createItem" size="small" variant="elevated" color="primary"> Add Role</v-btn>
+                        <v-btn class="ml-auto" prepend-icon="mdi-plus" @click="createItem" size="small" color="primary" variant="elevated">Add Role</v-btn>
                     </v-toolbar>
                 </template>
 
@@ -57,13 +57,13 @@
 
             <v-card-text>
                 <!-- fields go here -->
-                <v-text-field variant="underlined" label="Name" v-model="eitem.name"></v-text-field>
-                <v-text-field variant="underlined" label="Description" v-model="eitem.description" multiline></v-text-field>
+                <v-text-field label="Name" v-model="eitem.name"></v-text-field>
+                <v-text-field label="Description" v-model="eitem.description" multiline></v-text-field>
             </v-card-text>
 
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="primary" variant="elevated" @click="saveItem">Save</v-btn>
+                <v-btn color="primary" @click="saveItem" variant="elevated">Save</v-btn>
             </v-card-actions>
         </v-card>
 
@@ -73,7 +73,7 @@
 
         ${snackMessage}
         <template v-slot:actions>
-            <v-btn @click="snackBar=false" icon="mdi-close" class="ml-auto" variant="text" size="small"></v-btn>
+            <v-btn @click="snackBar=false" icon="mdi-close" class="ml-auto" size="small" variant="text"></v-btn>
         </template>
     </v-snackbar>
 
@@ -83,7 +83,7 @@
         const {createApp} = Vue;
         const {createVuetify} = Vuetify;
 
-        const vuetify = createVuetify();
+        const vuetify = createVuetify(config.vuetifyConfig);
 
         window.app = createApp({
             data() {
@@ -113,79 +113,74 @@
             mounted() {
                 this.refresh();
             },
-            delimiters: ["${", "}"],
+            delimiters: config.delimiters,
 
             methods: {
-
                 showSnack(message) {
                     this.snackMessage = message;
                     this.snackBar = true;
                 },
 
                 refresh() {
-
-                    axios.get(`/api/roles`).then(res => {
-                        this.items = res.data.items;
-                        this.itemsLength = res.data.total;
-
-                    });
+                    axios.get(`/api/roles`)
+                        .then(res => {
+                            this.items = res.data.items;
+                            this.itemsLength = res.data.total;
+                        })
+                        .catch(err => {
+                            console.error('Error fetching roles:', err);
+                        });
                 },
                 createItem() {
                     this.edialog = true;
                     this.eitem = {};
-
                 },
 
                 editItem(item) {
-
                     this.eitem = {...item};
-
                     this.$nextTick(() => {
                         this.edialog = true;
                     });
-
                 },
 
                 saveItem() {
                     if (this.eitem.id) {
                         // edit mode
-                        axios.post(`/api/role/${this.eitem.id}`, {item: this.eitem}).then(res => {
-                            this.showSnack(res.data?.message);
-                            this.refresh();
-
-                        }).catch(err => {
-
-                            this.showSnack(err.response?.data);
-                        });
+                        axios.post(`/api/role/${this.eitem.id}`, {item: this.eitem})
+                            .then(res => {
+                                this.showSnack(res.data?.message);
+                                this.refresh();
+                            })
+                            .catch(err => {
+                                console.error('Error updating role:', err);
+                            });
                     } else {
                         // create mode
-                        axios.post('/api/role/', {item: this.eitem}).then(res => {
-                            this.showSnack(res.data?.message);
-                            this.refresh();
-
-                        }).catch(err => {
-                            this.showSnack(err.response?.data)
-                        });
-
+                        axios.post('/api/role/', {item: this.eitem})
+                            .then(res => {
+                                this.showSnack(res.data?.message);
+                                this.refresh();
+                            })
+                            .catch(err => {
+                                console.error('Error creating role:', err);
+                            });
                     }
                     this.edialog = false;
-
                 },
 
                 deleteItem(item) {
                     if (confirm('Are you sure?')) {
-                        axios.delete(`/api/role/${item.id}`).then(res => {
-                            this.showSnack(res.data?.message);
-                            this.refresh();
-
-                        }).catch(err => {
-                            this.showSnack(err.response?.data);
-                        });
+                        axios.delete(`/api/role/${item.id}`)
+                            .then(res => {
+                                this.showSnack(res.data?.message);
+                                this.refresh();
+                            })
+                            .catch(err => {
+                                console.error('Error deleting role:', err);
+                            });
                     }
-
                 }
             }
-
         });
 
         app.use(vuetify).mount("#app");

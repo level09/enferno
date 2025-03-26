@@ -14,7 +14,7 @@
             Last login — {{ current_user.last_login_at.strftime('%B %-d, %Y at %-I:%M %p') if current_user.last_login_at else 'Never' }}
         </v-card-text>
         <v-card-actions class="justify-start">
-            <v-btn variant="elevated" color="red" href="/logout" color="primary">Logout</v-btn>
+            <v-btn color="error" href="/logout" variant="elevated">Logout</v-btn>
         </v-card-actions>
     </v-card>
 
@@ -24,13 +24,7 @@
     <script>
         const {createApp} = Vue;
         const {createVuetify} = Vuetify;
-        const vuetify = createVuetify(
-            {
-                theme: {
-                    dark: false,
-                },
-            }
-        );
+        const vuetify = createVuetify(config.vuetifyConfig);
 
         const app = createApp({
             data() {
@@ -47,7 +41,7 @@
                     this.snackBar = true;
                 },
             },
-            delimiters: ['${', '}']
+            delimiters: config.delimiters
         });
 
         app.use(vuetify).mount('#app');
