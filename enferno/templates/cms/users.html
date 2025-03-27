@@ -9,7 +9,15 @@
         </v-toolbar>
         <v-card-text>
 
-            <v-data-table-server :items="items" :headers="headers">
+            <v-data-table-server 
+            :items="items" 
+            :items-length="itemsLength"
+            :headers="headers"
+            :page="options.page"
+            :items-per-page="options.itemsPerPage"
+            @update:options="refresh"
+            hover
+            >
 
                 <template v-slot:top>
                     <v-toolbar class="mb-4" dense elevation="0" color="transparent">
@@ -116,17 +124,23 @@
         const {createApp, toRaw} = Vue;
         const {createVuetify} = Vuetify;
 
-        const vuetify = createVuetify(config.vuetifyConfig);
+        const vuetify = createVuetify(config);
 
         window.app = createApp({
             data() {
                 return {
-                    menu : null,
+                    config: config,
+                    menu: config.menu,
+                    rail: config.rail,
                     errors: "",
                     snackBar: false,
                     snackMessage: "",
                     items: [],
                     itemsLength: 0,
+                    options: {
+                        page: 1,
+                        itemsPerPage: config.itemsPerPage || 25
+                    },
                     drawer: true,
 
                     headers: [
@@ -152,7 +166,7 @@
             },
 
             mounted() {
-                this.refresh();
+                // No refresh on mount
             },
             delimiters: config.delimiters,
 
@@ -163,16 +177,33 @@
                     this.snackBar = true;
                 },
 
-                refresh() {
-                    axios.get(`/api/users`)
+                refresh(options) {
+                    // Use options from parameter or component state
+                    if (options) {
+                        // Update options with the values from the event
+                        this.options = {
+                            ...this.options,
+                            page: options.page,
+                            itemsPerPage: options.itemsPerPage
+                        };
+                    }
+                    
+                    // Make API request with pagination parameters
+                    axios.get(`/api/users?page=${this.options.page}&per_page=${this.options.itemsPerPage}`)
                         .then(res => {
                             this.items = res.data.items;
                             this.itemsLength = res.data.total;
+                            // Update itemsPerPage from API response if provided
+                            if (res.data.perPage) {
+                                this.options.itemsPerPage = res.data.perPage;
+                            }
                         })
-                        .catch(err => {
-                            console.error('Error fetching users:', err);
+                        .catch(error => {
+                            console.error('Error fetching users:', error);
+                            this.showSnack('Failed to load users');
                         });
                 },
+                
                 createItem() {
                     this.edialog = true;
                     this.eitem = {};
@@ -198,7 +229,7 @@
                                 this.refresh();
                             })
                             .catch(err => {
-                                console.error('Error updating user:', err);
+                                this.showSnack(err.response?.data);
                             });
                     } else {
                         // create mode
@@ -208,7 +239,7 @@
                                 this.refresh();
                             })
                             .catch(err => {
-                                console.error('Error creating user:', err);
+                                this.showSnack(err.response?.data);
                             });
                     }
                     this.edialog = false;
@@ -222,7 +253,7 @@
                                 this.refresh();
                             })
                             .catch(err => {
-                                console.error('Error deleting user:', err);
+                                this.showSnack(err.response?.data);
                             });
                     }
                 }

@@ -13,11 +13,18 @@
         </v-toolbar>
         <v-card-text>
 
-            <v-data-table :items="items" :headers="headers">
-
+            <v-data-table-server
+                :headers="headers"
+                :items="items"
+                :items-length="itemsLength"
+                :page="options.page"
+                :items-per-page="options.itemsPerPage"
+                @update:options="refresh"
+                hover
+            >
                 <template v-slot:top>
                     <v-toolbar color="transparent" class="mb-4" dense elevation="0">
-                        <v-btn class="ml-auto" prepend-icon="mdi-plus" @click="createItem" size="small" color="primary" variant="elevated">Add Role</v-btn>
+                        <v-btn class="ml-auto" prepend-icon="mdi-plus" @click="createItem" size="small" variant="elevated" color="primary">Add Role</v-btn>
                     </v-toolbar>
                 </template>
 
@@ -41,7 +48,7 @@
                     </v-icon>
                 </template>
 
-            </v-data-table>
+            </v-data-table-server>
 
 
         </v-card-text>
@@ -57,13 +64,13 @@
 
             <v-card-text>
                 <!-- fields go here -->
-                <v-text-field label="Name" v-model="eitem.name"></v-text-field>
-                <v-text-field label="Description" v-model="eitem.description" multiline></v-text-field>
+                <v-text-field variant="underlined" label="Name" v-model="eitem.name"></v-text-field>
+                <v-text-field variant="underlined" label="Description" v-model="eitem.description" multiline></v-text-field>
             </v-card-text>
 
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="primary" @click="saveItem" variant="elevated">Save</v-btn>
+                <v-btn color="primary" variant="elevated" @click="saveItem">Save</v-btn>
             </v-card-actions>
         </v-card>
 
@@ -73,31 +80,37 @@
 
         ${snackMessage}
         <template v-slot:actions>
-            <v-btn @click="snackBar=false" icon="mdi-close" class="ml-auto" size="small" variant="text"></v-btn>
+            <v-btn @click="snackBar=false" icon="mdi-close" class="ml-auto" variant="text" size="small"></v-btn>
         </template>
     </v-snackbar>
 
 {% endblock %} {% block js %}
 
     <script>
-        const {createApp} = Vue;
+        const {createApp, toRaw} = Vue;
         const {createVuetify} = Vuetify;
 
-        const vuetify = createVuetify(config.vuetifyConfig);
+        const vuetify = createVuetify(config);
 
         window.app = createApp({
             data() {
                 return {
-                    menu: null,
+                    config: config,
+                    menu: config.menu,
+                    rail: config.rail,
                     snackBar: false,
                     snackMessage: "",
                     items: [],
                     itemsLength: 0,
+                    options: {
+                        page: 1,
+                        itemsPerPage: config.itemsPerPage || 25
+                    },
                     drawer: true,
 
                     headers: [
-                        {title: 'ID', value: 'id'},
-                        {title: 'Name', value: 'name'},
+                        {title: 'ID', value: 'id', sortable: true},
+                        {title: 'Name', value: 'name', sortable: true},
                         {title: 'Description', value: 'description', sortable: false},
                         {title: 'Actions', value: 'actions', sortable: false}
                     ],
@@ -111,7 +124,7 @@
             },
 
             mounted() {
-                this.refresh();
+                // No refresh on mount
             },
             delimiters: config.delimiters,
 
@@ -121,23 +134,39 @@
                     this.snackBar = true;
                 },
 
-                refresh() {
-                    axios.get(`/api/roles`)
+                refresh(options) {
+                    // Use options from parameter or component state
+                    if (options) {
+                        // Update options with the values from the event
+                        this.options = {
+                            ...this.options,
+                            page: options.page,
+                            itemsPerPage: options.itemsPerPage
+                        };
+                    }
+                    
+                    // Make API request with pagination parameters
+                    axios.get(`/api/roles?page=${this.options.page}&per_page=${this.options.itemsPerPage}`)
                         .then(res => {
                             this.items = res.data.items;
                             this.itemsLength = res.data.total;
+                            // Update itemsPerPage from API response if provided
+                            if (res.data.perPage) {
+                                this.options.itemsPerPage = res.data.perPage;
+                            }
                         })
-                        .catch(err => {
-                            console.error('Error fetching roles:', err);
+                        .catch(error => {
+                            console.error('Error fetching roles:', error);
                         });
                 },
+                
                 createItem() {
                     this.edialog = true;
                     this.eitem = {};
                 },
 
                 editItem(item) {
-                    this.eitem = {...item};
+                    this.eitem = toRaw(item);
                     this.$nextTick(() => {
                         this.edialog = true;
                     });
@@ -152,7 +181,7 @@
                                 this.refresh();
                             })
                             .catch(err => {
-                                console.error('Error updating role:', err);
+                                this.showSnack(err.response?.data);
                             });
                     } else {
                         // create mode
@@ -162,7 +191,7 @@
                                 this.refresh();
                             })
                             .catch(err => {
-                                console.error('Error creating role:', err);
+                                this.showSnack(err.response?.data);
                             });
                     }
                     this.edialog = false;
@@ -176,7 +205,7 @@
                                 this.refresh();
                             })
                             .catch(err => {
-                                console.error('Error deleting role:', err);
+                                this.showSnack(err.response?.data);
                             });
                     }
                 }

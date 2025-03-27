@@ -34,7 +34,8 @@ const config = {
                 size: 'small'
             },
             VDataTableServer: {
-                itemsPerPageOptions: [10, 25, 50, 100]
+                itemsPerPage: 25 ,
+                itemsPerPageOptions: [ 25, 50, 100]
             }
         },
         theme: {

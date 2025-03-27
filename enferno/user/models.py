@@ -160,3 +160,24 @@ class OAuth(OAuthConsumerMixin, db.Model):
     user = db.relationship(User, backref=db.backref('oauth_accounts', 
                                                    cascade='all, delete-orphan',
                                                    lazy='dynamic'))
+
+
+class Activity(db.Model, BaseMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, nullable=False)
+    action = db.Column(db.String(255), nullable=False)
+    data = db.Column(db.JSON, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    
+    @classmethod
+    def register(cls, user_id, action, data=None):
+        """Register an activity for audit purposes"""
+        activity = cls(user_id=user_id, action=action, data=data)
+        db.session.add(activity)
+        try:
+            db.session.commit()
+            return activity
+        except Exception as e:
+            print(f"Error registering activity: {e}")
+            db.session.rollback()
+            return None

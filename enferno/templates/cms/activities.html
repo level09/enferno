@@ -1,0 +1,140 @@
+{% extends 'layout.html' %}
+{% block css %}
+{% endblock %}
+{% block sidebar %}
+{% endblock %}
+{% block layout_classes %} align-center {% endblock %}
+{% block content %}
+
+    <v-card class="ma-2 mt-12 w-100 h-100">
+        <v-toolbar>
+            <v-toolbar-title>Activity Logs</v-toolbar-title>
+            <v-spacer></v-spacer>
+        </v-toolbar>
+        <v-card-text>
+
+            <v-data-table-server
+                :headers="headers"
+                :items="items"
+                :items-length="itemsLength"
+                :page="options.page"
+                :items-per-page="options.itemsPerPage"
+                @update:options="refresh"
+                hover
+            >
+                <template v-slot:item.data="{ item }">
+                    <v-btn size="small" variant="text" color="primary" @click="showData(item)">
+                        View Data
+                    </v-btn>
+                </template>
+            </v-data-table-server>
+
+        </v-card-text>
+    </v-card>
+
+    <!-- Data Dialog -->
+    <v-dialog v-model="dataDialog" width="800">
+        <v-card v-if="dataDialog" class="pa-4">
+            <v-card-title class="d-flex align-center">
+                Activity Data
+                <v-spacer></v-spacer>
+                <v-btn icon="mdi-close" size="small" variant="text" @click="dataDialog = false"></v-btn>
+            </v-card-title>
+
+            <v-card-text>
+                <pre class="pa-4 rounded bg-grey-lighten-4"><code>${JSON.stringify(currentData, null, 2)}</code></pre>
+            </v-card-text>
+        </v-card>
+    </v-dialog>
+
+    <v-snackbar size="small" class="d-flex" v-model="snackBar" rounded="pill" elevation="25">
+        ${snackMessage}
+        <template v-slot:actions>
+            <v-btn @click="snackBar=false" icon="mdi-close" class="ml-auto" variant="text" size="small"></v-btn>
+        </template>
+    </v-snackbar>
+
+{% endblock %} {% block js %}
+
+    <script>
+        const {createApp} = Vue;
+        const {createVuetify} = Vuetify;
+
+        const vuetify = createVuetify(config);
+
+        window.app = createApp({
+            data() {
+                return {
+                    config: config,
+                    menu: config.menu,
+                    rail: config.rail,
+                    snackBar: false,
+                    snackMessage: "",
+                    items: [],
+                    itemsLength: 0,
+                    options: {
+                        page: 1,
+                        itemsPerPage: config.itemsPerPage || 25
+                    },
+                    drawer: true,
+                    dataDialog: false,
+                    currentData: null,
+
+                    headers: [
+                        {title: 'ID', value: 'id', sortable: true},
+                        {title: 'User', value: 'user', sortable: true},
+                        {title: 'Action', value: 'action', sortable: true},
+                        {title: 'Date', value: 'created_at', sortable: true},
+                        {title: 'Data', value: 'data', sortable: false}
+                    ]
+                };
+            },
+
+            mounted() {
+                // No refresh on mount
+            },
+            delimiters: config.delimiters,
+
+            methods: {
+                showSnack(message) {
+                    this.snackMessage = message;
+                    this.snackBar = true;
+                },
+
+                refresh(options) {
+                    // Use options from parameter or component state
+                    if (options) {
+                        // Update options with the values from the event
+                        this.options = {
+                            ...this.options,
+                            page: options.page,
+                            itemsPerPage: options.itemsPerPage
+                        };
+                    }
+                    
+                    // Make API request with pagination parameters
+                    axios.get(`/api/activities?page=${this.options.page}&per_page=${this.options.itemsPerPage}`)
+                        .then(res => {
+                            this.items = res.data.items;
+                            this.itemsLength = res.data.total;
+                            // Update itemsPerPage from API response if provided
+                            if (res.data.perPage) {
+                                this.options.itemsPerPage = res.data.perPage;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching activities:', error);
+                            this.showSnack('Failed to load activities');
+                        });
+                },
+
+                showData(item) {
+                    this.currentData = item.data;
+                    this.dataDialog = true;
+                }
+            }
+        });
+
+        app.use(vuetify).mount("#app");
+    </script>
+{% endblock %} 
