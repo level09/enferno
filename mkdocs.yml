@@ -12,7 +12,7 @@ nav:
   - Home: index.md
   - Getting Started: getting-started.md
   - Authentication: authentication.md
-  - AI Features: ai-features.md
+  - Cursor Rules: cursor-rules.md
   - Deployment: deployment.md
   - Development: development.md
 
