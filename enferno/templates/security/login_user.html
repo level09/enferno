@@ -81,10 +81,6 @@
                                     bg-color="grey-lighten-4"
                                 ></v-text-field>
                                 
-                                {% for message in get_flashed_messages() %}
-                                    <v-alert type="error" density="compact" class="mb-4">{{ message }}</v-alert>
-                                {% endfor %}
-                                
                                 {% if login_user_form.username.errors or login_user_form.password.errors %}
                                     <v-alert type="error" density="compact" class="mb-4">Invalid username or password!</v-alert>
                                 {% endif %}
@@ -184,22 +180,6 @@
                 </v-col>
             </v-row>
         </v-container>
-        
-        <v-snackbar 
-            v-model="snackBar"
-            :timeout="3000"
-        >
-            ${snackMessage}
-            <template v-slot:actions>
-                <v-btn 
-                    color="primary" 
-                    variant="text" 
-                    @click="snackBar = false"
-                >
-                    Close
-                </v-btn>
-            </template>
-        </v-snackbar>
     </div>
 {% endblock %}
 
@@ -214,17 +194,11 @@
                 return {
                     menu: null,
                     errors: '',
-                    snackBar: false,
-                    snackMessage: '',
                     email: "",
                     password: ""
                 };
             },
             methods: {
-                showSnack(message) {
-                    this.snackMessage = message;
-                    this.snackBar = true;
-                },
                 submit() {
                     document.getElementById('loginForm').submit();
                 }

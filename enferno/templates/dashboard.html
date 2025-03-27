@@ -2,12 +2,6 @@
 {% block content %}
     <v-card class="ma-auto pa-10 h-100 w-100">
         <v-card-text>
-
-            {% for message in get_flashed_messages() %}
-                <v-alert>{{ message }}</v-alert>
-            {% endfor %}
-
-
         </v-card-text>
         <v-card-text>
             <div class="text-h5 mb-3">Welcome, {{ current_user.username }}</div>
@@ -31,15 +25,7 @@
                 return {
                     menu: null,
                     drawer: true,
-                    snackBar: false,
-                    snackMessage: '',
                 };
-            },
-            methods: {
-                showSnack(message) {
-                    this.snackMessage = message;
-                    this.snackBar = true;
-                },
             },
             delimiters: config.delimiters
         });

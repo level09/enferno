@@ -98,6 +98,36 @@
             {% block content %}
             {% endblock %}
         </v-main>
+        
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div id="flash-messages" style="position: fixed; bottom: 20px; right: 20px; z-index: 2000;">
+                {% for category, message in messages %}
+                    <v-alert
+                        dismissible
+                        closable
+                        variant="tonal"
+                        :color="'{{ category if category in ['success', 'warning', 'error', 'info'] else 'primary' }}'"
+                        class="mb-2"
+                        style="min-width: 250px;"
+                    >
+                        {{ message }}
+                    </v-alert>
+                {% endfor %}
+            </div>
+            
+            <script>
+                // Auto-hide flash messages after 5 seconds
+                setTimeout(function() {
+                    const flashMessages = document.getElementById('flash-messages');
+                    if (flashMessages) {
+                        flashMessages.style.display = 'none';
+                    }
+                }, 5000);
+            </script>
+        {% endif %}
+        {% endwith %}
     </v-layout>
 </v-app>
 <script src="/static/js/vue.min.js"></script>
