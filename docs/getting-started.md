@@ -70,7 +70,7 @@ MAIL_USERNAME=your_email
 MAIL_PASSWORD=your_password
 SECURITY_EMAIL_SENDER=noreply@example.com
 
-# OAuth Settings (optional)
+# OAuth (optional)
 GOOGLE_AUTH_ENABLED=true
 GOOGLE_OAUTH_CLIENT_ID=your_client_id
 GOOGLE_OAUTH_CLIENT_SECRET=your_client_secret
@@ -78,9 +78,6 @@ GOOGLE_OAUTH_CLIENT_SECRET=your_client_secret
 GITHUB_AUTH_ENABLED=true
 GITHUB_OAUTH_CLIENT_ID=your_client_id
 GITHUB_OAUTH_CLIENT_SECRET=your_client_secret
-
-# AI Features (optional)
-OPENAI_API_KEY=your_openai_key
 
 # Security Settings
 SECURITY_PASSWORD_SALT=your_secure_salt

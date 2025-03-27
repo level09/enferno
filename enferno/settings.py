@@ -90,8 +90,6 @@ class Config(object):
     SECURITY_EMAIL_SENDER = os.environ.get('SECURITY_EMAIL_SENDER', 'info@domain.com')
     SECURITY_SEND_PASSWORD_CHANGE_EMAIL = False
 
-    OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
-
     # Google OAuth Settings
     GOOGLE_AUTH_ENABLED = os.environ.get('GOOGLE_AUTH_ENABLED', 'False').lower() == 'true'
     GOOGLE_OAUTH_CLIENT_ID = os.environ.get('GOOGLE_OAUTH_CLIENT_ID')

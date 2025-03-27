@@ -18,7 +18,7 @@ Key Features
 - **Frontend**: Client-side Vue.js with Vuetify components
 - **Security**: CSRF protection, secure session handling
 - **Docker Ready**: Production-grade Docker configuration
-- **AI Code Generation**: OpenAI-powered code scaffolding
+- **Cursor Rules**: Smart IDE-based code generation and assistance
 
 Frontend Features
 ---------------
@@ -30,21 +30,6 @@ Frontend Features
 - Data table server pattern
 - Authentication state integration
 - Material Design Icons
-
-AI Code Generation
-----------------
-Generate boilerplate code using natural language:
-
-```bash
-# Generate a model
-flask generate-model --class_name User --fields "name:string, email:string:unique"
-
-# Generate an API
-flask generate-api --class_name Product --fields "name, price:decimal"
-
-# Generate a dashboard
-flask generate-dashboard --class_name Order --fields "order_number, total:decimal"
-```
 
 OAuth Integration
 ---------------
@@ -145,9 +130,6 @@ GOOGLE_OAUTH_CLIENT_SECRET=your_client_secret
 GITHUB_AUTH_ENABLED=true
 GITHUB_OAUTH_CLIENT_ID=your_client_id
 GITHUB_OAUTH_CLIENT_SECRET=your_client_secret
-
-# AI Features (optional)
-OPENAI_API_KEY=your_openai_key
 
 # Security Settings
 SECURITY_PASSWORD_SALT=your_secure_salt

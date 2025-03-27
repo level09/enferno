@@ -24,6 +24,3 @@ session = Session()
 
 from flask_babel import Babel
 babel = Babel()
-
-from flask_openai import OpenAI
-openai = OpenAI()

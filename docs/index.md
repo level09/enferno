@@ -11,9 +11,9 @@ Enferno is a modern Python web framework built on top of Flask, designed for rap
 - **OAuth Integration**: Google and GitHub login via Flask-Dance
 - **Database**: SQLAlchemy ORM with PostgreSQL/SQLite support
 - **Task Queue**: Celery with Redis for background tasks
-- **AI Features**: OpenAI-powered code generation tools
 - **Frontend**: Client-side Vue.js with Vuetify components
 - **Docker Ready**: Production-grade Docker configuration
+- **Cursor Rules**: Smart IDE-based code generation and assistance
 
 ## Documentation Sections
 
@@ -21,21 +21,7 @@ Enferno is a modern Python web framework built on top of Flask, designed for rap
 - [Authentication](authentication.md) - User management and OAuth setup
 - [Development](development.md) - Development guidelines and best practices
 - [Deployment](deployment.md) - Production deployment guide
-
-## AI Code Generation
-
-Generate boilerplate code using natural language:
-
-```bash
-# Generate a model
-flask generate-model --class_name User --fields "name:string, email:string:unique"
-
-# Generate an API
-flask generate-api --class_name Product --fields "name, price:decimal"
-
-# Generate a dashboard
-flask generate-dashboard --class_name Order --fields "order_number, total:decimal"
-```
+- [Cursor Rules](cursor-rules.md) - Modern AI-powered code assistance
 
 ## OAuth Integration
 
@@ -55,6 +41,18 @@ GITHUB_AUTH_ENABLED=true
 GITHUB_OAUTH_CLIENT_ID=your_client_id
 GITHUB_OAUTH_CLIENT_SECRET=your_client_secret
 ```
+
+## Cursor Rules
+
+Enferno now leverages Cursor Rules for intelligent code assistance and generation. This approach provides:
+
+- Context-aware code generation through modern AI-powered IDEs
+- Codebase-specific guidance tailored to Enferno's patterns
+- Improved documentation integrated with development tools
+- Framework-specific best practices and conventions
+- More flexible workflow than template-based generation
+
+Rules are organized by domain areas like Vue-Jinja integration and UI components to provide targeted assistance exactly when needed.
 
 ## Source Code
 

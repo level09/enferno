@@ -44,6 +44,5 @@ webauthn==2.5.2
 WTForms==3.2.1
 orjson==3.10.15
 flask-babel==4.0.0
-flask-openai==0.5.0
 rich==13.9.4
 setuptools>=77.0.3

@@ -7,7 +7,7 @@ from enferno.settings import Config
 from flask_security import Security, SQLAlchemyUserDatastore, current_user
 from enferno.user.models import User, Role, WebAuthn, OAuth
 from enferno.user.forms import ExtendedRegisterForm
-from enferno.extensions import cache, db, mail, debug_toolbar, session, babel, openai
+from enferno.extensions import cache, db, mail, debug_toolbar, session, babel
 from enferno.public.views import public
 from enferno.user.views import bp_user
 from enferno.portal.views import portal
@@ -43,7 +43,6 @@ def register_extensions(app):
     session.init_app(app)
     
     babel.init_app(app, locale_selector=locale_selector, default_domain="messages", default_locale="en")
-    openai.init_app(app)
     
     return None
 
