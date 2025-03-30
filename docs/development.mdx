@@ -1,0 +1,267 @@
+---
+title: "Development"
+description: "Development guidelines and best practices for Enferno"
+sidebarTitle: "Development"
+---
+
+## Project Structure
+
+```
+enferno/
+├── enferno/                # Main application package
+│   ├── __init__.py
+│   ├── app.py             # Application factory and configuration
+│   ├── settings.py        # Application settings
+│   ├── extensions.py      # Flask extensions initialization
+│   ├── commands.py        # CLI commands
+│   ├── portal/            # Blueprint: Usually protected routes
+│   ├── public/            # Blueprint: Public routes
+│   ├── user/              # Blueprint: User management
+│   ├── tasks/             # Celery tasks
+│   ├── utils/             # Utility functions
+│   ├── static/            # Static assets
+│   └── templates/         # Jinja2 templates
+├── docs/                  # Documentation
+├── nginx/                 # Nginx configuration
+├── instance/             # Instance-specific files
+├── .env                  # Environment variables
+├── .env-sample           # Environment template
+├── requirements.txt      # Python dependencies
+├── setup.sh             # Setup script
+├── run.py               # Application entry point
+├── Dockerfile           # Docker configuration
+└── docker-compose.yml   # Docker Compose configuration
+```
+
+## Blueprints
+
+Enferno uses a three-blueprint architecture for better organization and security:
+
+### 1. Portal Blueprint (`portal/`)
+Usually contains protected routes that require authentication. Enferno uses a pattern of protecting all routes in this blueprint automatically using `before_request`:
+
+```python
+from flask import Blueprint
+from flask_security import auth_required
+
+portal = Blueprint('portal', __name__)
+
+# Protect all routes in this blueprint automatically
+@portal.before_request
+@auth_required()
+def before_request():
+    pass
+
+@portal.route('/dashboard')
+def dashboard():
+    return render_template('portal/dashboard.html')
+
+@portal.route('/settings')
+def settings():
+    return render_template('portal/settings.html')
+```
+
+This pattern ensures that all routes within the portal blueprint require authentication without needing to decorate each route individually.
+
+### 2. User Blueprint (`user/`)
+Handles user management, authentication, and profile-related routes:
+```python
+from flask import Blueprint
+from flask_security import auth_required
+
+user = Blueprint('user', __name__)
+
+@user.route('/profile')
+@auth_required()
+def profile():
+    return render_template('user/profile.html')
+```
+
+### 3. Public Blueprint (`public/`)
+Contains routes that are publicly accessible without authentication:
+```python
+from flask import Blueprint
+
+public = Blueprint('public', __name__)
+
+@public.route('/')
+def index():
+    return render_template('public/index.html')
+```
+
+## Database Operations
+
+Enferno uses SQLAlchemy 2.x with the Flask-SQLAlchemy extension. The `db` instance is available from `enferno.extensions`.
+
+### Model Definition
+
+```python
+from enferno.extensions import db
+from datetime import datetime
+
+class Post(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(80), nullable=False)
+    content = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship('User', back_populates='posts')
+```
+
+### Database Operations
+
+```python
+from enferno.extensions import db
+from enferno.models import Post
+from sqlalchemy import select
+
+# Create
+post = Post(title='New Post', content='Content here')
+db.session.add(post)
+db.session.commit()
+
+# Simple queries
+stmt = db.session.select(Post)  # Select all posts
+posts = db.session.scalars(stmt).all()
+
+post = db.session.get(Post, 1)  # Get by ID
+
+# Filtered query
+stmt = db.session.select(Post).where(Post.title.like('%python%'))
+python_posts = db.session.scalars(stmt).all()
+
+# Ordered query with join
+stmt = (
+    db.session.select(Post)
+    .join(Post.user)
+    .order_by(Post.created_at.desc())
+)
+recent_posts = db.session.scalars(stmt).all()
+
+# Update
+post = db.session.get(Post, 1)
+post.title = 'Updated Title'
+db.session.commit()
+
+# Delete
+db.session.delete(post)
+db.session.commit()
+```
+
+## Task Queue
+
+Enferno uses Celery for background tasks. Tasks are defined in `enferno/tasks/__init__.py`:
+
+```python
+from enferno.tasks import celery
+
+@celery.task
+def send_email(user_id, subject, message):
+    from enferno.extensions import db
+    from enferno.user.models import User
+    
+    user = db.session.get(User, user_id)
+    # Send email to user...
+    return True
+```
+
+Call tasks from anywhere in your application:
+```python
+from enferno.tasks import send_email
+
+# Call task asynchronously
+send_email.delay(user.id, 'Welcome', 'Welcome to Enferno!')
+```
+
+Run Celery worker:
+```bash
+celery -A enferno.tasks worker --loglevel=info
+```
+
+## API Development
+
+API endpoints are defined in `app/api/`. Enferno follows RESTful principles.
+
+```python
+from flask import Blueprint, jsonify
+from app.extensions import db
+from app.models import Post
+
+api = Blueprint('api', __name__)
+
+@api.route('/posts')
+def get_posts():
+    query = db.select(Post).order_by(Post.created_at.desc())
+    posts = db.session.execute(query).scalars()
+    return jsonify([{
+        'id': post.id,
+        'title': post.title,
+        'content': post.content
+    } for post in posts])
+```
+
+## Development Server
+
+Run the development server with:
+```bash
+flask run
+```
+
+For Celery worker:
+```bash
+celery -A enferno.tasks worker --loglevel=info
+```
+
+## Security Best Practices
+
+1. **Input Validation**
+   ```python
+   from flask_wtf import FlaskForm
+   from wtforms import StringField
+   from wtforms.validators import DataRequired, Length
+
+   class PostForm(FlaskForm):
+       title = StringField('Title', validators=[
+           DataRequired(),
+           Length(max=80)
+       ])
+   ```
+
+2. **CSRF Protection**
+   ```python
+   from flask_wtf.csrf import CSRFProtect
+   csrf = CSRFProtect(app)
+   ```
+
+3. **Authentication**
+   ```python
+   from flask_security import auth_required
+
+   @app.route('/protected')
+   @auth_required()
+   def protected_route():
+       return 'Protected content'
+   ```
+
+## Debugging
+
+Enferno includes several debugging tools:
+
+1. **Flask Debug Toolbar**
+   ```python
+   from flask_debugtoolbar import DebugToolbarExtension
+   toolbar = DebugToolbarExtension(app)
+   ```
+
+2. **Logging**
+   ```python
+   import logging
+   logging.basicConfig(level=logging.DEBUG)
+   logger = logging.getLogger(__name__)
+   ```
+
+3. **Database Debugging**
+   ```python
+   # Enable SQLAlchemy query logging
+   logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+   ``` 

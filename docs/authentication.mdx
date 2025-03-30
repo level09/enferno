@@ -1,0 +1,224 @@
+---
+title: "Authentication"
+description: "User authentication and security features in Enferno"
+sidebarTitle: "Authentication"
+---
+
+## Overview
+
+Enferno provides a robust authentication system built on Flask-Security-Too with modern security features and OAuth integration.
+
+## Features
+
+- User registration and login
+- Role-based access control (RBAC)
+- Two-factor authentication (2FA)
+- WebAuthn support
+- OAuth integration (Google, GitHub)
+- Password policies and recovery
+- Session protection
+- CSRF protection
+- Rate limiting
+- XSS protection
+
+## OAuth Integration
+
+Enable social login with Google and GitHub:
+
+```bash
+# Google OAuth
+GOOGLE_AUTH_ENABLED=true
+GOOGLE_OAUTH_CLIENT_ID=your_client_id
+GOOGLE_OAUTH_CLIENT_SECRET=your_client_secret
+
+# GitHub OAuth
+GITHUB_AUTH_ENABLED=true
+GITHUB_OAUTH_CLIENT_ID=your_client_id
+GITHUB_OAUTH_CLIENT_SECRET=your_client_secret
+```
+
+Scopes:
+- Google: profile and email
+- GitHub: user:email
+
+## User Management
+
+### Registration
+
+```python
+from enferno.user.models import User
+from enferno.user.forms import RegisterForm
+
+@app.route('/register', methods=['POST'])
+def register():
+    form = RegisterForm()
+    if form.validate_on_submit():
+        user = User(
+            email=form.email.data,
+            password=form.password.data,
+            active=True
+        )
+        user.save()
+        return jsonify({'message': 'Registration successful'})
+    return jsonify(form.errors), 400
+```
+
+### Role-Based Access
+
+```python
+from flask_security import roles_required, roles_accepted
+
+@app.route('/admin')
+@roles_required('admin')
+def admin_dashboard():
+    return 'Admin only content'
+
+@app.route('/premium')
+@roles_accepted('premium', 'admin')
+def premium_content():
+    return 'Premium or admin content'
+```
+
+## API Authentication
+
+### Token-Based Auth
+
+```python
+from flask_security import auth_token_required
+
+@app.route('/api/protected')
+@auth_token_required
+def protected_endpoint():
+    return jsonify({'message': 'Authenticated access'})
+```
+
+### Generate Auth Token
+
+```python
+from flask_security.utils import get_token_status
+
+def generate_auth_token(user):
+    token = user.get_auth_token()
+    return jsonify({
+        'token': token,
+        'expires': get_token_status(token)['exp']
+    })
+```
+
+## Security Configuration
+
+Key security settings in `.env`:
+
+```bash
+# Security Settings
+SECURITY_PASSWORD_SALT=your_secure_salt
+SECURITY_TOTP_SECRETS=your_totp_secrets
+SECURITY_REGISTERABLE=true
+SECURITY_CONFIRMABLE=true
+SECURITY_RECOVERABLE=true
+SECURITY_TRACKABLE=true
+SECURITY_PASSWORD_LENGTH_MIN=8
+SECURITY_TOKEN_MAX_AGE=86400
+```
+
+## Two-Factor Authentication
+
+Enable 2FA for enhanced security:
+
+```python
+from flask_security import two_factor_required
+
+@app.route('/sensitive')
+@two_factor_required
+def sensitive_data():
+    return 'Two-factor authenticated content'
+```
+
+## WebAuthn Support
+
+Enable WebAuthn for passwordless authentication:
+
+```python
+from flask_security import webauthn_required
+
+@app.route('/webauthn-protected')
+@webauthn_required
+def webauthn_protected():
+    return 'WebAuthn authenticated content'
+```
+
+## Session Protection
+
+Enferno includes several session security measures:
+
+```python
+# Session Configuration
+SESSION_PROTECTION = 'strong'
+PERMANENT_SESSION_LIFETIME = timedelta(days=1)
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+```
+
+## Rate Limiting
+
+Protect against brute force attacks:
+
+```python
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+limiter = Limiter(
+    app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"]
+)
+
+@app.route('/login', methods=['POST'])
+@limiter.limit("5 per minute")
+def login():
+    # Login logic here
+    pass
+```
+
+## Best Practices
+
+1. **Password Storage**
+   - Passwords are automatically hashed using secure algorithms
+   - Salt is unique per user
+   - Configurable password policies
+
+2. **CSRF Protection**
+   - Automatic CSRF token generation
+   - Required for all POST/PUT/DELETE requests
+   - Configurable token lifetime
+
+3. **XSS Prevention**
+   - Content Security Policy headers
+   - Automatic HTML escaping in templates
+   - Secure cookie flags
+
+4. **Security Headers**
+   - HSTS enabled
+   - X-Frame-Options set
+   - X-Content-Type-Options: nosniff
+   - Referrer-Policy configured
+
+## Troubleshooting
+
+Common issues and solutions:
+
+1. **Token Expiration**
+   - Check `SECURITY_TOKEN_MAX_AGE` setting
+   - Verify system time synchronization
+   - Clear expired tokens regularly
+
+2. **OAuth Issues**
+   - Verify callback URLs in provider settings
+   - Check scope permissions
+   - Ensure secrets are correctly configured
+
+3. **2FA Problems**
+   - Verify TOTP secrets configuration
+   - Check time synchronization
+   - Provide backup codes for recovery 

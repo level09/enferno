@@ -1,42 +1,61 @@
 {
   "$schema": "https://mintlify.com/schema.json",
+  "theme": "mint",
   "name": "Enferno Documentation",
-  "logo": {
-    "light": "/logo/light.svg", 
-    "dark": "/logo/dark.svg"   
-  },
-  "favicon": "/favicon.svg",    
+  "description": "Documentation for the Enferno Flask Framework",
   "colors": {
-    "primary": "#3B82F6", 
-    "light": "#60A5FA",   
-    "dark": "#2563EB"     
+    "primary": "#3B82F6",
+    "light": "#60A5FA",
+    "dark": "#2563EB"
   },
-  "navigation": [
-    {
-      "group": "Overview",
-      "pages": ["index"]
-    },
-    {
-      "group": "Getting Started",
-      "pages": ["getting-started"]
-    },
-    {
-      "group": "Guides",
-      "pages": [
-        "authentication",
-        "deployment"
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "index",
+              "getting-started"
+            ]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "authentication",
+              "deployment"
+            ]
+          },
+          {
+            "group": "Development",
+            "pages": [
+              "development"
+            ]
+          }
         ]
-    },
-    {
-      "group": "Development",
-      "pages": [
-        "development",
-        "cursor-rules" 
-      ]
+      }
+    ]
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "label": "GitHub",
+      "href": "https://github.com/level09/enferno"
     }
-  ],
-  "topbarCtaButton": {
-    "type": "github",
-    "url": "https://github.com/level09/enferno" 
-  }
+  },
+  "ignoreFiles": [
+    "../.venv/**",
+    "../venv/**",
+    "../node_modules/**",
+    "../enferno/**",
+    "../tests/**",
+    "../README.md",
+    "cursor-rules.md"
+  ]
 } 

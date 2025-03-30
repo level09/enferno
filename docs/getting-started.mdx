@@ -1,0 +1,78 @@
+---
+title: "Quick Start"
+description: "Get up and running with Enferno"
+sidebarTitle: "Quick Start"
+---
+
+## Prerequisites
+
+- Python 3.11+
+- Redis (for caching and sessions)
+- PostgreSQL (optional, SQLite works for development)
+- Git
+- uv (fast Python package installer and resolver)
+
+## Local Setup
+
+1. Install uv:
+```bash
+pip install uv
+# Or using the installer script
+curl -sSf https://astral.sh/uv/install.sh | bash
+```
+
+2. Clone and setup:
+```bash
+git clone git@github.com:level09/enferno.git
+cd enferno
+./setup.sh  # Creates Python environment, installs requirements, and generates secure .env
+```
+
+3. Initialize application:
+```bash
+source .venv/bin/activate  # Activate environment
+flask create-db  # Setup database
+flask install    # Create admin user
+flask run        # Start development server
+```
+
+Visit `http://localhost:5000` to see your application.
+
+## Docker Setup
+
+One-command setup with Docker:
+```bash
+docker compose up --build
+```
+
+Includes:
+- Redis for caching and sessions
+- PostgreSQL database
+- Nginx for static files
+- Celery for background tasks
+
+## Environment Configuration
+
+Key variables in `.env`:
+
+```bash
+# Core
+FLASK_APP=run.py
+FLASK_DEBUG=1  # 0 in production
+SECRET_KEY=your_secret_key
+
+# Database
+SQLALCHEMY_DATABASE_URI=sqlite:///enferno.sqlite3
+# Or: postgresql://username:password@localhost/dbname
+
+# Redis & Celery
+REDIS_URL=redis://localhost:6379/0
+CELERY_BROKER_URL=redis://localhost:6379/1
+CELERY_RESULT_BACKEND=redis://localhost:6379/2
+```
+
+## Next Steps
+
+- [Authentication](/authentication) - User management and OAuth setup
+- [Deployment](/deployment) - Production deployment guide
+- [Development](/development) - Development guidelines and best practices 
