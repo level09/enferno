@@ -153,5 +153,6 @@ echo -e "${GREEN}SQLite database configured at: enferno.sqlite3${NC}"
 echo
 echo -e "${GREEN}Next steps:${NC}"
 echo -e "1. Update the remaining values in your .env file (mail settings, redis, etc.)"
-echo -e "2. Run ${GREEN}flask create-db${NC} to initialize the database"
-echo -e "3. Run ${GREEN}flask install${NC} to create the first admin user" 
+echo -e "2. Activate the virtual environment: ${GREEN}source .venv/bin/activate${NC}"
+echo -e "3. Run ${GREEN}flask create-db${NC} to initialize the database"
+echo -e "4. Run ${GREEN}flask install${NC} to create the first admin user" 
