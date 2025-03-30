@@ -1,0 +1,42 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Enferno Documentation",
+  "logo": {
+    "light": "/logo/light.svg", 
+    "dark": "/logo/dark.svg"   
+  },
+  "favicon": "/favicon.svg",    
+  "colors": {
+    "primary": "#3B82F6", 
+    "light": "#60A5FA",   
+    "dark": "#2563EB"     
+  },
+  "navigation": [
+    {
+      "group": "Overview",
+      "pages": ["index"]
+    },
+    {
+      "group": "Getting Started",
+      "pages": ["getting-started"]
+    },
+    {
+      "group": "Guides",
+      "pages": [
+        "authentication",
+        "deployment"
+        ]
+    },
+    {
+      "group": "Development",
+      "pages": [
+        "development",
+        "cursor-rules" 
+      ]
+    }
+  ],
+  "topbarCtaButton": {
+    "type": "github",
+    "url": "https://github.com/your-username/enferno" 
+  }
+} 
