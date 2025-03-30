@@ -87,14 +87,18 @@ chmod 600 /home/enferno/.ssh/authorized_keys
 su - enferno
 git clone git@github.com:level09/enferno.git /home/enferno/your-domain.com
 cd /home/enferno/your-domain.com
-python3 -m venv env
-source env/bin/activate
-pip install -r requirements.txt
+# Install uv if not already installed
+pip install uv
+# Or using the installer script:
+# curl -sSf https://astral.sh/uv/install.sh | bash
+uv venv
+source .venv/bin/activate
+uv pip install -r requirements.txt
 ```
 
 2. Configure environment:
 ```bash
-./generate-env.sh  # Creates .env file with secure keys
+./setup.sh  # Creates .env file with secure keys
 # Edit .env with production settings
 ```
 
@@ -120,7 +124,7 @@ User=enferno
 Group=enferno
 WorkingDirectory=/home/enferno/your-domain.com
 Environment="FLASK_DEBUG=0"
-ExecStart=/home/enferno/your-domain.com/env/bin/uwsgi \
+ExecStart=/home/enferno/your-domain.com/.venv/bin/uwsgi \
     --master \
     --enable-threads \
     --threads 2 \
@@ -129,7 +133,7 @@ ExecStart=/home/enferno/your-domain.com/env/bin/uwsgi \
     --worker-reload-mercy 30 \
     --reload-mercy 30 \
     -w run:app \
-    --home env
+    --home /home/enferno/your-domain.com/.venv
 Restart=always
 Type=notify
 StandardOutput=journal
@@ -150,7 +154,7 @@ User=enferno
 Group=enferno
 WorkingDirectory=/home/enferno/your-domain.com
 Environment="FLASK_DEBUG=0"
-ExecStart=/home/enferno/your-domain.com/env/bin/celery -A enferno.tasks worker -l info
+ExecStart=/home/enferno/your-domain.com/.venv/bin/celery -A enferno.tasks worker -l info
 Restart=always
 
 [Install]

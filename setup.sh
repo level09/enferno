@@ -22,27 +22,35 @@ fi
 
 echo -e "${GREEN}Using Python: $($PYTHON_CMD --version)${NC}"
 
-# Create and activate virtual environment
-if [ -d "env" ]; then
-    read -p "Virtual environment 'env' already exists. Recreate? (y/N) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        rm -rf env
-    else
-        echo -e "${RED}Aborting setup${NC}"
-        exit 1
-    fi
+# Check if uv is installed
+if ! command -v uv &> /dev/null; then
+    echo -e "${RED}Error: uv is not installed. Please install uv using: 'pip install uv' or 'curl -sSf https://astral.sh/uv/install.sh | bash'${NC}"
+    exit 1
 fi
 
-echo -e "${GREEN}Creating virtual environment...${NC}"
-$PYTHON_CMD -m venv env
+# Create and activate virtual environment
+if [ -d ".venv" ]; then
+    read -p "Virtual environment '.venv' already exists. Recreate? (y/N) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo -e "${GREEN}Recreating virtual environment...${NC}"
+        rm -rf .venv
+        uv venv
+    else
+        echo -e "${GREEN}Using existing virtual environment '.venv'${NC}"
+        # Skip venv creation, proceed to activation and installation
+    fi
+else
+    echo -e "${GREEN}Creating virtual environment...${NC}"
+    uv venv
+fi
 
 # Activate virtual environment
-source env/bin/activate
+source .venv/bin/activate
 
 # Install requirements
 echo -e "${GREEN}Installing requirements...${NC}"
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 
 # Check for required commands
 for cmd in tr openssl awk; do

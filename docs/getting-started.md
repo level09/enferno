@@ -8,6 +8,7 @@ This guide will help you set up Enferno for local development or production depl
 - Redis
 - PostgreSQL (optional, SQLite works for development)
 - Git
+- uv (fast Python package installer and resolver)
 
 ### Installing Dependencies
 
@@ -20,6 +21,11 @@ This guide will help you set up Enferno for local development or production depl
 
 - Mac (using homebrew): `brew install postgresql`
 - Linux: `sudo apt-get install postgresql`
+
+**uv:**
+
+- Using pip: `pip install uv`
+- Using the installer script: `curl -sSf https://astral.sh/uv/install.sh | bash`
 
 ## Local Development Setup
 
@@ -38,8 +44,9 @@ cd enferno
 
 This script will:
 - Find the latest Python 3.x version on your system
-- Create a virtual environment
-- Install requirements
+- Check for uv installation
+- Create a virtual environment in `.venv` directory
+- Install requirements using uv
 - Generate a secure `.env` file with random keys
 
 ### 3. Configure Environment

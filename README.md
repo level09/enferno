@@ -19,6 +19,7 @@ Key Features
 - **Security**: CSRF protection, secure session handling
 - **Docker Ready**: Production-grade Docker configuration
 - **Cursor Rules**: Smart IDE-based code generation and assistance
+- **Package Management**: Fast installation with uv
 
 Frontend Features
 ---------------
@@ -56,26 +57,36 @@ Prerequisites
 - Redis (for caching and sessions)
 - PostgreSQL (optional, SQLite works for development)
 - Git
+- uv (fast Python package installer and resolver)
 
 Quick Start
 ----------
 
 ### Local Setup
 
-1. Clone and setup:
+1. Install uv:
+```bash
+# Install using pip
+pip install uv
+
+# Or using the installer script
+curl -sSf https://astral.sh/uv/install.sh | bash
+```
+
+2. Clone and setup:
 ```bash
 git clone git@github.com:level09/enferno.git
 cd enferno
 ./setup.sh  # Creates Python environment, installs requirements, and generates secure .env
 ```
 
-2. Initialize application:
+3. Initialize application:
 ```bash
 flask create-db  # Setup database
 flask install    # Create admin user
 ```
 
-3. Run development server:
+4. Run development server:
 ```bash
 flask run
 ```
