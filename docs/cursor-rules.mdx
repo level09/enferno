@@ -1,0 +1,141 @@
+---
+title: "Cursor Rules"
+description: "AI-powered development assistance in Enferno"
+sidebarTitle: "Cursor Rules"
+---
+
+## Overview
+
+Enferno leverages Cursor Rules for AI-powered development assistance, providing context-aware code generation and guidance through modern IDEs like Cursor. This approach replaces traditional template-based generation with more flexible, intelligent assistance.
+
+## What Are Cursor Rules?
+
+Cursor Rules are documentation-as-code specifications that provide structured guidance to AI assistants in modern IDEs. They contain information about:
+
+- Code patterns and conventions
+- Framework-specific best practices
+- Integration techniques
+- Component usage examples
+- UI/UX standards
+
+## Available Rules
+
+Enferno includes rules for key development aspects:
+
+### Vue-Jinja Patterns
+Guidelines for integrating Vue.js with Flask Jinja templates:
+```python
+# Template example
+@app.route('/products')
+def products():
+    return render_template('products.html', 
+                         products=products,
+                         vue_enabled=True)
+```
+
+```html
+<!-- products.html -->
+{% extends "layout.html" %}
+{% block content %}
+<div id="app">
+    <v-data-table
+        :items="{% raw %}{{ products }}{% endraw %}"
+        :headers="headers"
+    ></v-data-table>
+</div>
+{% endblock %}
+```
+
+### UI Components
+Standards for Vuetify components and usage:
+```html
+<!-- Recommended dialog pattern -->
+<v-dialog v-model="dialog" max-width="500px">
+    <template v-slot:activator="{ props }">
+        <v-btn v-bind="props">Open Dialog</v-btn>
+    </template>
+    <v-card>
+        <v-card-title>Dialog Title</v-card-title>
+        <v-card-text>Content here</v-card-text>
+    </v-card>
+</v-dialog>
+```
+
+### Python Standards
+Flask patterns and backend conventions:
+```python
+# Blueprint organization
+from flask import Blueprint
+from flask_security import auth_required
+
+portal = Blueprint('portal', __name__)
+
+@portal.before_request
+@auth_required()
+def before_request():
+    pass
+
+@portal.route('/dashboard')
+def dashboard():
+    return render_template('portal/dashboard.html')
+```
+
+### API Design
+RESTful API design patterns:
+```python
+@api.route('/resources', methods=['GET'])
+def get_resources():
+    stmt = db.session.select(Resource)
+    resources = db.session.scalars(stmt).all()
+    return jsonify([resource.to_dict() for resource in resources])
+```
+
+## Using Cursor Rules
+
+When working with Cursor IDE:
+
+1. The AI assistant automatically understands these rules
+2. Reference specific patterns in your questions
+3. Ask for help with implementation details
+4. Get context-aware suggestions
+
+Example prompts:
+- "Create a data table for users following our UI patterns"
+- "Show how to integrate Vue with Jinja for a product page"
+- "Generate a RESTful endpoint following our API standards"
+
+## Benefits
+
+The Cursor Rules approach offers several advantages:
+
+1. **Contextual Awareness**
+   - AI understands your entire codebase
+   - Suggestions consider existing patterns
+   - Better integration with your code
+
+2. **Flexible Generation**
+   - Not limited to predefined templates
+   - Adaptable to your needs
+   - Custom implementations supported
+
+3. **Development Environment Integration**
+   - Works within your IDE
+   - No external dependencies
+   - Immediate feedback
+
+4. **Continuous Learning**
+   - Rules evolve with your codebase
+   - Team knowledge integration
+   - Pattern refinement over time
+
+## Creating Custom Rules
+
+Extend the rules for your project:
+
+1. Create markdown files in `cursor/rules`
+2. Follow the established format
+3. Include concrete examples
+4. Reference existing patterns
+5. Organize by domain or feature
+
+For more information about Cursor Rules or to contribute, check our [contribution guidelines](https://github.com/level09/enferno). 

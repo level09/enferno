@@ -31,7 +31,8 @@
           {
             "group": "Development",
             "pages": [
-              "development"
+              "development",
+              "cursor-rules"
             ]
           }
         ]

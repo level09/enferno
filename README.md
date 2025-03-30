@@ -1,8 +1,6 @@
-Project Enferno
-=================
+# Project Enferno
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Documentation Status](https://readthedocs.org/projects/enferno/badge/?version=latest)](https://enferno.readthedocs.io/en/latest/?badge=latest)
 
 A modern Python web framework built on top of Flask, designed for rapid development of secure and scalable web applications. Enferno combines best practices with pre-configured components to help you build production-ready applications quickly.
 
@@ -150,7 +148,9 @@ GITHUB_OAUTH_CLIENT_SECRET=your_client_secret
 # Security Settings
 SECURITY_PASSWORD_SALT=your_secure_salt
 SECURITY_TOTP_SECRETS=your_totp_secrets
-```Security Features
+```
+
+Security Features
 ---------------
 - Two-factor authentication (2FA)
 - WebAuthn support
@@ -162,7 +162,7 @@ SECURITY_TOTP_SECRETS=your_totp_secrets
 - Rate limiting
 - XSS protection
 
-For detailed documentation, visit [enferno.readthedocs.io](https://enferno.readthedocs.io)
+For detailed documentation, visit [docs.enferno.io](https://docs.enferno.io)
 
 Contributing
 -----------
