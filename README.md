@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A modern Python web framework built on top of Flask, designed for rapid development of secure and scalable web applications. Enferno combines best practices with pre-configured components to help you build production-ready applications quickly.
+Enferno is a modern Flask framework optimized for AI-assisted development workflows. By combining carefully crafted development patterns, smart Cursor Rules, and modern libraries, it enables developers to build sophisticated web applications with unprecedented speed. Whether you're using AI-powered IDEs like Cursor or traditional tools, Enferno's intelligent patterns and contextual guides help you create production-ready SAAS applications faster than ever.
 
 ![Enferno Demo](docs/enferno-demo.gif)
 
