@@ -80,13 +80,18 @@ cd enferno
 ./setup.sh  # Creates Python environment, installs requirements, and generates secure .env
 ```
 
-3. Initialize application:
+3. Activate Environment:
+```bash
+source .venv/bin/activate
+```
+
+4. Initialize application:
 ```bash
 flask create-db  # Setup database
 flask install    # Create admin user
 ```
 
-4. Run development server:
+5. Run development server:
 ```bash
 flask run
 ```

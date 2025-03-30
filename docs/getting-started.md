@@ -93,7 +93,13 @@ SECURITY_TOTP_SECRETS=your_totp_secrets
 
 **Note: Never commit your `.env` file to version control.**
 
-### 4. Initialize Application
+### 4. Activate Environment
+
+```bash
+source .venv/bin/activate
+```
+
+### 5. Initialize Application
 
 If using PostgreSQL:
 ```bash
@@ -108,7 +114,7 @@ flask create-db   # This will create enferno.sqlite3
 flask install     # Create first admin user
 ```
 
-### 5. Run Development Server
+### 6. Run Development Server
 
 ```bash
 flask run
