@@ -5,30 +5,27 @@ alwaysApply: true
 ---
 # Enferno Framework Rules for Cursor
 
-This directory contains coding standards and patterns for the Enferno framework, organized according to the new Cursor rules convention.
+This directory contains coding standards and architectural patterns for the **Enferno** framework, following the **Cursor rules** convention.
 
-## How to Use These Rules
+## How to Use These Rulles are organized into separate markdown files by category  
+2. Start with the `@index.md` file for an overview  
+3. Reference specific rule files as needed during development  
+4. Cursoruse these rules to provide consistent and contex Rule Files
 
-1. The rules are organized into separate markdown files by category
-2. Start with the [index.md](mdc:index.md) file for an overview
-3. Reference specific rule files as needed during development
-4. Cursor AI will use these rules to provide more accurate and consistent assistance
-
-## Rule Files
-
-- [index.md](mdc:index.md) - Overview of all rules and technology stack
-- [vue-jinja-patterns.md](mdc:vue-jinja-patterns.md) - Patterns for Vue.js and Jinja integration
-- [ui-components.md](mdc:ui-components.md) - UI component patterns using Vuetify
-- [python-standards.md](mdc:python-standards.md) - Python coding standards for the backend
+- `@index.md` — Overview of all ruy stack  
+- `@vue-jinja-patterns.md` — Vuration patterns  
+- `@ui-components.md` — UI component standards using Vuetify  
+- `@python-standards.md` — Python backend coding standards  
 
 ## Framework Overview
 
-Enferno is a full-stack web framework that combines:
+**Enferno** is a full-stack web framework built with:
 
-- Python Flask backend
-- Vue.js frontend with Vuetify components
-- Jinja2 templating
-- Material Design UI
+- Python Flask backend  
+- Vue.js frontend with Vuetify components  
+- Jinja2 templating for server-side rendering  
+- Material Design-based UI  
 - RESTful API architecture
 
-These rules help maintain consistency across the codebase and ensure that new features follow established patterns. 
+These rules promote consistency, scalability, and maintainability across the codebase.
+
