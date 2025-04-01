@@ -105,12 +105,12 @@ def register_shellcontext(app):
 
 def register_commands(app: Flask, commands_module):
     """
-    Automatically register all Click commands in the given module.
+    Automatically register all Click commands and command groups in the given module.
 
     Args:
     - app: Flask application instance to register commands to.
-    - commands_module: The module containing Click commands.
+    - commands_module: The module containing Click commands and command groups.
     """
     for name, obj in inspect.getmembers(commands_module):
-        if isinstance(obj, click.Command):
+        if isinstance(obj, (click.Command, click.Group)):
             app.cli.add_command(obj)
