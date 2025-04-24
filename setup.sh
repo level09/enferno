@@ -4,6 +4,7 @@ set -e  # Exit on error
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
 NC='\033[0m'
 
 # Find latest Python 3 version
@@ -76,6 +77,17 @@ if [ ! -f .env-sample ]; then
     exit 1
 fi
 
+# Ask about Docker configuration
+read -p "Would you like to configure Docker settings? (y/N) " -n 1 -r
+echo
+DOCKER_CONFIG=false
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    DOCKER_CONFIG=true
+    echo -e "${GREEN}Docker configuration will be included.${NC}"
+else
+    echo -e "${YELLOW}Skipping Docker configuration.${NC}"
+fi
+
 # Check if .env already exists
 if [ -f .env ]; then
     read -p "A .env file already exists. Do you want to overwrite it? (y/N) " -n 1 -r
@@ -103,6 +115,9 @@ SECRET_KEY=$(generate_secure_string 32)
 TOTP_SECRET1=$(generate_secure_string 32)
 TOTP_SECRET2=$(generate_secure_string 32)
 PASSWORD_SALT=$(generate_secure_string 32)
+REDIS_PASSWORD=$(generate_secure_string 20)
+DB_PASSWORD=$(generate_secure_string 20)
+DOCKER_UID=$(id -u)
 
 # Validate generated values
 if [ -z "$SECRET_KEY" ] || [ -z "$TOTP_SECRET1" ] || [ -z "$TOTP_SECRET2" ] || [ -z "$PASSWORD_SALT" ]; then
@@ -111,7 +126,8 @@ if [ -z "$SECRET_KEY" ] || [ -z "$TOTP_SECRET1" ] || [ -z "$TOTP_SECRET2" ] || [
 fi
 
 # Process the .env file
-if ! awk -v sk="$SECRET_KEY" -v ts1="$TOTP_SECRET1" -v ts2="$TOTP_SECRET2" -v ps="$PASSWORD_SALT" '
+if ! awk -v sk="$SECRET_KEY" -v ts1="$TOTP_SECRET1" -v ts2="$TOTP_SECRET2" -v ps="$PASSWORD_SALT" \
+       -v docker="$DOCKER_CONFIG" -v rpass="$REDIS_PASSWORD" -v dbpass="$DB_PASSWORD" -v uid="$DOCKER_UID" '
 {
     if ($0 ~ /^SECRET_KEY=/) {
         print "SECRET_KEY=\"" sk "\""
@@ -126,6 +142,29 @@ if ! awk -v sk="$SECRET_KEY" -v ts1="$TOTP_SECRET1" -v ts2="$TOTP_SECRET2" -v ps
         print "SQLALCHEMY_DATABASE_URI=sqlite:///enferno.sqlite3"
         print "# PostgreSQL alternative:"
         print "# SQLALCHEMY_DATABASE_URI=postgresql://postgres:pass@localhost/dbname"
+    }
+    else if (docker == "true" && $0 ~ /^#REDIS_PASSWORD=/) {
+        print "REDIS_PASSWORD=" rpass
+    }
+    else if (docker == "true" && $0 ~ /^#DB_PASSWORD=/) {
+        print "DB_PASSWORD=" dbpass
+    }
+    else if (docker == "true" && $0 ~ /^#SQLALCHEMY_DATABASE_URI=postgresql:/) {
+        print "SQLALCHEMY_DATABASE_URI=postgresql://enferno:${DB_PASSWORD}@postgres/enferno"
+    }
+    else if (docker == "true" && $0 ~ /^#REDIS_SESSION=/) {
+        print "REDIS_SESSION=redis://:${REDIS_PASSWORD}@redis:6379/1"
+    }
+    else if (docker == "true" && $0 ~ /^#CELERY_BROKER_URL=redis:\/\/:/) {
+        print "CELERY_BROKER_URL=redis://:${REDIS_PASSWORD}@redis:6379/2"
+    }
+    else if (docker == "true" && $0 ~ /^#CELERY_RESULT_BACKEND=redis:\/\/:/) {
+        print "CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD}@redis:6379/3"
+    }
+    else if (docker == "true" && $0 ~ /^# Docker-specific settings/) {
+        print "# Docker-specific settings"
+        print "DOCKER_UID=" uid
+        print
     }
     else {
         print $0
@@ -149,10 +188,18 @@ fi
 
 echo -e "${GREEN}Successfully generated .env file with secure keys${NC}"
 echo -e "${GREEN}Generated secure values for: SECRET_KEY, SECURITY_TOTP_SECRETS, SECURITY_PASSWORD_SALT${NC}"
+if [ "$DOCKER_CONFIG" = true ]; then
+    echo -e "${GREEN}Docker configuration enabled with secure passwords for Redis and PostgreSQL${NC}"
+fi
 echo -e "${GREEN}SQLite database configured at: enferno.sqlite3${NC}"
 echo
 echo -e "${GREEN}Next steps:${NC}"
-echo -e "1. Update the remaining values in your .env file (mail settings, redis, etc.)"
+echo -e "1. Update the remaining values in your .env file (mail settings, etc.)"
 echo -e "2. Activate the virtual environment: ${GREEN}source .venv/bin/activate${NC}"
-echo -e "3. Run ${GREEN}flask create-db${NC} to initialize the database"
-echo -e "4. Run ${GREEN}flask install${NC} to create the first admin user" 
+if [ "$DOCKER_CONFIG" = true ]; then
+    echo -e "3. To use Docker, run: ${GREEN}docker compose up -d${NC}"
+    echo -e "4. Or for traditional setup, run: ${GREEN}flask create-db${NC} and ${GREEN}flask install${NC}"
+else
+    echo -e "3. Run ${GREEN}flask create-db${NC} to initialize the database"
+    echo -e "4. Run ${GREEN}flask install${NC} to create the first admin user" 
+fi 
