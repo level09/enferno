@@ -1,0 +1,38 @@
+---
+description: when docekr is mentioned or related. 
+globs: 
+alwaysApply: false
+---
+Docker Enhancement & Development
+
+### 1. Code Quality
+- Write clear, maintainable, and well-documented code.
+- Use meaningful names for containers, images, and services.
+
+### 2. Docker Best Practices
+- Always use official base images when possible.
+- Keep Dockerfiles as small and simple as possible.
+- Use multi-stage builds to reduce image size.
+- Avoid running containers as root unless necessary.
+
+### 3. Version Control
+- Commit often with clear, concise messages.
+- Use feature branches for new enhancements.
+
+### 4. Collaboration
+- Review pull requests before merging.
+- Report issues and bugs clearly with steps to reproduce.
+
+### 5. Security
+- Do not hardcode secrets or credentials in Dockerfiles or Compose files.
+- Regularly update base images to the latest stable versions.
+
+### 6. Testing
+- Ensure all enhancements are covered by automated tests.
+- Test images locally before pushing to a registry.
+
+### 7. Documentation
+- Update `README.md` and relevant docs for any changes.
+- Document all new environment variables, ports, and volumes.
+
+---
