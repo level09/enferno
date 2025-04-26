@@ -45,11 +45,49 @@ alwaysApply: true
 ```
 
 ## Vue-Jinja Integration
-- Use `config.delimiters` to avoid Jinja conflicts
-- Pass server data via JSON script tags:
+
+### IMPORTANT: Custom Delimiters
+- Enferno uses `${` and `}` for Vue expressions to avoid Jinja conflicts
+- Always use `delimiters: config.delimiters` in Vue app initialization
+- **NEVER** use standard Vue double curly braces (`{{ }}`) in templates
+
+### Correct Usage Examples
+```html
+<!-- CORRECT: Using ${} for Vue expressions -->
+<v-card-title>${ item.title }</v-card-title>
+
+<!-- CORRECT: Using Jinja expressions -->
+{% if current_user.is_authenticated %}
+    <v-btn href="/logout">Logout</v-btn>
+{% endif %}
+
+<!-- CORRECT: v-for with proper delimiters -->
+<v-col v-for="(item, index) in items" :key="index">
+    <div>${ item.name }</div>
+</v-col>
+```
+
+### Incorrect Usage Examples
+```html
+<!-- WRONG: Using Vue double curly braces -->
+<v-card-title>{{ item.title }}</v-card-title>
+
+<!-- WRONG: Mixing Vue expressions in Jinja blocks -->
+{% if item.active == true %}
+    ${ item.name }
+{% endif %}
+```
+
+### Passing Server Data to Vue
+- Use JSON script tags to pass data from server to client:
 ```html
 <script type="application/json" id="data-id">
     {{ server_data|tojson|safe }}
+</script>
+
+<script>
+    // In Vue app
+    const serverData = JSON.parse(document.getElementById('data-id').textContent);
 </script>
 ```
 
@@ -190,3 +228,27 @@ methods: {
   - `/login`
   - `/logout`
   - `/register`
+
+## Updating Templates
+
+### Template Creation Process
+1. Create a new file in `enferno/templates/` or appropriate subdirectory
+2. Extend the base layout: `{% extends 'layout.html' %}`
+3. Define content blocks: `{% block content %}...{% endblock %}`
+4. Add JavaScript in the js block: `{% block js %}...{% endblock %}`
+5. Ensure Vue app is properly initialized with `delimiters: config.delimiters`
+
+### Template Modification Process
+1. Identify existing patterns in the template
+2. Maintain consistent Vuetify component usage
+3. Keep Jinja and Vue logic separate when possible
+4. Preserve existing data structure in the Vue instance
+5. Always use `${` and `}` for Vue expressions, never `{{ }}`
+6. Test template changes with various user states (logged in/out)
+
+### Common Template Sections
+- Header/navigation (controlled by `drawer` and `menu`)
+- Main content area (typically in a `<v-container>`)
+- Data tables (with headers, items, and pagination)
+- Edit dialogs (with form fields bound to `eitem`)
+- Snackbar notifications (triggered by `showSnack()`)
