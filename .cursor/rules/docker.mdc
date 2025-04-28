@@ -1,5 +1,5 @@
 ---
-description: when docekr is mentioned or related. 
+description: when docker is mentioned or related.
 globs: 
 alwaysApply: false
 ---
