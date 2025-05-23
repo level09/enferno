@@ -1,31 +1,38 @@
 ---
-description: 
+description: Overview and index of Enferno development rules
 globs: 
 alwaysApply: true
 ---
 # Enferno Framework Rules for Cursor
 
-This directory contains coding standards and architectural patterns for the **Enferno** framework, following the **Cursor rules** convention.
+This directory contains comprehensive coding standards and architectural patterns for the **Enferno** framework.
 
-## How to Use These Rulles are organized into separate markdown files by category  
-2. Start with the `@index.md` file for an overview  
-3. Reference specific rule files as needed during development  
-4. Cursoruse these rules to provide consistent and contex Rule Files
+## Rule Files Organization
 
-- `@index.md` — Overview of all ruy stack  
-- `@vue-jinja-patterns.md` — Vuration patterns  
-- `@ui-components.md` — UI component standards using Vuetify  
-- `@python-standards.md` — Python backend coding standards  
+### Core Architecture
+- `01-architecture.mdc` — Project structure, Flask app organization, and blueprint patterns
+- `02-backend-standards.mdc` — Python, Flask, and API development standards
+- `03-frontend-patterns.mdc` — Vue.js, Vuetify, and template integration patterns
+- `04-deployment.mdc` — Docker and deployment best practices
 
 ## Framework Overview
 
 **Enferno** is a full-stack web framework built with:
 
-- Python Flask backend  
-- Vue.js frontend with Vuetify components  
-- Jinja2 templating for server-side rendering  
-- Material Design-based UI  
-- RESTful API architecture
+- **Backend**: Python Flask with Blueprint organization
+- **Frontend**: Vue 3 + Vuetify (no build step, direct JS)
+- **Templates**: Jinja2 server-side rendering with Vue integration
+- **UI**: Material Design via Vuetify components
+- **API**: RESTful architecture with JSON responses
+- **Database**: SQLAlchemy 2.x with statement-based patterns
 
-These rules promote consistency, scalability, and maintainability across the codebase.
+## Key Architectural Principles
+
+1. **Blueprint-based organization** by feature (admin, public, user)
+2. **No SPA** - each page mounts its own Vue instance
+3. **Custom Vue delimiters** (`${}`) to avoid Jinja conflicts
+4. **Direct JavaScript** without build tools
+5. **RESTful API design** with consistent responses
+
+These rules ensure consistency, scalability, and maintainability across the codebase.
 

@@ -1,0 +1,287 @@
+---
+description: Python, Flask, and backend development standards for Enferno
+globs: ["**/*.py"]
+alwaysApply: true
+---
+# Backend Development Standards
+
+## Python Standards
+
+### Code Quality
+- **PEP 8 compliant** code with meaningful variable names
+- **Type hints** for function parameters and return values
+- **Docstrings** for modules, classes, and functions
+- **Clean imports** - group by standard library, third-party, local
+
+```python
+from typing import Dict, List, Optional
+from flask import Blueprint, request, jsonify
+from enferno.extensions import db
+from enferno.user.models import User
+
+def get_user_data(user_id: int) -> Optional[Dict]:
+    """Retrieve user data by ID.
+    
+    Args:
+        user_id: The unique identifier for the user
+        
+    Returns:
+        User data dictionary or None if not found
+    """
+    # Implementation here
+```
+
+## Flask Development
+
+### Blueprint Organization
+Group routes by feature and follow established patterns:
+
+```python
+# Blueprint structure
+from flask import Blueprint
+from flask_security import auth_required, roles_required
+
+# Create blueprint with clear naming
+admin = Blueprint('admin', __name__, url_prefix='/admin')
+
+# Apply authentication to all routes
+@admin.before_request
+@auth_required()
+def require_auth():
+    pass
+
+# Role-based route protection
+@admin.route('/users')
+@roles_required('admin')
+def manage_users():
+    return render_template('admin/users.html')
+```
+
+### Blueprint Categories
+- **`public/views.py`** - Public pages & resources (no authentication)
+- **`portal/views.py`** - Authenticated user routes (`auth_required` in `before_request`)
+- **`user/views.py`** - Account/auth routes (login, logout, profile)
+
+### Extension Usage
+Import initialized extensions from `extensions.py`:
+
+```python
+from enferno.extensions import db, security, mail
+```
+
+## API Development
+
+### RESTful Endpoint Standards
+- **Consistent URL patterns**: `/api/resource` for collections, `/api/resource/id` for items
+- **HTTP methods**: GET (retrieve), POST (create/update), DELETE (remove)
+- **JSON responses** with consistent structure
+- **Proper status codes**: 200 (success), 400 (bad request), 404 (not found), 500 (server error)
+
+```python
+@api.route('/api/users', methods=['GET'])
+def get_users():
+    """Get paginated list of users."""
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 25, type=int)
+    
+    stmt = db.select(User).offset((page-1) * per_page).limit(per_page)
+    users = db.session.scalars(stmt).all()
+    total = db.session.scalar(db.select(db.func.count(User.id)))
+    
+    return jsonify({
+        'items': [user.to_dict() for user in users],
+        'total': total,
+        'page': page,
+        'per_page': per_page
+    })
+
+@api.route('/api/users/<int:user_id>', methods=['POST'])
+def update_user(user_id: int):
+    """Update user data."""
+    try:
+        user = db.session.get(User, user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+            
+        data = request.get_json()
+        user.update_from_dict(data)
+        db.session.commit()
+        
+        return jsonify({'message': 'User updated successfully'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+```
+
+### Response Patterns
+```python
+# Success response
+return jsonify({
+    'message': 'Operation successful',
+    'data': result_data
+})
+
+# Error response
+return jsonify({
+    'error': 'Descriptive error message',
+    'details': error_details
+}), 400
+
+# List response with pagination
+return jsonify({
+    'items': items_list,
+    'total': total_count,
+    'page': current_page,
+    'per_page': items_per_page
+})
+```
+
+## Database Patterns
+
+### SQLAlchemy 2.x Statement Style
+Use modern SQLAlchemy patterns with explicit statements:
+
+```python
+from sqlalchemy import select, update, delete
+from enferno.extensions import db
+
+# Select with filtering
+stmt = db.select(User).where(User.active == True)
+users = db.session.scalars(stmt).all()
+
+# Select single item
+stmt = db.select(User).where(User.id == user_id)
+user = db.session.scalar(stmt)
+
+# Update with conditions
+stmt = db.update(User).where(User.id == user_id).values(active=False)
+db.session.execute(stmt)
+db.session.commit()
+```
+
+### Model Patterns
+```python
+class User(db.Model):
+    """User model with standard patterns."""
+    
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def to_dict(self) -> Dict:
+        """Convert model to dictionary for JSON serialization."""
+        return {
+            'id': self.id,
+            'email': self.email,
+            'created_at': self.created_at.isoformat()
+        }
+    
+    def update_from_dict(self, data: Dict) -> None:
+        """Update model attributes from dictionary."""
+        for key, value in data.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+```
+
+### Migration Best Practices
+- Use Flask-Migrate for schema changes
+- Create descriptive migration messages
+- Test migrations on development data first
+
+## Security Standards
+
+### Authentication & Authorization
+- Use Flask-Security for auth management
+- Apply `@auth_required()` decorator for protected routes
+- Use `@roles_required('role')` for role-based access
+- Implement CSRF protection for forms
+
+```python
+from flask_security import auth_required, roles_required, current_user
+
+@blueprint.route('/admin-only')
+@auth_required()
+@roles_required('admin')
+def admin_function():
+    return render_template('admin.html')
+```
+
+### Input Validation & Sanitization
+- Validate all user inputs
+- Use WTForms for form validation
+- Sanitize data before database operations
+- Escape output in templates
+
+```python
+from wtforms import StringField, validators
+
+class UserForm(FlaskForm):
+    email = StringField('Email', [
+        validators.Email(),
+        validators.Length(min=6, max=255)
+    ])
+```
+
+## Error Handling
+
+### Exception Management
+```python
+try:
+    # Database operation
+    db.session.commit()
+except IntegrityError:
+    db.session.rollback()
+    return jsonify({'error': 'Data integrity violation'}), 400
+except Exception as e:
+    db.session.rollback()
+    current_app.logger.error(f'Unexpected error: {str(e)}')
+    return jsonify({'error': 'Internal server error'}), 500
+```
+
+### Logging Best Practices
+```python
+import logging
+
+# Use Flask's logger
+current_app.logger.info('User login successful')
+current_app.logger.error(f'Failed login attempt: {email}')
+current_app.logger.debug(f'Processing request: {request.url}')
+```
+
+### User-Friendly Error Messages
+- Log technical details for developers
+- Return user-friendly messages to clients
+- Never expose sensitive information in error responses
+- Use consistent error response format
+
+## Testing Standards
+
+### Unit Test Structure
+```python
+import pytest
+from enferno.app import create_app
+from enferno.extensions import db
+
+@pytest.fixture
+def app():
+    app = create_app('testing')
+    with app.app_context():
+        db.create_all()
+        yield app
+        db.drop_all()
+
+def test_user_creation(app):
+    """Test user model creation."""
+    with app.app_context():
+        user = User(email='test@example.com')
+        db.session.add(user)
+        db.session.commit()
+        assert user.id is not None
+```
+
+These standards ensure:
+- **Code consistency** across the application
+- **Security best practices** in all components
+- **Maintainable architecture** as the project grows
+- **Reliable error handling** and user experience

@@ -1,0 +1,152 @@
+---
+description: Enferno project structure and Flask architecture patterns
+globs: 
+alwaysApply: true
+---
+# Enferno Architecture & Project Structure
+
+## Flask Application Structure
+
+### Core Application Files
+- **`enferno/app.py`** - Creates the Flask app instance, registers blueprints, configures extensions
+- **`enferno/settings.py`** - Handles all configuration (development, production, testing)
+- **`enferno/extensions.py`** - Initializes Flask extensions (database, security, etc.)
+- **`enferno/commands.py`** - Custom Flask CLI commands for development and deployment
+
+### Blueprint Organization
+
+Features are organized into **Blueprints** by functional area:
+
+```
+enferno/
+├── public/          # Public-facing pages (no auth required)
+│   ├── views.py     # Routes and view functions
+│   ├── models.py    # Data models specific to public features
+│   └── templates/   # Blueprint-specific Jinja2 templates
+├── user/            # User account management (auth-related)
+│   ├── views.py     # Login, register, profile routes
+│   ├── models.py    # User and auth models
+│   ├── forms.py     # WTForms for user input
+│   └── templates/   # Auth-related templates
+└── portal/          # Protected admin/user portal
+    ├── views.py     # Dashboard and admin routes
+    └── templates/   # Portal-specific templates
+```
+
+### Blueprint Pattern
+```python
+# In blueprint views.py
+from flask import Blueprint, render_template
+from flask_security import auth_required
+
+# Create blueprint
+portal = Blueprint('portal', __name__, url_prefix='/portal')
+
+# Require authentication for all portal routes
+@portal.before_request
+@auth_required()
+def before_request():
+    pass
+
+# Define routes
+@portal.route('/dashboard')
+def dashboard():
+    return render_template('portal/dashboard.html')
+```
+
+## File Organization
+
+### Static Assets
+- **`enferno/static/`** - Global static assets
+  - `css/` - Stylesheets (app.css, vuetify.min.css)
+  - `js/` - JavaScript files (Vue, Vuetify, config)
+  - `img/` - Images and icons
+  - `mdi/` - Material Design Icons
+
+### Template Structure
+- **`enferno/templates/`** - Global Jinja2 templates
+  - `layout.html` - Base template with Vue/Vuetify setup
+  - `dashboard.html` - Main dashboard template
+  - `security/` - Flask-Security templates
+  - `cms/` - Content management templates
+- **Blueprint templates** - Located in each blueprint's `templates/` folder
+
+### Frontend Architecture
+
+#### No Build Step Approach
+- Vue.js code written directly in `.js` files
+- Vue and Vuetify loaded via CDN in base template
+- Components defined using `Vue.defineComponent` with template strings
+- Configuration centralized in `enferno/static/js/config.js`
+
+#### Component Registration Pattern
+```javascript
+// Global component registration
+const MyComponent = Vue.defineComponent({
+    template: `<v-card>Component content</v-card>`,
+    data() {
+        return {
+            // component data
+        }
+    }
+});
+
+// Register to main app
+app.component('my-component', MyComponent);
+```
+
+## Directory Structure Best Practices
+
+### New Blueprint Creation
+1. Create blueprint directory: `enferno/feature_name/`
+2. Add required files: `views.py`, `models.py`
+3. Create templates subdirectory: `templates/feature_name/`
+4. Register blueprint in `app.py`
+
+### Template Organization
+- Global templates in `enferno/templates/`
+- Blueprint-specific templates in `blueprint/templates/blueprint_name/`
+- Follow naming convention: `feature_action.html`
+
+### Static File Organization
+- Feature-specific CSS in `static/css/`
+- JavaScript modules in `static/js/`
+- Images organized by purpose in `static/img/`
+
+## Configuration Management
+
+### Settings Structure
+```python
+# settings.py
+class Config:
+    # Base configuration
+    SECRET_KEY = os.environ.get('SECRET_KEY')
+    
+class DevelopmentConfig(Config):
+    # Development-specific settings
+    DEBUG = True
+    
+class ProductionConfig(Config):
+    # Production-specific settings
+    DEBUG = False
+```
+
+### Extension Initialization
+```python
+# extensions.py
+from flask_sqlalchemy import SQLAlchemy
+from flask_security import Security
+
+db = SQLAlchemy()
+security = Security()
+
+def init_app(app):
+    db.init_app(app)
+    security.init_app(app, user_datastore)
+```
+
+This architecture promotes:
+- **Separation of concerns** through blueprints
+- **Scalable organization** as features grow
+- **Clear file hierarchy** for easy navigation
+- **Consistent patterns** across the application

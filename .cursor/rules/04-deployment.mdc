@@ -1,0 +1,278 @@
+---
+description: Docker and deployment best practices for Enferno
+globs: ["**/Dockerfile*", "**/docker-compose*.yml", "**/nginx/**/*"]
+alwaysApply: false
+---
+# Docker & Deployment Standards
+
+## Dockerfile Best Practices
+
+### Base Image Selection
+- **Use official Python images**: `python:3.11-slim` for production
+- **Pin specific versions** to ensure reproducible builds
+- **Multi-stage builds** to minimize final image size
+
+```dockerfile
+# Multi-stage build example
+FROM python:3.11-slim as builder
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --user -r requirements.txt
+
+FROM python:3.11-slim
+WORKDIR /app
+COPY --from=builder /root/.local /root/.local
+COPY . .
+ENV PATH=/root/.local/bin:$PATH
+EXPOSE 5000
+CMD ["python", "run.py"]
+```
+
+### Security Practices
+- **Never run as root** - create dedicated user
+- **Don't hardcode secrets** in Dockerfiles
+- **Use .dockerignore** to exclude sensitive files
+- **Regular base image updates** for security patches
+
+```dockerfile
+# Create non-root user
+RUN adduser --disabled-password --gecos '' appuser
+USER appuser
+
+# Use build args for configuration
+ARG FLASK_ENV=production
+ENV FLASK_ENV=${FLASK_ENV}
+```
+
+## Docker Compose Configuration
+
+### Service Organization
+```yaml
+version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: enferno
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:
+```
+
+### Environment Management
+- **Use .env files** for environment-specific configuration
+- **Separate configs** for development, staging, production
+- **Document all environment variables** in README
+
+## Nginx Configuration
+
+### Flask Application Proxy
+```nginx
+# nginx/enferno.conf
+upstream flask_app {
+    server web:5000;
+}
+
+server {
+    listen 80;
+    server_name localhost;
+
+    # Static files
+    location /static {
+        alias /app/enferno/static;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Flask application
+    location / {
+        proxy_pass http://flask_app;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+## Development Workflow
+
+### Local Development Setup
+```bash
+# Start development environment
+docker-compose up -d
+
+# View logs
+docker-compose logs -f web
+
+# Execute commands in container
+docker-compose exec web flask db upgrade
+docker-compose exec web flask create-admin
+
+# Stop services
+docker-compose down
+```
+
+### Production Deployment
+```yaml
+# docker-compose.prod.yml
+version: '3.8'
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    environment:
+      - FLASK_ENV=production
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/prod:/etc/nginx/conf.d
+      - ./certs:/etc/nginx/certs
+    restart: unless-stopped
+```
+
+## Container Management
+
+### Health Checks
+```dockerfile
+# Add health check to Dockerfile
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:5000/health || exit 1
+```
+
+### Resource Limits
+```yaml
+# In docker-compose.yml
+services:
+  web:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+```
+
+## Environment Variables
+
+### Required Variables
+Document all required environment variables:
+
+```bash
+# Database
+DATABASE_URL=postgresql://user:pass@localhost/enferno
+DB_USER=enferno
+DB_PASSWORD=secure_password
+
+# Flask
+SECRET_KEY=your-secret-key-here
+FLASK_ENV=production
+
+# Security
+SECURITY_PASSWORD_SALT=your-salt-here
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+```
+
+### Security Considerations
+- **Never commit secrets** to version control
+- **Use Docker secrets** in production swarm mode
+- **Rotate secrets regularly**
+- **Use strong, unique passwords** for all services
+
+## Testing & Quality Assurance
+
+### Container Testing
+```bash
+# Test build process
+docker build -t enferno:test .
+
+# Test image functionality
+docker run --rm enferno:test python -m pytest
+
+# Security scanning
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+  aquasec/trivy enferno:latest
+```
+
+### CI/CD Integration
+```yaml
+# .github/workflows/docker.yml
+name: Docker Build
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build Docker image
+        run: docker build -t enferno:${{ github.sha }} .
+      - name: Test application
+        run: docker run --rm enferno:${{ github.sha }} python -m pytest
+```
+
+## Documentation Requirements
+
+### Container Documentation
+- **README updates** for any Docker changes
+- **Environment variable documentation** with descriptions
+- **Port mappings** and service dependencies
+- **Volume mount explanations** and data persistence
+
+### Deployment Notes
+```markdown
+## Docker Deployment
+
+### Requirements
+- Docker 20.10+
+- Docker Compose 2.0+
+
+### Environment Setup
+1. Copy `.env.example` to `.env`
+2. Update environment variables
+3. Run `docker-compose up -d`
+
+### Ports
+- 5000: Flask application
+- 80: Nginx web server
+- 5432: PostgreSQL database
+```
+
+These standards ensure:
+- **Secure container operations** with non-root users
+- **Reproducible deployments** across environments
+- **Efficient resource utilization** with optimized images
+- **Proper documentation** for team collaboration
