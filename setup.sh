@@ -47,7 +47,11 @@ else
 fi
 
 # Activate virtual environment
-source .venv/bin/activate
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+    source .venv/Scripts/activate
+else
+    source .venv/bin/activate
+fi
 
 # Install requirements
 echo -e "${GREEN}Installing requirements...${NC}"
@@ -195,7 +199,11 @@ echo -e "${GREEN}SQLite database configured at: enferno.sqlite3${NC}"
 echo
 echo -e "${GREEN}Next steps:${NC}"
 echo -e "1. Update the remaining values in your .env file (mail settings, etc.)"
-echo -e "2. Activate the virtual environment: ${GREEN}source .venv/bin/activate${NC}"
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+    echo -e "2. Activate the virtual environment: ${GREEN}source .venv/Scripts/activate${NC}"
+else
+    echo -e "2. Activate the virtual environment: ${GREEN}source .venv/bin/activate${NC}"
+fi
 if [ "$DOCKER_CONFIG" = true ]; then
     echo -e "3. To use Docker, run: ${GREEN}docker compose up -d${NC}"
     echo -e "4. Or for traditional setup, run: ${GREEN}flask create-db${NC} and ${GREEN}flask install${NC}"
