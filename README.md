@@ -17,7 +17,7 @@ Key Features
 - **Security**: CSRF protection, secure session handling
 - **Docker Ready**: Production-grade Docker configuration
 - **Cursor Rules**: Smart IDE-based code generation and assistance
-- **Package Management**: Fast installation with uv
+- **Package Management**: Modern uv workflow with pyproject.toml
 
 Frontend Features
 ---------------
@@ -75,23 +75,21 @@ curl -sSf https://astral.sh/uv/install.sh | bash
 ```bash
 git clone git@github.com:level09/enferno.git
 cd enferno
-./setup.sh  # Creates Python environment, installs requirements, and generates secure .env
+./setup.sh  # Creates environment, installs requirements, generates secure .env
 ```
 
-3. Activate Environment:
+3. Initialize and run (modern uv workflow):
 ```bash
-source .venv/bin/activate
+uv run flask create-db  # Setup database
+uv run flask install    # Create admin user
+uv run flask run        # Start development server
 ```
 
-4. Initialize application:
+Or activate environment manually:
 ```bash
-flask create-db  # Setup database
-flask install    # Create admin user
-```
-
-5. Run development server:
-```bash
-flask run
+source .venv/bin/activate  # Linux/Mac
+# source .venv/Scripts/activate  # Windows
+flask create-db && flask install && flask run
 ```
 
 ### Docker Setup

@@ -18,83 +18,93 @@ console = Console()
 @click.command()
 @with_appcontext
 def create_db():
-    """creates db tables - import your models within commands.py to create the models.
-    """
+    """creates db tables - import your models within commands.py to create the models."""
     db.create_all()
-    print('Database structure created successfully')
+    print("Database structure created successfully")
 
 
 @click.command()
 @with_appcontext
 def install():
-    """Install a default admin user and add an admin role to it.
-    """
+    """Install a default admin user and add an admin role to it."""
     # check if admin exists
     from enferno.user.models import Role
+
     # create admin role if it doesn't exist
-    admin_role = Role.query.filter(Role.name == 'admin').first()
+    admin_role = Role.query.filter(Role.name == "admin").first()
     if not admin_role:
-        admin_role = Role(name='admin').save()
+        admin_role = Role(name="admin").save()
 
     # check if admin users already installed
-    admin_user = User.query.filter(User.roles.any(Role.name == 'admin')).first()
+    admin_user = User.query.filter(User.roles.any(Role.name == "admin")).first()
     if admin_user:
-        console.print(f"[yellow]An admin user already exists:[/] [blue]{admin_user.username}[/]")
+        console.print(
+            f"[yellow]An admin user already exists:[/] [blue]{admin_user.username}[/]"
+        )
         return
 
     # else : create a new admin user
-    username = click.prompt('Admin username', default='admin')
+    username = click.prompt("Admin username", default="admin")
     # Generate a secure password
-    password = ''.join(secrets.choice(string.ascii_letters + string.digits + '@#$%^&*') for _ in range(32))
+    password = "".join(
+        secrets.choice(string.ascii_letters + string.digits + "@#$%^&*")
+        for _ in range(32)
+    )
 
-    user = User(username=username, name='Super Admin', password=hash_password(password), active=1)
+    user = User(
+        username=username,
+        name="Super Admin",
+        password=hash_password(password),
+        active=1,
+    )
     user.roles.append(admin_role)
     user.save()
-    
+
     console.print("\n[green]✓[/] Admin user created successfully!")
     console.print(f"[blue]Username:[/] {username}")
     console.print(f"[blue]Password:[/] [red]{password}[/]")
-    console.print("\n[yellow]⚠️  Please save this password securely - you will not see it again![/]")
+    console.print(
+        "\n[yellow]⚠️  Please save this password securely - you will not see it again![/]"
+    )
 
 
 @click.command()
-@click.option('-e', '--email', prompt=True, default=None)
-@click.option('-p', '--password', prompt=True, default=None)
+@click.option("-e", "--email", prompt=True, default=None)
+@click.option("-p", "--password", prompt=True, default=None)
 @with_appcontext
 def create(email, password):
-    """Creates a user using an email.
-    """
+    """Creates a user using an email."""
     a = User.query.filter(User.email == email).first()
     if a != None:
-        print('User already exists!')
+        print("User already exists!")
     else:
         user = User(email=email, password=hash_password(password), active=True)
         user.save()
 
 
 @click.command()
-@click.option('-e', '--email', prompt=True, default=None)
-@click.option('-r', '--role', prompt=True, default='admin')
+@click.option("-e", "--email", prompt=True, default=None)
+@click.option("-r", "--role", prompt=True, default="admin")
 @with_appcontext
 def add_role(email, role):
-    """Adds a role to the specified user.
-        """
+    """Adds a role to the specified user."""
     from enferno.user.models import Role
+
     u = User.query.filter(User.email == email).first()
 
     if u is None:
-        print('Sorry, this user does not exist!')
+        print("Sorry, this user does not exist!")
     else:
         r = db.session.execute(db.select(Role).filter_by(name=role)).scalar_one()
         if r is None:
-            print('Sorry, this role does not exist!')
-            u = click.prompt('Would you like to create one? Y/N', default='N')
-            if u.lower() == 'y':
+            print("Sorry, this role does not exist!")
+            u = click.prompt("Would you like to create one? Y/N", default="N")
+            if u.lower() == "y":
                 r = Role(name=role)
                 try:
                     db.session.add(r)
                     db.session.commit()
-                    print('Role created successfully, you may add it now to the user')
+                    print("Role created successfully, you may add it now to the user")
                 except Exception as e:
                     db.session.rollback()
         # add role to user
@@ -102,12 +112,11 @@ def add_role(email, role):
 
 
 @click.command()
-@click.option('-e', '--email', prompt='Email or username', default=None)
-@click.option('-p', '--password', hide_input=True, prompt=True, default=None)
+@click.option("-e", "--email", prompt="Email or username", default=None)
+@click.option("-p", "--password", hide_input=True, prompt=True, default=None)
 @with_appcontext
 def reset(email, password):
-    """Reset a user password using email or username
-    """
+    """Reset a user password using email or username"""
     try:
         pwd = hash_password(password)
         # Check if user exists with provided email or username
@@ -115,23 +124,23 @@ def reset(email, password):
         if not u:
             print(f'User with email or username "{email}" not found.')
             return
-        
+
         u.password = pwd
         try:
             db.session.commit()
-            print('User password has been reset successfully.')
+            print("User password has been reset successfully.")
         except:
             db.session.rollback()
-            print('Error committing to database.')
+            print("Error committing to database.")
     except Exception as e:
-        print('Error resetting user password: %s' % e)
+        print("Error resetting user password: %s" % e)
 
 
-i18n_cli = AppGroup('i18n')
+i18n_cli = AppGroup("i18n")
 
 
 @i18n_cli.command()
-@click.argument('lang')
+@click.argument("lang")
 def init(lang):
     """Initialize a new language"""
     if os.system("pybabel init -i messages.pot -d enferno/translations -l " + lang):
