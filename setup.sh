@@ -29,33 +29,22 @@ if ! command -v uv &> /dev/null; then
     exit 1
 fi
 
-# Create and activate virtual environment
-if [ -d ".venv" ]; then
-    read -p "Virtual environment '.venv' already exists. Recreate? (y/N) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        echo -e "${GREEN}Recreating virtual environment...${NC}"
-        rm -rf .venv
-        uv venv
-    else
-        echo -e "${GREEN}Using existing virtual environment '.venv'${NC}"
-        # Skip venv creation, proceed to activation and installation
-    fi
-else
-    echo -e "${GREEN}Creating virtual environment...${NC}"
-    uv venv
-fi
+# Modern uv workflow doesn't require manual venv creation
+# uv sync will automatically create and manage the virtual environment
+echo -e "${GREEN}uv will automatically manage virtual environment...${NC}"
 
-# Activate virtual environment
+# Note: uv sync creates .venv automatically, activation happens via 'uv run'
+# For manual activation after setup:
 if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
-    source .venv/Scripts/activate
+    ACTIVATE_CMD="source .venv/Scripts/activate"
 else
-    source .venv/bin/activate
+    ACTIVATE_CMD="source .venv/bin/activate"
 fi
+echo -e "${GREEN}Virtual environment will be available at .venv${NC}"
 
-# Install requirements
+# Install requirements using modern uv sync
 echo -e "${GREEN}Installing requirements...${NC}"
-uv pip install -r requirements.txt
+uv sync
 
 # Check for required commands
 for cmd in tr openssl awk; do
@@ -199,15 +188,15 @@ echo -e "${GREEN}SQLite database configured at: enferno.sqlite3${NC}"
 echo
 echo -e "${GREEN}Next steps:${NC}"
 echo -e "1. Update the remaining values in your .env file (mail settings, etc.)"
+echo -e "2. Modern uv workflow - use these commands:"
+echo -e "   ${GREEN}uv run flask create-db${NC}   # Initialize database"
+echo -e "   ${GREEN}uv run flask install${NC}     # Create admin user"
+echo -e "   ${GREEN}uv run flask run${NC}         # Start development server"
+echo -e ""
+echo -e "3. Or activate manually: ${GREEN}$ACTIVATE_CMD${NC}"
 if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
-    echo -e "2. Activate the virtual environment: ${GREEN}source .venv/Scripts/activate${NC}"
-else
-    echo -e "2. Activate the virtual environment: ${GREEN}source .venv/bin/activate${NC}"
+    echo -e "${YELLOW}Note: On Windows, uWSGI is automatically excluded${NC}"
 fi
 if [ "$DOCKER_CONFIG" = true ]; then
-    echo -e "3. To use Docker, run: ${GREEN}docker compose up -d${NC}"
-    echo -e "4. Or for traditional setup, run: ${GREEN}flask create-db${NC} and ${GREEN}flask install${NC}"
-else
-    echo -e "3. Run ${GREEN}flask create-db${NC} to initialize the database"
-    echo -e "4. Run ${GREEN}flask install${NC} to create the first admin user" 
+    echo -e "4. For Docker: ${GREEN}docker compose up -d${NC}"
 fi 

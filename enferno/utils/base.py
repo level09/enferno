@@ -1,7 +1,8 @@
 from enferno.extensions import db
 from sqlalchemy import exc
 
-class BaseMixin():
+
+class BaseMixin:
 
     def save(self, commit=True):
         db.session.add(self)
