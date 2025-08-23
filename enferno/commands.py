@@ -1,13 +1,13 @@
-# -*- coding: utf-8 -*-
 """Click commands."""
 
-import click
-from flask.cli import with_appcontext, AppGroup
-from flask_security.utils import hash_password
-from rich.console import Console
+import os
 import secrets
 import string
-import os
+
+import click
+from flask.cli import AppGroup, with_appcontext
+from flask_security.utils import hash_password
+from rich.console import Console
 
 from enferno.extensions import db
 from enferno.user.models import User
@@ -105,7 +105,7 @@ def add_role(email, role):
                     db.session.add(r)
                     db.session.commit()
                     print("Role created successfully, you may add it now to the user")
-                except Exception as e:
+                except Exception:
                     db.session.rollback()
         # add role to user
         u.roles.append(r)

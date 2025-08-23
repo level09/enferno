@@ -1,9 +1,9 @@
-from enferno.extensions import db
 from sqlalchemy import exc
+
+from enferno.extensions import db
 
 
 class BaseMixin:
-
     def save(self, commit=True):
         db.session.add(self)
         if commit:

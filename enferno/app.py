@@ -1,20 +1,20 @@
-# -*- coding: utf-8 -*-
 import inspect
 
 import click
 from flask import Flask, render_template
-from enferno.settings import Config
-from flask_security import Security, SQLAlchemyUserDatastore, current_user
-from enferno.user.models import User, Role, WebAuthn, OAuth
-from enferno.user.forms import ExtendedRegisterForm
-from enferno.extensions import cache, db, mail, debug_toolbar, session, babel
-from enferno.public.views import public
-from enferno.user.views import bp_user
-from enferno.portal.views import portal
-from flask_dance.contrib.google import make_google_blueprint
-from flask_dance.contrib.github import make_github_blueprint
 from flask_dance.consumer.storage.sqla import SQLAlchemyStorage
+from flask_dance.contrib.github import make_github_blueprint
+from flask_dance.contrib.google import make_google_blueprint
+from flask_security import Security, SQLAlchemyUserDatastore, current_user
+
 import enferno.commands as commands
+from enferno.extensions import babel, cache, db, debug_toolbar, mail, session
+from enferno.portal.views import portal
+from enferno.public.views import public
+from enferno.settings import Config
+from enferno.user.forms import ExtendedRegisterForm
+from enferno.user.models import OAuth, Role, User, WebAuthn
+from enferno.user.views import bp_user
 
 
 def create_app(config_object=Config):
@@ -93,7 +93,7 @@ def register_blueprints(app):
 def register_errorhandlers(app):
     def render_error(error):
         error_code = getattr(error, "code", 500)
-        return render_template("{0}.html".format(error_code)), error_code
+        return render_template(f"{error_code}.html"), error_code
 
     for errcode in [401, 404, 500]:
         app.errorhandler(errcode)(render_error)

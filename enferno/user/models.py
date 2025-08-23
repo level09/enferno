@@ -1,30 +1,24 @@
-import json, dataclasses
-from typing import Dict
-from uuid import uuid4
-from enferno.utils.base import BaseMixin
-from enferno.extensions import db
+import dataclasses
 import secrets
 import string
-
-from flask_security.core import UserMixin, RoleMixin
 from datetime import datetime
+from uuid import uuid4
+
+from flask_dance.consumer.storage.sqla import OAuthConsumerMixin
+from flask_security import AsaList
+from flask_security.core import RoleMixin, UserMixin
+from flask_security.utils import hash_password
 from sqlalchemy import (
-    String,
-    DateTime,
-    Integer,
-    Boolean,
     Column,
     ForeignKey,
+    Integer,
     Table,
-    ARRAY,
-    LargeBinary,
-    JSON,
 )
-from flask_security.utils import hash_password
-from sqlalchemy.orm import Mapped, mapped_column, relationship, declared_attr
 from sqlalchemy.ext.mutable import MutableList
-from flask_security import AsaList
-from flask_dance.consumer.storage.sqla import OAuthConsumerMixin
+from sqlalchemy.orm import declared_attr, relationship
+
+from enferno.extensions import db
+from enferno.utils.base import BaseMixin
 
 roles_users: Table = db.Table(
     "roles_users",
@@ -39,7 +33,7 @@ class Role(db.Model, RoleMixin, BaseMixin):
     name = db.Column(db.String(80), unique=True, nullable=True)
     description = db.Column(db.String(255), nullable=True)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {"id": self.id, "name": self.name, "description": self.description}
 
     def from_dict(self, json_dict):

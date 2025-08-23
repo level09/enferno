@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
+import os
 from datetime import timedelta
 
 import bleach
-import os
 import redis
 from dotenv import load_dotenv
 
@@ -15,7 +14,7 @@ def uia_username_mapper(identity):
     return bleach.clean(identity, strip=True)
 
 
-class Config(object):
+class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "3nF3Rn0")
     APP_DIR = os.path.abspath(os.path.dirname(__file__))  # This directory
     PROJECT_ROOT = os.path.abspath(os.path.join(APP_DIR, os.pardir))

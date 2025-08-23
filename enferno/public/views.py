@@ -1,20 +1,22 @@
+import datetime
+
 from flask import (
-    request,
     Blueprint,
-    send_from_directory,
+    current_app,
     flash,
     redirect,
+    request,
+    send_from_directory,
     url_for,
-    current_app,
 )
 from flask.templating import render_template
-from flask_security import login_user, current_user, logout_user
 from flask_dance.consumer import oauth_authorized, oauth_error
-from sqlalchemy.orm.exc import NoResultFound
-from enferno.extensions import db
-from enferno.user.models import User, OAuth
-import datetime
+from flask_security import current_user, login_user, logout_user
 from oauthlib.oauth2.rfc6749.errors import OAuth2Error
+from sqlalchemy.orm.exc import NoResultFound
+
+from enferno.extensions import db
+from enferno.user.models import OAuth, User
 
 public = Blueprint("public", __name__, static_folder="../static")
 

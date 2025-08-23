@@ -1,6 +1,3 @@
-from enferno.extensions import db
-
-
 # your models can go here
 """
 class MyModel(db.Model):

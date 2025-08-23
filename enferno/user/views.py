@@ -1,11 +1,11 @@
 import datetime
 
 import orjson as json
-from flask import Blueprint, request, flash, g, Response, render_template
-from flask_security import current_user, auth_required, roles_required
+from flask import Blueprint, Response, render_template, request
+from flask_security import auth_required, current_user, roles_required
 
 from enferno.extensions import db
-from enferno.user.models import User, Role, Activity
+from enferno.user.models import Activity, Role, User
 
 bp_user = Blueprint("users", __name__, static_folder="../static")
 
