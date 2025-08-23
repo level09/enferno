@@ -75,7 +75,7 @@ def install():
 def create(email, password):
     """Creates a user using an email."""
     a = User.query.filter(User.email == email).first()
-    if a != None:
+    if a is not None:
         print("User already exists!")
     else:
         user = User(email=email, password=hash_password(password), active=True)
@@ -129,11 +129,11 @@ def reset(email, password):
         try:
             db.session.commit()
             print("User password has been reset successfully.")
-        except:
+        except Exception:
             db.session.rollback()
             print("Error committing to database.")
     except Exception as e:
-        print("Error resetting user password: %s" % e)
+        print(f"Error resetting user password: {e}")
 
 
 i18n_cli = AppGroup("i18n")

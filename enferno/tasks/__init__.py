@@ -19,7 +19,7 @@ class ContextTask(celery.Task):
         from enferno.app import create_app
 
         with create_app(cfg).app_context():
-            return super(ContextTask, self).__call__(*args, **kwargs)
+            return super().__call__(*args, **kwargs)
 
 
 celery.Task = ContextTask

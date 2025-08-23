@@ -156,7 +156,7 @@ class WebAuthn(db.Model):
         """
         Return the mapping from webauthn back to User
         """
-        return dict(id=self.user_id)
+        return {"id": self.user_id}
 
 
 class OAuth(OAuthConsumerMixin, db.Model):

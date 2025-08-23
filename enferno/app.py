@@ -37,7 +37,7 @@ def register_extensions(app):
     cache.init_app(app)
     db.init_app(app)
     user_datastore = SQLAlchemyUserDatastore(db, User, Role, webauthn_model=WebAuthn)
-    security = Security(app, user_datastore, register_form=ExtendedRegisterForm)
+    Security(app, user_datastore, register_form=ExtendedRegisterForm)
     mail.init_app(app)
     debug_toolbar.init_app(app)
 
@@ -118,6 +118,6 @@ def register_commands(app: Flask, commands_module):
     - app: Flask application instance to register commands to.
     - commands_module: The module containing Click commands and command groups.
     """
-    for name, obj in inspect.getmembers(commands_module):
-        if isinstance(obj, (click.Command, click.Group)):
+    for _name, obj in inspect.getmembers(commands_module):
+        if isinstance(obj, click.Command | click.Group):
             app.cli.add_command(obj)

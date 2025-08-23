@@ -44,7 +44,7 @@ echo -e "${GREEN}Virtual environment will be available at .venv${NC}"
 
 # Install dependencies using modern uv sync  
 echo -e "${GREEN}Installing dependencies from pyproject.toml...${NC}"
-uv sync --all-extras
+uv sync --extra dev
 
 # Check for required commands
 for cmd in tr openssl awk; do
@@ -192,8 +192,9 @@ echo -e "2. Modern uv workflow - use these commands:"
 echo -e "   ${GREEN}uv run flask create-db${NC}   # Initialize database"
 echo -e "   ${GREEN}uv run flask install${NC}     # Create admin user"
 echo -e "   ${GREEN}uv run flask run${NC}         # Start development server"
-echo -e "   ${GREEN}uv run ruff check .${NC}      # Lint code"
-echo -e "   ${GREEN}uv run ruff format .${NC}     # Format code"
+echo -e "   ${GREEN}uv run ruff check --fix .${NC} # Lint and auto-fix code"
+echo -e "   ${GREEN}uv run ruff format .${NC}      # Format code"
+echo -e "   ${GREEN}uv run pre-commit install${NC} # Install pre-commit hooks"
 echo -e ""
 echo -e "3. Or activate manually: ${GREEN}$ACTIVATE_CMD${NC}"
 if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
