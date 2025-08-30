@@ -1,27 +1,10 @@
-from sqlalchemy import exc
+from datetime import datetime
 
 from enferno.extensions import db
 
 
 class BaseMixin:
-    def save(self, commit=True):
-        db.session.add(self)
-        if commit:
-            try:
-                db.session.commit()
-                return self
-            except exc.SQLAlchemyError as e:
-                print(e)
-                db.session.rollback()
-                return None
-
-    def delete(self, commit=True):
-        db.session.delete(self)
-        if commit:
-            try:
-                db.session.commit()
-                return self
-            except exc.SQLAlchemyError as e:
-                print(e)
-                db.session.rollback()
-                return None
+    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.now, onupdate=datetime.now, nullable=False
+    )

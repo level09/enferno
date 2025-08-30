@@ -1,0 +1,110 @@
+{% extends 'layout.html' %}
+{% block css %}{% endblock %}
+
+{% block content %}
+
+<v-container>
+    <v-card class="ma-2 mt-12 w-100">
+        <v-toolbar>
+            <v-toolbar-title>${workspaceData.name} - Workspace</v-toolbar-title>
+            <v-spacer></v-spacer>
+            {% if user_role == 'admin' %}
+            <v-btn 
+                href="/workspace/{{ workspace.id }}/team" 
+                prepend-icon="mdi-account-group"
+                variant="outlined"
+                size="small"
+            >
+                Manage Team
+            </v-btn>
+            {% endif %}
+        </v-toolbar>
+
+        <v-card-text>
+            <!-- Welcome Message -->
+            <v-alert 
+                type="info" 
+                variant="tonal" 
+                class="mb-6"
+                closable
+            >
+                <v-alert-title>Welcome to ${workspaceData.name}!</v-alert-title>
+                This is your workspace. Start building your amazing product here.
+                {% if user_role == 'admin' %}
+                You can manage your team from the navigation sidebar.
+                {% endif %}
+            </v-alert>
+            
+            <!-- Main Content Area - Your Product Goes Here -->
+            <v-card class="mb-6" elevation="2">
+                <v-card-title class="d-flex align-center">
+                    <v-icon class="mr-3" color="primary">mdi-rocket-launch</v-icon>
+                    Your Product
+                </v-card-title>
+                <v-card-text class="pa-8 text-center">
+                    <v-icon size="80" color="grey-lighten-2" class="mb-4">mdi-application-outline</v-icon>
+                    <h3 class="text-h5 mb-4">Build Your SaaS Product Here</h3>
+                    <p class="text-body-1 mb-4">
+                        This is your main workspace. Replace this content with your actual product features.
+                        Focus 80% of your development time here, not on auth complexity.
+                    </p>
+                    <v-btn 
+                        color="primary" 
+                        size="large" 
+                        variant="elevated"
+                        prepend-icon="mdi-plus"
+                    >
+                        Get Started
+                    </v-btn>
+                </v-card-text>
+            </v-card>
+        </v-card-text>
+    </v-card>
+</v-container>
+
+{% endblock %}
+
+{% block js %}
+
+<script type="application/json" id="workspace-data">
+{{ workspace.to_dict()|tojson|safe }}
+</script>
+
+<script>
+const { createApp } = Vue;
+const { createVuetify } = Vuetify;
+const vuetify = createVuetify(config.vuetifyConfig);
+
+const app = createApp({
+    data() {
+        return {
+            memberCount: 0, // Will be loaded via API
+            drawer: true,
+            workspaceData: {},
+        };
+    },
+    delimiters: config.delimiters,
+    
+    async mounted() {
+        // Load workspace data
+        this.workspaceData = JSON.parse(document.querySelector('#workspace-data').textContent);
+        // Load workspace stats
+        await this.loadStats();
+    },
+    
+    methods: {
+        async loadStats() {
+            try {
+                const response = await axios.get(`/api/workspace/${this.workspaceData.id}/stats`);
+                this.memberCount = response.data.member_count || 0;
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+                this.memberCount = 0;
+            }
+        }
+    }
+});
+
+app.use(vuetify).mount('#app');
+</script>
+{% endblock %}

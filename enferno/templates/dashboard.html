@@ -1,35 +1,620 @@
 {% extends 'layout.html' %}
 {% block content %}
-    <v-card class="ma-auto pa-10 h-100 w-100">
-        <v-card-text>
+
+<v-container fluid class="pa-4">
+    <!-- Header Section -->
+    <v-row class="mb-6">
+        <v-col cols="12">
+            <div class="d-flex align-center justify-space-between">
+                <div>
+                    <h1 class="text-h4 font-weight-medium mb-1">
+                        {% if current_user.is_superadmin %}
+                            Platform Overview
+                        {% else %}
+                            Your Workspaces
+                        {% endif %}
+                    </h1>
+                    <p class="text-body-2 text-medium-emphasis">
+                        {% if current_user.is_superadmin %}
+                            Manage the entire platform, workspaces, and users
+                        {% else %}
+                            Choose a workspace to get started
+                        {% endif %}
+                    </p>
+                </div>
+                {% if current_user.is_superadmin %}
+                <v-btn 
+                    color="primary" 
+                    variant="elevated"
+                    prepend-icon="mdi-plus"
+                    @click="createDialog = true"
+                    size="default"
+                >
+                    Create Workspace
+                </v-btn>
+                {% endif %}
+            </div>
+        </v-col>
+    </v-row>
+
+    <!-- Super Admin Quick Actions -->
+    {% if current_user.is_superadmin %}
+    <v-row class="mb-6">
+        <v-col cols="12" sm="6" md="3">
+            <v-card 
+                variant="elevated" 
+                class="text-center pa-4 h-100"
+                @click="openAllWorkspaces"
+                hover
+                style="cursor: pointer"
+            >
+                <v-icon size="40" color="primary" class="mb-3">mdi-office-building-outline</v-icon>
+                <div class="text-h6 mb-2">All Workspaces</div>
+                <div class="text-body-2 text-medium-emphasis">Manage all client workspaces</div>
+            </v-card>
+        </v-col>
+        <v-col cols="12" sm="6" md="3">
+            <v-card 
+                variant="elevated" 
+                class="text-center pa-4 h-100"
+                @click="openAllUsers"
+                hover
+                style="cursor: pointer"
+            >
+                <v-icon size="40" color="success" class="mb-3">mdi-account-group</v-icon>
+                <div class="text-h6 mb-2">All Users</div>
+                <div class="text-body-2 text-medium-emphasis">View platform users</div>
+            </v-card>
+        </v-col>
+        <v-col cols="12" sm="6" md="3">
+            <v-card 
+                variant="elevated" 
+                class="text-center pa-4 h-100"
+                @click="systemStatsDialog = true"
+                hover
+                style="cursor: pointer"
+            >
+                <v-icon size="40" color="info" class="mb-3">mdi-chart-line</v-icon>
+                <div class="text-h6 mb-2">System Stats</div>
+                <div class="text-body-2 text-medium-emphasis">Platform metrics</div>
+            </v-card>
+        </v-col>
+        <v-col cols="12" sm="6" md="3">
+            <v-card 
+                variant="elevated" 
+                class="text-center pa-4 h-100"
+                hover
+                style="cursor: pointer"
+            >
+                <v-icon size="40" color="warning" class="mb-3">mdi-cog</v-icon>
+                <div class="text-h6 mb-2">Settings</div>
+                <div class="text-body-2 text-medium-emphasis">Platform configuration</div>
+            </v-card>
+        </v-col>
+    </v-row>
+
+    <!-- Platform Stats for Super Admin -->
+    <v-row class="mb-6" v-if="platformStats">
+        <v-col cols="12" sm="6" md="3">
+            <v-card variant="tonal" color="primary" class="pa-4">
+                <div class="d-flex align-center">
+                    <v-icon size="32" class="mr-3">mdi-office-building</v-icon>
+                    <div>
+                        <div class="text-h5 font-weight-bold">${platformStats.total_workspaces}</div>
+                        <div class="text-body-2">Total Workspaces</div>
+                    </div>
+                </div>
+            </v-card>
+        </v-col>
+        <v-col cols="12" sm="6" md="3">
+            <v-card variant="tonal" color="success" class="pa-4">
+                <div class="d-flex align-center">
+                    <v-icon size="32" class="mr-3">mdi-account-group</v-icon>
+                    <div>
+                        <div class="text-h5 font-weight-bold">${platformStats.total_users}</div>
+                        <div class="text-body-2">Total Users</div>
+                    </div>
+                </div>
+            </v-card>
+        </v-col>
+        <v-col cols="12" sm="6" md="3">
+            <v-card variant="tonal" color="info" class="pa-4">
+                <div class="d-flex align-center">
+                    <v-icon size="32" class="mr-3">mdi-account-plus</v-icon>
+                    <div>
+                        <div class="text-h5 font-weight-bold">${platformStats.new_users_today}</div>
+                        <div class="text-body-2">New Today</div>
+                    </div>
+                </div>
+            </v-card>
+        </v-col>
+        <v-col cols="12" sm="6" md="3">
+            <v-card variant="tonal" color="warning" class="pa-4">
+                <div class="d-flex align-center">
+                    <v-icon size="32" class="mr-3">mdi-chart-line</v-icon>
+                    <div>
+                        <div class="text-h5 font-weight-bold">${platformStats.active_workspaces}</div>
+                        <div class="text-body-2">Active This Week</div>
+                    </div>
+                </div>
+            </v-card>
+        </v-col>
+    </v-row>
+    {% endif %}
+
+    <!-- Workspaces Section -->
+    <div v-if="workspaces.length > 0">
+        <div class="d-flex align-center mb-4">
+            <h2 class="text-h5 font-weight-medium">
+                {% if current_user.is_superadmin %}
+                    All Workspaces
+                {% else %}
+                    Your Workspaces
+                {% endif %}
+            </h2>
+            <v-spacer></v-spacer>
+            <v-chip size="small" variant="outlined">${workspaces.length} workspace${workspaces.length !== 1 ? 's' : ''}</v-chip>
+        </div>
+        
+        <v-row>
+            <v-col 
+                v-for="workspace in workspaces" 
+                :key="workspace.id"
+                cols="12" 
+                sm="6" 
+                lg="4"
+            >
+                <v-card 
+                    :href="`/workspace/${workspace.id}/switch/`"
+                    variant="elevated"
+                    hover
+                    class="h-100"
+                >
+                    <v-card-text class="pa-4">
+                        <div class="d-flex align-center mb-3">
+                            <v-avatar size="40" color="primary" variant="tonal">
+                                <v-icon>mdi-briefcase-outline</v-icon>
+                            </v-avatar>
+                            <div class="ml-3 flex-grow-1">
+                                <div class="text-h6 font-weight-medium">${workspace.name}</div>
+                                <div class="text-body-2 text-medium-emphasis">
+                                    {% if current_user.is_superadmin %}
+                                        Client workspace
+                                    {% else %}
+                                        Your role: ${workspace.user_role}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if current_user.is_superadmin %}
+                            <v-chip size="small" color="warning" variant="tonal">
+                                <v-icon start size="16">mdi-crown</v-icon>
+                                Super Admin
+                            </v-chip>
+                            {% else %}
+                            <v-chip 
+                                size="small" 
+                                :color="workspace.user_role === 'admin' ? 'primary' : 'default'"
+                                variant="tonal"
+                            >
+                                ${workspace.user_role}
+                            </v-chip>
+                            {% endif %}
+                        </div>
+                        
+                        <v-divider class="mb-3"></v-divider>
+                        
+                        <div class="d-flex justify-space-between text-body-2 text-medium-emphasis">
+                            <span>Last accessed</span>
+                            <span>Recently</span>
+                        </div>
+                    </v-card-text>
+                </v-card>
+            </v-col>
+        </v-row>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else class="text-center py-16">
+        <v-avatar size="120" color="grey-lighten-4" class="mb-6">
+            <v-icon size="60" color="grey-lighten-1">mdi-briefcase-plus-outline</v-icon>
+        </v-avatar>
+        <h2 class="text-h4 font-weight-medium mb-3">No workspaces yet</h2>
+        <p class="text-body-1 text-medium-emphasis mb-8">
+            {% if current_user.is_superadmin %}
+                Create your first workspace to get started with the platform.
+            {% else %}
+                Contact your administrator to join a workspace.
+            {% endif %}
+        </p>
+        {% if current_user.is_superadmin %}
+        <v-btn 
+            color="primary" 
+            size="large"
+            variant="elevated"
+            @click="createDialog = true"
+            prepend-icon="mdi-plus"
+        >
+            Create Your First Workspace
+        </v-btn>
+        {% endif %}
+    </div>
+    
+</v-container>
+
+<!-- Create Workspace Dialog -->
+<v-dialog v-model="createDialog" max-width="500" persistent>
+    <v-card>
+        <v-card-title class="d-flex align-center justify-space-between">
+            <div class="d-flex align-center">
+                <v-icon color="primary" class="mr-3">mdi-briefcase-plus</v-icon>
+                <span>Create New Workspace</span>
+            </div>
+            <v-btn @click="createDialog=false" icon="mdi-close" variant="text" size="small"></v-btn>
+        </v-card-title>
+
+        <v-card-text class="pb-0">
+            <v-text-field
+                label="Workspace Name"
+                v-model="newWorkspaceName"
+                :rules="[rules.required]"
+                placeholder="e.g. Acme Corporation"
+                variant="outlined"
+                prepend-inner-icon="mdi-domain"
+                hide-details="auto"
+                class="mb-4"
+            ></v-text-field>
+            <v-alert type="info" variant="tonal" class="mb-4">
+                <template v-slot:prepend>
+                    <v-icon>mdi-information</v-icon>
+                </template>
+                You'll be the admin of this workspace and can invite team members later.
+            </v-alert>
         </v-card-text>
-        <v-card-text>
-            <div class="text-h5 mb-3">Welcome, {{ current_user.username }}</div>
-            Last login — {{ current_user.last_login_at.strftime('%B %-d, %Y at %-I:%M %p') if current_user.last_login_at else 'Never' }}
-        </v-card-text>
-        <v-card-actions class="justify-start">
-            <v-btn color="error" href="/logout" variant="elevated">Logout</v-btn>
+
+        <v-card-actions class="px-6 pb-6">
+            <v-spacer></v-spacer>
+            <v-btn @click="createDialog=false" variant="text" :disabled="creating">
+                Cancel
+            </v-btn>
+            <v-btn 
+                color="primary" 
+                @click="createWorkspace" 
+                :loading="creating"
+                variant="elevated"
+                prepend-icon="mdi-plus"
+            >
+                Create Workspace
+            </v-btn>
         </v-card-actions>
     </v-card>
+</v-dialog>
+
+<v-snackbar 
+    v-model="snackBar" 
+    :color="snackColor"
+    location="top right"
+    timeout="4000"
+    variant="elevated"
+>
+    <div class="d-flex align-center">
+        <v-icon 
+            :icon="snackColor === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle'" 
+            class="mr-2"
+        ></v-icon>
+        ${snackMessage}
+    </div>
+    <template v-slot:actions>
+        <v-btn icon="mdi-close" @click="snackBar=false" variant="text" size="small"></v-btn>
+    </template>
+</v-snackbar>
+
+<!-- Super Admin Dialogs -->
+{% if current_user.is_superadmin %}
+
+<!-- All Workspaces Dialog -->
+<v-dialog v-model="allWorkspacesDialog" width="900" scrollable>
+    <v-card>
+        <v-toolbar>
+            <v-toolbar-title>All Workspaces</v-toolbar-title>
+            <template v-slot:append>
+                <v-btn @click="allWorkspacesDialog=false" size="small" icon="mdi-close" variant="text"></v-btn>
+            </template>
+        </v-toolbar>
+        
+        <v-card-text style="height: 500px;">
+            <v-data-table
+                :items="allWorkspaces"
+                :headers="workspaceHeaders"
+                :loading="loadingWorkspaces"
+                item-key="id"
+                class="elevation-1"
+            >
+                <template v-slot:item.created_at="{ item }">
+                    ${formatDate(item.created_at)}
+                </template>
+                
+                <template v-slot:item.actions="{ item }">
+                    <v-btn 
+                        size="small" 
+                        color="primary" 
+                        variant="outlined"
+                        :href="`/workspace/${item.id}/switch/`"
+                    >
+                        Access
+                    </v-btn>
+                </template>
+            </v-data-table>
+        </v-card-text>
+    </v-card>
+</v-dialog>
+
+<!-- All Users Dialog -->
+<v-dialog v-model="allUsersDialog" width="900" scrollable>
+    <v-card>
+        <v-toolbar>
+            <v-toolbar-title>All Users</v-toolbar-title>
+            <template v-slot:append>
+                <v-btn @click="allUsersDialog=false" size="small" icon="mdi-close" variant="text"></v-btn>
+            </template>
+        </v-toolbar>
+        
+        <v-card-text style="height: 500px;">
+            <v-data-table
+                :items="allUsers"
+                :headers="userHeaders"
+                :loading="loadingUsers"
+                item-key="id"
+                class="elevation-1"
+            >
+                <template v-slot:item.workspace_count="{ item }">
+                    <v-chip size="small" variant="outlined">
+                        ${item.workspace_count}
+                    </v-chip>
+                </template>
+                
+                <template v-slot:item.active="{ item }">
+                    <v-chip 
+                        :color="item.active ? 'success' : 'error'" 
+                        size="small"
+                    >
+                        ${item.active ? 'Active' : 'Inactive'}
+                    </v-chip>
+                </template>
+                
+                <template v-slot:item.role_display="{ item }">
+                    <v-chip 
+                        :color="item.is_superadmin ? 'warning' : 'default'" 
+                        size="small"
+                        :prepend-icon="item.is_superadmin ? 'mdi-crown' : 'mdi-account'"
+                    >
+                        ${item.is_superadmin ? 'Super Admin' : 'User'}
+                    </v-chip>
+                </template>
+                
+                <template v-slot:item.created_at="{ item }">
+                    ${formatDate(item.created_at)}
+                </template>
+            </v-data-table>
+        </v-card-text>
+    </v-card>
+</v-dialog>
+
+<!-- System Stats Dialog -->
+<v-dialog v-model="systemStatsDialog" width="600">
+    <v-card>
+        <v-toolbar>
+            <v-toolbar-title>System Statistics</v-toolbar-title>
+            <template v-slot:append>
+                <v-btn @click="systemStatsDialog=false" size="small" icon="mdi-close" variant="text"></v-btn>
+            </template>
+        </v-toolbar>
+        
+        <v-card-text>
+            <v-row v-if="platformStats">
+                <v-col cols="6">
+                    <v-card variant="tonal" color="primary">
+                        <v-card-text class="text-center">
+                            <v-icon size="40" class="mb-2">mdi-office-building</v-icon>
+                            <div class="text-h4">${platformStats.total_workspaces}</div>
+                            <div>Total Workspaces</div>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+                <v-col cols="6">
+                    <v-card variant="tonal" color="success">
+                        <v-card-text class="text-center">
+                            <v-icon size="40" class="mb-2">mdi-account-group</v-icon>
+                            <div class="text-h4">${platformStats.total_users}</div>
+                            <div>Total Users</div>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+                <v-col cols="6">
+                    <v-card variant="tonal" color="info">
+                        <v-card-text class="text-center">
+                            <v-icon size="40" class="mb-2">mdi-account-plus</v-icon>
+                            <div class="text-h4">${platformStats.new_users_today}</div>
+                            <div>New Today</div>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+                <v-col cols="6">
+                    <v-card variant="tonal" color="warning">
+                        <v-card-text class="text-center">
+                            <v-icon size="40" class="mb-2">mdi-chart-line</v-icon>
+                            <div class="text-h4">${platformStats.active_workspaces}</div>
+                            <div>Active This Week</div>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+            </v-row>
+        </v-card-text>
+    </v-card>
+</v-dialog>
+
+{% endif %}
 
 {% endblock %}
 
 {% block js %}
-    <script>
-        const {createApp} = Vue;
-        const {createVuetify} = Vuetify;
-        const vuetify = createVuetify(config.vuetifyConfig);
+<script>
+const { createApp } = Vue;
+const { createVuetify } = Vuetify;
+const vuetify = createVuetify(config.vuetifyConfig);
 
-        const app = createApp({
-            data() {
-                return {
-                    menu: null,
-                    drawer: true,
-                };
-            },
-            delimiters: config.delimiters
-        });
+const app = createApp({
+    data() {
+        return {
+            menu: null,
+            drawer: true,
+            workspaces: [],
+            createDialog: false,
+            newWorkspaceName: '',
+            creating: false,
+            snackBar: false,
+            snackMessage: '',
+            snackColor: 'success',
+            
+            // Super admin data
+            {% if current_user.is_superadmin %}
+            allWorkspacesDialog: false,
+            allUsersDialog: false,
+            systemStatsDialog: false,
+            platformStats: null,
+            allWorkspaces: [],
+            allUsers: [],
+            loadingWorkspaces: false,
+            loadingUsers: false,
+            
+            workspaceHeaders: [
+                { title: 'Name', value: 'name' },
+                { title: 'Owner', value: 'owner_name' },
+                { title: 'Members', value: 'member_count' },
+                { title: 'Created', value: 'created_at' },
+                { title: 'Actions', value: 'actions', sortable: false }
+            ],
+            
+            userHeaders: [
+                { title: 'Name', value: 'name' },
+                { title: 'Email', value: 'email' },
+                { title: 'Workspaces', value: 'workspace_count' },
+                { title: 'Status', value: 'active' },
+                { title: 'Role', value: 'role_display' },
+                { title: 'Joined', value: 'created_at' }
+            ],
+            {% endif %}
+            
+            rules: {
+                required: value => !!value || 'Required'
+            }
+        };
+    },
+    delimiters: config.delimiters,
+    
+    mounted() {
+        // Load workspace data from template (already includes user roles)
+        this.workspaces = {{ workspaces | tojson | safe }};
+        
+        {% if current_user.is_superadmin %}
+        // Load platform stats for super admin
+        this.loadPlatformStats();
+        {% endif %}
+    },
+    
+    methods: {
+        showSnack(message, color = 'success') {
+            this.snackMessage = message;
+            this.snackColor = color;
+            this.snackBar = true;
+        },
+        
+        async createWorkspace() {
+            if (!this.newWorkspaceName.trim()) {
+                this.showSnack('Workspace name is required', 'error');
+                return;
+            }
+            
+            this.creating = true;
+            
+            try {
+                const response = await axios.post('/api/workspaces', {
+                    name: this.newWorkspaceName.trim()
+                });
+                
+                this.showSnack('Workspace created successfully!');
+                this.createDialog = false;
+                this.newWorkspaceName = '';
+                
+                // Redirect to the new workspace
+                window.location.href = `/workspace/${response.data.workspace.id}/switch/`;
+                
+            } catch (error) {
+                this.showSnack(
+                    error.response?.data?.error || 'Failed to create workspace', 
+                    'error'
+                );
+            } finally {
+                this.creating = false;
+            }
+        },
+        
+        {% if current_user.is_superadmin %}
+        // Super admin methods
+        async loadPlatformStats() {
+            try {
+                const response = await axios.get('/api/admin/stats');
+                this.platformStats = response.data;
+            } catch (error) {
+                console.error('Failed to load platform stats:', error);
+            }
+        },
+        
+        async loadAllWorkspaces() {
+            this.loadingWorkspaces = true;
+            try {
+                const response = await axios.get('/api/admin/workspaces');
+                this.allWorkspaces = response.data.workspaces;
+            } catch (error) {
+                this.showSnack('Failed to load workspaces', 'error');
+            } finally {
+                this.loadingWorkspaces = false;
+            }
+        },
+        
+        async loadAllUsers() {
+            this.loadingUsers = true;
+            try {
+                const response = await axios.get('/api/admin/users');
+                this.allUsers = response.data.users;
+            } catch (error) {
+                this.showSnack('Failed to load users', 'error');
+            } finally {
+                this.loadingUsers = false;
+            }
+        },
+        
+        openAllWorkspaces() {
+            this.allWorkspacesDialog = true;
+            this.loadAllWorkspaces();
+        },
+        
+        openAllUsers() {
+            this.allUsersDialog = true;
+            this.loadAllUsers();
+        },
+        {% endif %}
+        
+        formatDate(dateString) {
+            if (!dateString) return 'Unknown';
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+    }
+});
 
-        app.use(vuetify).mount('#app');
-    </script>
+app.use(vuetify).mount('#app');
+</script>
 {% endblock %}

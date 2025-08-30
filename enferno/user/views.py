@@ -2,10 +2,10 @@ import datetime
 
 import orjson as json
 from flask import Blueprint, Response, render_template, request
-from flask_security import auth_required, current_user, roles_required
+from flask_security import auth_required, current_user
 
 from enferno.extensions import db
-from enferno.user.models import Activity, Role, User
+from enferno.user.models import Activity, User
 
 bp_user = Blueprint("users", __name__, static_folder="../static")
 
@@ -14,16 +14,23 @@ PER_PAGE = 25
 
 @bp_user.before_request
 @auth_required("session")
-@roles_required("admin")
 def before_request():
-    pass
+    # Ensure only super admins can access user management
+    if not current_user.is_superadmin:
+        from flask import abort
+
+        abort(403)
 
 
 @bp_user.route("/users/")
 def users():
-    roles = Role.query.all()
-    roles = [r.to_dict() for r in roles]
-    return render_template("cms/users.html", roles=roles)
+    # Get all workspaces for assignment
+    from enferno.user.models import Workspace
+
+    workspaces = db.session.execute(db.select(Workspace)).scalars().all()
+    workspace_list = [{"id": w.id, "name": w.name} for w in workspaces]
+
+    return render_template("cms/users.html", workspaces=workspace_list)
 
 
 @bp_user.route("/api/users")
@@ -37,8 +44,18 @@ def api_user():
     # Paginate results
     pagination = db.paginate(query, page=page, per_page=per_page)
 
-    # Convert users to dictionaries
-    items = [user.to_dict() for user in pagination.items]
+    # Convert users to dictionaries with workspace info
+    items = []
+    for user in pagination.items:
+        user_dict = user.to_dict()
+        # Add workspace information
+        workspaces = user.get_workspaces()
+        user_dict["workspace_count"] = len(workspaces)
+        user_dict["workspaces"] = [
+            {"id": w.id, "name": w.name, "role": user.get_workspace_role(w.id)}
+            for w in workspaces[:3]
+        ]  # Show first 3
+        items.append(user_dict)
 
     # Create consistent response structure with metadata
     response_data = {
@@ -54,9 +71,35 @@ def api_user():
 def api_user_create():
     user_data = request.json.get("item", {})
     user = User()
-    user.from_dict(user_data)  # Assuming from_dict is correctly implemented
+    user.from_dict(user_data)
+    # Handle super admin field separately - only allow one super admin via UI
+    if "is_superadmin" in user_data and user_data["is_superadmin"]:
+        # Check if another super admin already exists
+        existing_super_admin = db.session.execute(
+            db.select(User).where(User.is_superadmin)
+        ).scalar_one_or_none()
+
+        if existing_super_admin:
+            return {
+                "message": "Only one super admin is allowed. Use CLI command to create additional super admins if needed.",
+                "error": "Super admin limit reached",
+            }, 400
+
+        user.is_superadmin = True
     user.confirmed_at = datetime.datetime.now()
     db.session.add(user)
+    db.session.flush()  # Get user ID
+
+    # Handle workspace assignments - simple approach
+    if "workspace_ids" in user_data and not user.is_superadmin:
+        from enferno.user.models import Membership
+
+        for workspace_id in user_data.get("workspace_ids", []):
+            membership = Membership(
+                user_id=user.id, workspace_id=workspace_id, role="member"
+            )
+            db.session.add(membership)
+
     try:
         db.session.commit()
         # Register activity
@@ -74,6 +117,51 @@ def api_user_update(id):
     # Store old user data for activity log
     old_user_data = user.to_dict()
     user.from_dict(user_data)
+    # Handle super admin field separately - with safeguards
+    if "is_superadmin" in user_data:
+        new_super_admin_status = user_data["is_superadmin"]
+
+        # If trying to make someone super admin
+        if new_super_admin_status and not user.is_superadmin:
+            # Check if another super admin already exists
+            existing_super_admin = db.session.execute(
+                db.select(User).where(User.is_superadmin)
+            ).scalar_one_or_none()
+
+            if existing_super_admin:
+                return {
+                    "message": "Only one super admin is allowed. Use CLI command to create additional super admins if needed.",
+                    "error": "Super admin limit reached",
+                }, 400
+
+        # If trying to remove super admin status, ensure at least one exists
+        elif not new_super_admin_status and user.is_superadmin:
+            super_admin_count = db.session.execute(
+                db.select(db.func.count(User.id)).where(User.is_superadmin)
+            ).scalar()
+
+            if super_admin_count <= 1:
+                return {
+                    "message": "Cannot remove the last super admin. Create another super admin first.",
+                    "error": "Cannot remove last super admin",
+                }, 400
+
+        user.is_superadmin = new_super_admin_status
+
+    # Handle workspace assignments - simple approach
+    if "workspace_ids" in user_data and not user.is_superadmin:
+        from enferno.user.models import Membership
+
+        # Clear existing memberships
+        db.session.execute(db.delete(Membership).where(Membership.user_id == user.id))
+
+        # Add new memberships
+        for workspace_id in user_data.get("workspace_ids", []):
+            membership = Membership(
+                user_id=user.id, workspace_id=workspace_id, role="member"
+            )
+            db.session.add(membership)
+
     db.session.commit()
     # Register activity
     Activity.register(
@@ -92,78 +180,6 @@ def api_user_delete(id):
     # Register activity
     Activity.register(current_user.id, "User Delete", user_data)
     return {"message": "User successfully deleted!"}
-
-
-@bp_user.route("/roles/")
-def roles():
-    return render_template("cms/roles.html")
-
-
-@bp_user.route("/api/roles", methods=["GET"])
-def api_roles():
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", PER_PAGE, type=int)
-
-    # Start with base query
-    query = db.select(Role)
-
-    # Paginate results
-    pagination = db.paginate(query, page=page, per_page=per_page)
-
-    # Convert roles to dictionaries
-    items = [role.to_dict() for role in pagination.items]
-
-    # Create consistent response structure
-    response_data = {
-        "items": items,
-        "total": pagination.total,
-        "perPage": pagination.per_page,
-    }
-
-    return Response(json.dumps(response_data), content_type="application/json")
-
-
-@bp_user.route("/api/role/", methods=["POST"])
-def api_role_create():
-    role_data = request.json.get("item", {})
-    role = Role()
-    role.from_dict(role_data)
-    db.session.add(role)
-    try:
-        db.session.commit()
-        # Register activity
-        Activity.register(current_user.id, "Role Create", role.to_dict())
-        return {"message": "Role successfully created!"}
-    except Exception as e:
-        db.session.rollback()
-        return {"message": "Error creating role", "error": str(e)}, 412
-
-
-@bp_user.post("/api/role/<int:id>")
-def api_role_update(id):
-    role = db.get_or_404(Role, id)
-    # Store old role data for activity log
-    old_role_data = role.to_dict()
-    role_data = request.json.get("item", {})
-    role.from_dict(role_data)
-    db.session.commit()
-    # Register activity
-    Activity.register(
-        current_user.id, "Role Update", {"old": old_role_data, "new": role.to_dict()}
-    )
-    return {"message": "Role successfully updated!"}
-
-
-@bp_user.route("/api/role/<int:id>", methods=["DELETE"])
-def api_role_delete(id):
-    role = db.get_or_404(Role, id)
-    # Store role data for activity log before deletion
-    role_data = role.to_dict()
-    db.session.delete(role)
-    db.session.commit()
-    # Register activity
-    Activity.register(current_user.id, "Role Delete", role_data)
-    return {"message": "Role successfully deleted!"}
 
 
 @bp_user.route("/activities/")

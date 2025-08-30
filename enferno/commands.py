@@ -24,44 +24,81 @@ def create_db():
 
 
 @click.command()
+@click.option("--email", "-e", help="Admin email (default: admin@example.com)")
+@click.option(
+    "--password", "-p", help="Admin password (auto-generated if not provided)"
+)
+@click.option("--non-interactive", "-n", is_flag=True, help="Non-interactive mode")
 @with_appcontext
-def install():
+def install(email=None, password=None, non_interactive=False):
     """Install a default admin user and add an admin role to it."""
     # check if admin exists
     from enferno.user.models import Role
 
     # create admin role if it doesn't exist
-    admin_role = Role.query.filter(Role.name == "admin").first()
+    admin_role = db.session.execute(
+        db.select(Role).where(Role.name == "admin")
+    ).scalar_one_or_none()
     if not admin_role:
-        admin_role = Role(name="admin").save()
+        admin_role = Role(name="admin")
+        db.session.add(admin_role)
+        db.session.commit()
 
     # check if admin users already installed
-    admin_user = User.query.filter(User.roles.any(Role.name == "admin")).first()
+    admin_user = db.session.execute(
+        db.select(User).where(User.roles.any(Role.name == "admin"))
+    ).scalar_one_or_none()
     if admin_user:
         console.print(
-            f"[yellow]An admin user already exists:[/] [blue]{admin_user.username}[/]"
+            f"[yellow]An admin user already exists:[/] [blue]{admin_user.email}[/]"
         )
         return
 
-    # else : create a new admin user
-    username = click.prompt("Admin username", default="admin")
-    # Generate a secure password
-    password = "".join(
-        secrets.choice(string.ascii_letters + string.digits + "@#$%^&*")
-        for _ in range(32)
-    )
+    # Get email
+    if email is None:
+        if non_interactive:
+            email = "admin@example.com"
+        else:
+            email = click.prompt("Admin email", default="admin@example.com")
+
+    # Get or generate password
+    if password is None:
+        if non_interactive:
+            # Generate a secure password for non-interactive mode
+            password = "".join(
+                secrets.choice(string.ascii_letters + string.digits + "@#$%^&*")
+                for _ in range(32)
+            )
+        else:
+            # Interactive mode - ask user if they want to generate or provide password
+            generate_password = click.confirm(
+                "Generate a secure random password?", default=True
+            )
+            if generate_password:
+                password = "".join(
+                    secrets.choice(string.ascii_letters + string.digits + "@#$%^&*")
+                    for _ in range(32)
+                )
+            else:
+                password = click.prompt("Enter admin password", hide_input=True)
+
+    # Extract username from email for backwards compatibility
+    username = email.split("@")[0]
 
     user = User(
         username=username,
+        email=email,
         name="Super Admin",
         password=hash_password(password),
-        active=1,
+        active=True,
+        is_superadmin=True,  # Set as super admin
     )
     user.roles.append(admin_role)
-    user.save()
+    db.session.add(user)
+    db.session.commit()
 
-    console.print("\n[green]✓[/] Admin user created successfully!")
-    console.print(f"[blue]Username:[/] {username}")
+    console.print("\n[green]✓[/] Super Admin user created successfully!")
+    console.print(f"[blue]Email:[/] {email}")
     console.print(f"[blue]Password:[/] [red]{password}[/]")
     console.print(
         "\n[yellow]⚠️  Please save this password securely - you will not see it again![/]"
@@ -71,15 +108,36 @@ def install():
 @click.command()
 @click.option("-e", "--email", prompt=True, default=None)
 @click.option("-p", "--password", prompt=True, default=None)
+@click.option(
+    "--super-admin",
+    is_flag=True,
+    help="Create as super admin (bypasses UI restrictions)",
+)
 @with_appcontext
-def create(email, password):
+def create(email, password, super_admin):
     """Creates a user using an email."""
-    a = User.query.filter(User.email == email).first()
+    a = db.session.execute(
+        db.select(User).where(User.email == email)
+    ).scalar_one_or_none()
     if a is not None:
         print("User already exists!")
     else:
-        user = User(email=email, password=hash_password(password), active=True)
-        user.save()
+        username = email.split("@")[0]
+        user = User(
+            username=username,
+            email=email,
+            password=hash_password(password),
+            active=True,
+            is_superadmin=super_admin,
+        )
+        db.session.add(user)
+        db.session.commit()
+
+        if super_admin:
+            console.print(f"[green]✓[/] Super Admin user created: {email}")
+            console.print("[yellow]⚠️  This user has full platform access![/]")
+        else:
+            console.print(f"[green]✓[/] User created: {email}")
 
 
 @click.command()
@@ -90,7 +148,9 @@ def add_role(email, role):
     """Adds a role to the specified user."""
     from enferno.user.models import Role
 
-    u = User.query.filter(User.email == email).first()
+    u = db.session.execute(
+        db.select(User).where(User.email == email)
+    ).scalar_one_or_none()
 
     if u is None:
         print("Sorry, this user does not exist!")
@@ -109,6 +169,7 @@ def add_role(email, role):
                     db.session.rollback()
         # add role to user
         u.roles.append(r)
+        db.session.commit()
 
 
 @click.command()
@@ -120,7 +181,9 @@ def reset(email, password):
     try:
         pwd = hash_password(password)
         # Check if user exists with provided email or username
-        u = User.query.filter((User.email == email) | (User.username == email)).first()
+        u = db.session.execute(
+            db.select(User).where((User.email == email) | (User.username == email))
+        ).scalar_one_or_none()
         if not u:
             print(f'User with email or username "{email}" not found.')
             return

@@ -39,15 +39,16 @@ class Config:
     SECURITY_CONFIRMABLE = False
     SECURITY_CHANGEABLE = True
     SECURITY_TRACKABLE = True
-    SECURITY_PASSWORD_HASH = "pbkdf2_sha512"
+    SECURITY_PASSWORD_HASH = "argon2"
     SECURITY_PASSWORD_SALT = os.environ.get(
         "SECURITY_PASSWORD_SALT",
         "e89c4039b51f72b0519d1ee033ff537c7c48902e1f497f74c7a0923c9e4e0996",
     )
+    # Email-only login - simplest and most user-friendly
     SECURITY_USER_IDENTITY_ATTRIBUTES = [
-        {"username": {"mapper": uia_username_mapper, "case_insensitive": True}},
+        {"email": {"mapper": uia_username_mapper, "case_insensitive": True}},
     ]
-    SECURITY_USERNAME_ENABLE = True
+    SECURITY_USERNAME_ENABLE = False  # Disable username completely
 
     SECURITY_POST_LOGIN_VIEW = "/dashboard"
     SECURITY_POST_CONFIRM_VIEW = "/dashboard"

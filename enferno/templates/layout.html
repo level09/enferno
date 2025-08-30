@@ -29,68 +29,153 @@
             </v-app-bar-title>
             <v-spacer></v-spacer>
             {% if current_user.is_authenticated %}
-            <v-menu
-      v-model="menu"
-      :close-on-content-click="false"
-      location="bottom"
-    >
-      <template v-slot:activator="{ props }">
-        <v-btn
+<!-- User menu moved to sidebar -->
 
-          v-bind="props"
-          icon="mdi-account"
-        >
-
-
-
-
-
-        </v-btn>
-      </template>
-
-      <v-card min-width="300" >
-        <v-list>
-          <v-list-item
-            title="{{ current_user.name }}"
-            subtitle="{{ current_user.email}}"
-          >
-            <template v-slot:append>
-            </template>
-          </v-list-item>
-        </v-list>
-
-        <v-divider></v-divider>
-
-        <v-list>
-          <v-list-item>
-           <v-btn href="/dashboard" variant="plain" >My Account</v-btn>
-          </v-list-item>
-
-          <v-list-item>
-            <v-btn href="/change" variant="plain"  >Change Password</v-btn>
-          </v-list-item>
-
-             <v-list-item>
-            <v-btn color="red" href="/logout"  > Logout</v-btn>
-          </v-list-item>
-        </v-list>
-
-
-      </v-card>
-    </v-menu>
 
             {% endif  %}
         </v-app-bar>
 
         <v-navigation-drawer v-model="drawer">
             <v-list>
-                <v-list-item href="/dashboard" title="Dashboard"></v-list-item>
-                {% if current_user.has_role('admin') %}
-                    <v-list-item href="/users" title="Users Management"></v-list-item>
-                    <v-list-item href="/roles" title="Roles Management"></v-list-item>
-                    <v-list-item href="/activities" title="Activity Logs"></v-list-item>
+                {% if current_user.is_authenticated %}
+                    <!-- Super Admin Navigation -->
+                    {% if current_user.is_superadmin %}
+                        <v-list-subheader>Platform Management</v-list-subheader>
+                        <v-list-item 
+                            href="/dashboard" 
+                            prepend-icon="mdi-view-dashboard"
+                            title="Platform Overview"
+                        ></v-list-item>
+                        
+                        <v-divider class="my-2"></v-divider>
+                        <v-list-subheader>System Administration</v-list-subheader>
+                        <v-list-item 
+                            href="/users/" 
+                            prepend-icon="mdi-account-group"
+                            title="Manage Users"
+                        ></v-list-item>
+                        <v-list-item 
+                            href="/activities/" 
+                            prepend-icon="mdi-history"
+                            title="Activity Log"
+                        ></v-list-item>
+                        
+                        <!-- Current Workspace Context (if in workspace) -->
+                        {% set current_workspace = get_current_workspace() %}
+                        {% if current_workspace %}
+                            <v-divider class="my-2"></v-divider>
+                            <v-list-subheader>Current Workspace: {{ current_workspace.name }}</v-list-subheader>
+                            <v-list-item 
+                                href="/workspace/{{ current_workspace.id }}/" 
+                                prepend-icon="mdi-briefcase"
+                                title="Workspace Home"
+                            ></v-list-item>
+                            <v-list-item 
+                                href="/workspace/{{ current_workspace.id }}/team/" 
+                                prepend-icon="mdi-account-group"
+                                title="Manage Team"
+                            ></v-list-item>
+                            <v-list-item 
+                                href="/dashboard" 
+                                prepend-icon="mdi-swap-horizontal"
+                                title="Switch Workspace"
+                            ></v-list-item>
+                        {% endif %}
+                        
+                    {% else %}
+                        <!-- Regular User Navigation -->
+                        {% set current_workspace = get_current_workspace() %}
+                        {% if current_workspace %}
+                            <!-- User is in a workspace -->
+                            <v-list-subheader>{{ current_workspace.name }}</v-list-subheader>
+                            <v-list-item 
+                                href="/workspace/{{ current_workspace.id }}/" 
+                                prepend-icon="mdi-briefcase"
+                                title="Workspace Home"
+                            ></v-list-item>
+                            
+                            <!-- Show team management if user is workspace admin -->
+                            {% if current_user.is_workspace_admin(current_workspace.id) %}
+                                <v-list-item 
+                                    href="/workspace/{{ current_workspace.id }}/team/" 
+                                    prepend-icon="mdi-account-group"
+                                    title="Manage Team"
+                                ></v-list-item>
+                            {% endif %}
+                            
+                            <!-- Show workspace switcher if user has multiple workspaces -->
+                            {% if current_user.get_workspaces()|length > 1 %}
+                                <v-list-item 
+                                    href="/dashboard" 
+                                    prepend-icon="mdi-swap-horizontal"
+                                    title="Switch Workspace"
+                                ></v-list-item>
+                            {% endif %}
+                        {% else %}
+                            <!-- User has no workspace access -->
+                            <v-list-subheader>Getting Started</v-list-subheader>
+                            <v-list-item 
+                                href="/dashboard" 
+                                prepend-icon="mdi-view-dashboard"
+                                title="Dashboard"
+                            ></v-list-item>
+                            <v-list-item 
+                                prepend-icon="mdi-help-circle"
+                                title="Contact Admin"
+                                subtitle="Request workspace access"
+                            ></v-list-item>
+                        {% endif %}
+                    {% endif %}
+                {% else %}
+                    <!-- Unauthenticated Navigation -->
+                    <v-list-item href="/login" prepend-icon="mdi-login" title="Login"></v-list-item>
+                    <v-list-item href="/register" prepend-icon="mdi-account-plus" title="Sign Up"></v-list-item>
                 {% endif %}
             </v-list>
+            
+            <!-- User Profile Section at Bottom -->
+            {% if current_user.is_authenticated %}
+            <template v-slot:append>
+                <v-divider class="mb-2"></v-divider>
+                
+                <!-- User Info Card -->
+                <div class="pa-3">
+                    <v-card variant="flat" color="transparent" class="d-flex align-center">
+                        <v-avatar size="36" color="primary" class="mr-3">
+                            <span class="text-white font-weight-bold text-body-2">{{ current_user.name[:1].upper() if current_user.name else 'U' }}</span>
+                        </v-avatar>
+                        
+                        <div class="flex-grow-1 mr-2">
+                            <div class="text-body-2 font-weight-medium text-truncate">
+                                {{ current_user.name or 'User' }}
+                            </div>
+                            <div class="text-caption text-medium-emphasis">
+                                {% if current_user.is_superadmin %}
+                                    <v-chip size="x-small" color="primary" variant="tonal" class="px-2">
+                                        <v-icon start size="12">mdi-shield-crown</v-icon>
+                                        Admin
+                                    </v-chip>
+                                {% else %}
+                                    <span class="text-truncate">{{ current_user.email }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <v-btn 
+                            href="/logout" 
+                            icon="mdi-logout" 
+                            variant="text" 
+                            size="small"
+                            color="medium-emphasis"
+                            class="ml-auto"
+                        >
+                            <v-icon size="18">mdi-logout</v-icon>
+                            <v-tooltip activator="parent" location="top">Logout</v-tooltip>
+                        </v-btn>
+                    </v-card>
+                </div>
+            </template>
+            {% endif %}
         </v-navigation-drawer>
 
 

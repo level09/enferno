@@ -25,12 +25,34 @@
                         
                     </v-toolbar>
                 </template>
-                <template v-slot:item.roles="{ item }">
-                    <v-chip v-for="role in item.roles" :key="role.id" color="primary" class="mr-2">
-                        ${role.name}
+                <template v-slot:item.user_type="{ item }">
+                    <v-chip v-if="item.is_superadmin" color="error" size="small" variant="tonal">
+                        <v-icon start size="14">mdi-shield-crown</v-icon>
+                        Super Admin
                     </v-chip>
-
+                    <v-chip v-else color="primary" size="small" variant="tonal">
+                        <v-icon start size="14">mdi-account</v-icon>
+                        User
+                    </v-chip>
                 </template>
+                
+                <template v-slot:item.workspaces="{ item }">
+                    <div v-if="item.workspace_count > 0">
+                        <v-chip v-for="workspace in item.workspaces" :key="workspace.id" color="info" size="small" class="mr-1 mb-1" variant="tonal">
+                            ${workspace.name}
+                            <v-tooltip activator="parent" location="top">
+                                Role: ${workspace.role}
+                            </v-tooltip>
+                        </v-chip>
+                        <v-chip v-if="item.workspace_count > 3" color="grey" size="small" variant="text">
+                            +${item.workspace_count - 3} more
+                        </v-chip>
+                    </div>
+                    <v-chip v-else color="grey" size="small" variant="text">
+                        No workspaces
+                    </v-chip>
+                </template>
+                
 
                  <template v-slot:item.active="{ item }">
                     <v-avatar size="16" v-if="item.active" color="green"></v-avatar>
@@ -81,17 +103,21 @@
 
                 <v-text-field placeholder="Password" type="password" v-model="eitem.password"></v-text-field>
 
-                <v-select label="Roles"
+
+                <v-select v-if="!eitem.is_superadmin" label="Assign to Workspaces"
                           item-title="name"
+                          item-value="id"
                           multiple
-                          v-model="eitem.roles"
-                          return-object
+                          v-model="eitem.workspace_ids"
                           chips
                           clearable
-                          :items="roles"
+                          hint="Super admins have access to all workspaces"
+                          persistent-hint
+                          :items="workspaces"
                 ></v-select>
-
+                
                 <v-switch color="primary" label="Active" v-model="eitem.active"></v-switch>
+                <v-switch color="error" label="Super Admin" v-model="eitem.is_superadmin"></v-switch>
 
             </v-card-text>
 
@@ -115,9 +141,9 @@
 
 {% endblock %} {% block js %}
 
-    <script type="application/json" id="roles-data">
-    {{ roles|tojson|safe }}
-
+    
+    <script type="application/json" id="workspaces-data">
+    {{ workspaces|tojson|safe }}
     </script>
 
     <script>
@@ -148,7 +174,8 @@
                         {title: 'Name', value: 'name'},
                         {title: 'Username', value: 'username'},
                         {title: 'Email', value: 'email'},
-                        {title: 'Roles', value: 'roles', sortable: false},
+                        {title: 'Type', value: 'user_type', sortable: false},
+                        {title: 'Workspaces', value: 'workspaces', sortable: false},
                         {title: 'Active', value: 'active', sortable: false},
                         {title: 'Actions', value: 'actions', sortable: false}
                     ],
@@ -158,10 +185,11 @@
                         name: "",
                         email: "",
                         password: "",
-                        roles: [],
-                        active: true
+                        active: true,
+                        is_superadmin: false,
+                        workspace_ids: []
                     },
-                    roles: JSON.parse(document.querySelector('#roles-data').textContent)
+                    workspaces: JSON.parse(document.querySelector('#workspaces-data').textContent)
                 };
             },
 
@@ -206,13 +234,24 @@
                 
                 createItem() {
                     this.edialog = true;
-                    this.eitem = {};
+                    this.eitem = {
+                        id: "",
+                        name: "",
+                        email: "",
+                        username: "",
+                        password: "",
+                        active: true,
+                        is_superadmin: false,
+                        workspace_ids: []
+                    };
 
                 },
 
                 editItem(item) {
-
                     this.eitem = toRaw(item);
+                    
+                    // Populate workspace IDs for editing
+                    this.eitem.workspace_ids = item.workspaces ? item.workspaces.map(w => w.id) : [];
 
                     this.$nextTick(() => {
                         this.edialog = true;

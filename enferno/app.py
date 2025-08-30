@@ -1,4 +1,5 @@
 import inspect
+import warnings
 
 import click
 from flask import Flask, render_template
@@ -15,6 +16,11 @@ from enferno.settings import Config
 from enferno.user.forms import ExtendedRegisterForm
 from enferno.user.models import OAuth, Role, User, WebAuthn
 from enferno.user.views import bp_user
+
+# Suppress passlib pkg_resources deprecation warning at import time
+warnings.filterwarnings(
+    "ignore", message="pkg_resources is deprecated", category=UserWarning
+)
 
 
 def create_app(config_object=Config):
@@ -39,7 +45,8 @@ def register_extensions(app):
     user_datastore = SQLAlchemyUserDatastore(db, User, Role, webauthn_model=WebAuthn)
     Security(app, user_datastore, register_form=ExtendedRegisterForm)
     mail.init_app(app)
-    debug_toolbar.init_app(app)
+    if debug_toolbar:
+        debug_toolbar.init_app(app)
 
     # Session initialization
     session.init_app(app)
@@ -50,6 +57,13 @@ def register_extensions(app):
         default_domain="messages",
         default_locale="en",
     )
+
+    # Add template context processors
+    @app.context_processor
+    def inject_workspace_helpers():
+        from enferno.utils.tenant import get_current_workspace
+
+        return {"get_current_workspace": get_current_workspace}
 
     return None
 

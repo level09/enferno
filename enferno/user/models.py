@@ -54,6 +54,7 @@ class User(UserMixin, db.Model, BaseMixin):
     email = db.Column(db.String(255), nullable=True)
     password = db.Column(db.String(255), nullable=False)
     active = db.Column(db.Boolean, default=False, nullable=True)
+    is_superadmin = db.Column(db.Boolean, default=False, nullable=False)
 
     roles = relationship("Role", secondary=roles_users, backref="users")
 
@@ -82,7 +83,7 @@ class User(UserMixin, db.Model, BaseMixin):
             "name": self.name,
             "username": self.username,
             "email": self.email,
-            "roles": [role.to_dict() for role in self.roles],
+            "is_superadmin": self.is_superadmin,
         }
 
     def from_dict(self, json_dict):
@@ -93,14 +94,6 @@ class User(UserMixin, db.Model, BaseMixin):
             "password" in json_dict
         ):  # Only hash password if provided, to avoid hashing None
             self.password = hash_password(json_dict["password"])
-        # Update roles if specified, otherwise leave unchanged
-        if "roles" in json_dict:
-            role_ids = [r.get("id") for r in json_dict["roles"]]
-            self.roles = (
-                Role.query.filter(Role.id.in_(role_ids)).all()
-                if role_ids
-                else self.roles
-            )
         self.active = json_dict.get("active", self.active)
         return self
 
@@ -127,6 +120,38 @@ class User(UserMixin, db.Model, BaseMixin):
         alphabet = string.ascii_letters + string.digits + string.punctuation
         password = "".join(secrets.choice(alphabet) for i in range(length))
         return hash_password(password)
+
+    def get_workspaces(self):
+        """Get all workspaces user has access to"""
+        from sqlalchemy import select
+
+        return (
+            db.session.execute(
+                select(Workspace)
+                .join(Membership)
+                .where(Membership.user_id == self.id)
+                .order_by(Workspace.created_at.desc())
+            )
+            .scalars()
+            .all()
+        )
+
+    def get_workspace_role(self, workspace_id):
+        """Get user's role in a specific workspace"""
+        membership = db.session.execute(
+            db.select(Membership).where(
+                Membership.user_id == self.id, Membership.workspace_id == workspace_id
+            )
+        ).scalar_one_or_none()
+        return membership.role if membership else None
+
+    def can_access_workspace(self, workspace_id):
+        """Check if user can access workspace"""
+        return self.get_workspace_role(workspace_id) is not None
+
+    def is_workspace_admin(self, workspace_id):
+        """Check if user is admin of workspace"""
+        return self.get_workspace_role(workspace_id) == "admin"
 
 
 class WebAuthn(db.Model):
@@ -176,7 +201,6 @@ class Activity(db.Model, BaseMixin):
     user_id = db.Column(db.Integer, nullable=False)
     action = db.Column(db.String(255), nullable=False)
     data = db.Column(db.JSON, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
 
     @classmethod
     def register(cls, user_id, action, data=None):
@@ -190,3 +214,56 @@ class Activity(db.Model, BaseMixin):
             print(f"Error registering activity: {e}")
             db.session.rollback()
             return None
+
+
+@dataclasses.dataclass
+class Workspace(db.Model, BaseMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    slug = db.Column(db.String(100), unique=True, nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+    owner = relationship("User", backref="owned_workspaces")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "slug": self.slug,
+            "owner_id": self.owner_id,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+    @staticmethod
+    def generate_slug(name):
+        """Generate URL-safe slug from name"""
+        import re
+
+        slug = re.sub(r"[^\w\s-]", "", name.lower())
+        slug = re.sub(r"[-\s]+", "-", slug)
+        return slug.strip("-")
+
+
+@dataclasses.dataclass
+class Membership(db.Model, BaseMixin):
+    workspace_id = db.Column(
+        db.Integer, db.ForeignKey("workspace.id", ondelete="CASCADE"), primary_key=True
+    )
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), primary_key=True
+    )
+    role = db.Column(
+        db.String(20), nullable=False, default="member"
+    )  # 'admin' or 'member'
+
+    workspace = relationship("Workspace", backref="memberships")
+    user = relationship("User", backref="memberships")
+
+    def to_dict(self):
+        return {
+            "workspace_id": self.workspace_id,
+            "user_id": self.user_id,
+            "role": self.role,
+            "user": self.user.to_dict() if self.user else None,
+            "workspace": self.workspace.to_dict() if self.workspace else None,
+        }

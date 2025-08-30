@@ -1,0 +1,354 @@
+{% extends 'layout.html' %}
+{% block css %}{% endblock %}
+
+{% block content %}
+
+<v-card class="ma-2 mt-12 w-100 h-100">
+    <v-toolbar>
+        <v-toolbar-title>Members</v-toolbar-title>
+        <v-spacer></v-spacer>
+    </v-toolbar>
+
+    <v-card-text>
+        <v-data-table-server
+            :items="items"
+            :items-length="itemsLength"
+            :headers="headers"
+            :loading="loading"
+            :page="options.page"
+            :items-per-page="options.itemsPerPage"
+            @update:options="refresh"
+            hover
+        >
+            <template v-slot:top>
+                <v-toolbar class="mb-4" dense elevation="0" color="transparent">
+                    {% if role.key == 'admin' %}
+                    <v-btn 
+                        class="ml-auto" 
+                        prepend-icon="mdi-account-plus" 
+                        @click="createItem" 
+                        size="small" 
+                        color="primary" 
+                        variant="elevated"
+                    >
+                        Add Team Member
+                    </v-btn>
+                    {% endif %}
+                </v-toolbar>
+            </template>
+
+            <template v-slot:item.name="{ item }">
+                <div class="d-flex align-center">
+                    <v-avatar color="grey-lighten-1" size="32" class="mr-3">
+                        <span class="text-white text-caption">
+                            ${item.name?.charAt(0)?.toUpperCase() || 'U'}
+                        </span>
+                    </v-avatar>
+                    <div>
+                        <div class="font-weight-medium">${item.name}</div>
+                        <div class="text-caption text-medium-emphasis">${item.email}</div>
+                    </div>
+                </div>
+            </template>
+
+            <template v-slot:item.role="{ item }">
+                <v-chip 
+                    :color="getRoleColor(item.role_key)" 
+                    variant="outlined" 
+                    size="small"
+                >
+                    ${item.role}
+                </v-chip>
+            </template>
+
+            <template v-slot:item.joined_at="{ item }">
+                <div class="text-body-2 text-medium-emphasis">
+                    ${formatDate(item.joined_at)}
+                </div>
+            </template>
+
+            {% if role.key in ['owner', 'admin'] %}
+            <template v-slot:item.actions="{ item }">
+                <v-icon
+                    v-if="item.role_key !== 'owner' && item.user_id !== {{ current_user.id }}"
+                    small
+                    class="mr-2"
+                    @click="editItem(item)"
+                >
+                    mdi-pencil
+                </v-icon>
+                <v-icon
+                    v-if="item.role_key !== 'owner' && item.user_id !== {{ current_user.id }}"
+                    small
+                    @click="deleteItem(item)"
+                >
+                    mdi-delete
+                </v-icon>
+            </template>
+            {% endif %}
+        </v-data-table-server>
+    </v-card-text>
+</v-card>
+
+<!-- Edit/Add Member Dialog -->
+<v-dialog v-model="edialog" width="500">
+    <v-card v-if="edialog">
+        <v-toolbar>
+            <v-toolbar-title>${editMode ? 'Change Role' : 'Add Member'}</v-toolbar-title>
+            <template v-slot:append>
+                <v-btn @click="edialog=false" size="small" icon="mdi-close" variant="text"></v-btn>
+            </template>
+        </v-toolbar>
+
+        <v-card-text>
+            <div v-if="editMode && eitem.name" class="mb-4">
+                <strong>${eitem.name}</strong>
+                <div class="text-caption text-medium-emphasis">${eitem.email}</div>
+            </div>
+
+            <div v-if="!editMode">
+                <v-text-field
+                    label="Email Address"
+                    v-model="eitem.email"
+                    type="email"
+                    :rules="[rules.required, rules.email]"
+                ></v-text-field>
+                <v-text-field
+                    label="Password"
+                    v-model="eitem.password"
+                    type="password"
+                    :rules="[rules.required]"
+                ></v-text-field>
+            </div>
+
+            <v-select
+                :label="editMode ? 'New Role' : 'Role'"
+                v-model="eitem.role_key"
+                :items="availableRoles"
+                item-title="name"
+                item-value="key"
+            ></v-select>
+        </v-card-text>
+
+        <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" @click="saveItem" variant="elevated">
+                ${editMode ? 'Update Role' : 'Add Member'}
+            </v-btn>
+        </v-card-actions>
+    </v-card>
+</v-dialog>
+
+<v-snackbar size="small" class="d-flex" v-model="snackBar" rounded="pill" elevation="25">
+    ${snackMessage}
+    <template v-slot:actions>
+        <v-btn @click="snackBar=false" icon="mdi-close" class="ml-auto" size="small" variant="text"></v-btn>
+    </template>
+</v-snackbar>
+
+{% endblock %}
+
+{% block js %}
+
+<script type="application/json" id="org-data">
+{{ organization.to_dict()|tojson|safe }}
+</script>
+
+<script>
+const { createApp, toRaw } = Vue;
+const { createVuetify } = Vuetify;
+const vuetify = createVuetify(config.vuetifyConfig);
+
+window.app = createApp({
+    data() {
+        return {
+            config: config,
+            menu: config.menu,
+            rail: config.rail,
+            snackBar: false,
+            snackMessage: "",
+            items: [],
+            itemsLength: 0,
+            loading: false,
+            options: {
+                page: 1,
+                itemsPerPage: config.itemsPerPage || 25
+            },
+            drawer: true,
+            orgData: {},
+
+            headers: [
+                { title: 'Member', value: 'name' },
+                { title: 'Role', value: 'role' },
+                { title: 'Joined', value: 'joined_at' },
+                {% if role.key in ['owner', 'admin'] %}
+                { title: 'Actions', value: 'actions', sortable: false }
+                {% endif %}
+            ],
+
+            edialog: false,
+            eitem: {
+                email: '',
+                role_key: 'member'
+            },
+            editMode: false,
+
+            availableRoles: [
+                { key: 'member', name: 'Member' },
+                { key: 'admin', name: 'Admin' }
+            ],
+
+            rules: {
+                required: value => !!value || 'Required',
+                email: value => {
+                    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    return pattern.test(value) || 'Invalid email';
+                }
+            }
+        };
+    },
+
+    mounted() {
+        // Load organization data from the DOM
+        try {
+            const orgElement = document.querySelector('#org-data');
+            if (orgElement) {
+                this.orgData = JSON.parse(orgElement.textContent);
+            } else {
+                console.error('Organization data element not found');
+            }
+        } catch (error) {
+            console.error('Failed to parse organization data:', error);
+        }
+    },
+
+    watch: {
+        // Watch for the organization ID to become available.
+        // Once it is, trigger the initial data load.
+        'orgData.id'(newId, oldId) {
+            if (newId) {
+                this.refresh();
+            }
+        }
+    },
+
+    delimiters: config.delimiters,
+
+    methods: {
+        showSnack(message) {
+            this.snackMessage = message;
+            this.snackBar = true;
+        },
+
+        refresh(options) {
+            if (this.loading) return;
+            this.loading = true;
+
+            // Use options from parameter or component state
+            if (options) {
+                this.options = {
+                    ...this.options,
+                    page: options.page,
+                    itemsPerPage: options.itemsPerPage
+                };
+            }
+            
+            if (!this.orgData.id) {
+                console.log('Not ready to load data, skipping API call');
+                this.loading = false;
+                return;
+            }
+            
+            // Make API request with pagination parameters (POST like CMS pattern)
+            axios.post(`/api/org/${this.orgData.id}/members`, {
+                options: this.options
+            })
+                .then(res => {
+                    this.items = res.data.items || [];
+                    this.itemsLength = res.data.total || 0;
+                    // Update itemsPerPage from API response if provided
+                    if (res.data.perPage) {
+                        this.options.itemsPerPage = res.data.perPage;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching members:', error);
+                    this.showSnack('Failed to load members');
+                })
+                .finally(() => {
+                    this.loading = false;
+                });
+        },
+
+        createItem() {
+            this.editMode = false;
+            this.eitem = { email: '', role_key: 'member' };
+            this.edialog = true;
+        },
+
+        editItem(item) {
+            this.editMode = true;
+            this.eitem = { ...toRaw(item) };
+            this.edialog = true;
+        },
+
+        saveItem() {
+            let request;
+            if (this.editMode) {
+                // Update role functionality
+                request = axios.put(`/api/org/${this.orgData.id}/members/${this.eitem.id}`, {
+                    role_key: this.eitem.role_key
+                });
+            } else {
+                // Add member functionality
+                request = axios.post(`/api/org/${this.orgData.id}/members/add`, {
+                    email: this.eitem.email,
+                    role_key: this.eitem.role_key
+                });
+            }
+
+            request.then(res => {
+                this.showSnack(res.data.message || 'Success!');
+                this.refresh();
+                this.edialog = false;
+            }).catch(error => {
+                this.showSnack(error.response?.data?.error || 'An error occurred.');
+            });
+        },
+
+        deleteItem(item) {
+            if (confirm(`Are you sure you want to remove ${item.name} from the organization?`)) {
+                axios.delete(`/api/org/${this.orgData.id}/members/${item.id}`)
+                    .then(res => {
+                        this.showSnack(res.data.message || 'Member removed.');
+                        this.refresh();
+                    })
+                    .catch(error => {
+                        this.showSnack(error.response?.data?.error || 'Failed to remove member.');
+                    });
+            }
+        },
+
+        getRoleColor(roleKey) {
+            const colors = {
+                'owner': 'purple',
+                'admin': 'blue',
+                'member': 'green'
+            };
+            return colors[roleKey] || 'grey';
+        },
+
+        formatDate(dateString) {
+            if (!dateString) return 'Unknown';
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+    }
+});
+
+app.use(vuetify).mount("#app");
+</script>
+{% endblock %}

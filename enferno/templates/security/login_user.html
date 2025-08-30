@@ -61,10 +61,10 @@
                                 {{ login_user_form.hidden_tag() }}
                                 
                                 <v-text-field
-                                    label="Email or username"
-                                    name="username"
-                                    prepend-inner-icon="mdi-account"
-                                    type="text"
+                                    label="Email"
+                                    name="email"
+                                    prepend-inner-icon="mdi-email"
+                                    type="email"
                                     variant="outlined"
                                     class="mb-2"
                                     bg-color="grey-lighten-4"
@@ -81,8 +81,8 @@
                                     bg-color="grey-lighten-4"
                                 ></v-text-field>
                                 
-                                {% if login_user_form.username.errors or login_user_form.password.errors %}
-                                    <v-alert type="error" density="compact" class="mb-4">Invalid username or password!</v-alert>
+                                {% if login_user_form.email.errors or login_user_form.password.errors %}
+                                    <v-alert type="error" density="compact" class="mb-4">Invalid email or password!</v-alert>
                                 {% endif %}
                                 
                                 {% if security.recoverable %}
@@ -149,6 +149,8 @@
                                 </v-btn>
                                 {% endif %}
                             </div>
+
+                            {{ login_user_form.errors }}
                             
                             <div class="text-center mt-4 mb-4">
                                 <p class="text-caption text-medium-emphasis">
