@@ -10,8 +10,8 @@ load_dotenv()
 
 
 def uia_username_mapper(identity):
-    # we allow pretty much anything - but we bleach it.
-    return bleach.clean(identity, strip=True)
+    # Sanitize and strip whitespace from email input - Flask-Security handles case insensitivity
+    return bleach.clean(identity, strip=True).strip() if identity else identity
 
 
 class Config:
