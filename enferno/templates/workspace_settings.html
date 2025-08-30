@@ -1,0 +1,283 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<v-card class="ma-2 mt-12 w-100">
+    <v-toolbar>
+        <v-toolbar-title>Workspace Settings</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-btn 
+            href="/workspace/{{ workspace.id }}" 
+            prepend-icon="mdi-arrow-left"
+            variant="outlined"
+            size="small"
+        >
+            Back to Workspace
+        </v-btn>
+    </v-toolbar>
+
+    <v-card-text>
+        <!-- Workspace Details Section -->
+        <v-card class="mb-6">
+          <v-card-title class="d-flex align-center">
+            <v-icon class="mr-2">mdi-briefcase</v-icon>
+            Workspace Details
+          </v-card-title>
+          <v-card-text>
+            <v-form v-if="workspaceData.id" @submit.prevent="updateWorkspaceName">
+              <v-text-field
+                label="Workspace Name"
+                v-model="workspaceData.name"
+                variant="outlined"
+                :readonly="'{{ user_role }}' !== 'admin'"
+                class="mb-4"
+              ></v-text-field>
+              {% if user_role == 'admin' %}
+              <v-btn 
+                color="primary" 
+                @click="updateWorkspaceName"
+                :loading="savingWorkspace"
+                class="mb-4"
+              >
+                Save Workspace Name
+              </v-btn>
+              {% endif %}
+              <p class="text-body-2 text-medium-emphasis">
+                {% if user_role == 'admin' %}
+                You can update the workspace name above.
+                {% else %}
+                Only workspace admins can modify workspace settings.
+                {% endif %}
+              </p>
+            </v-form>
+          </v-card-text>
+        </v-card>
+
+        <!-- Profile Section -->
+        <v-card class="mb-6">
+          <v-card-title class="d-flex align-center">
+            <v-icon class="mr-2">mdi-account</v-icon>
+            My Profile
+          </v-card-title>
+          <v-card-text>
+            <v-form v-if="userData.name" @submit.prevent="updateProfile">
+              <v-text-field
+                label="Name"
+                v-model="userData.name"
+                variant="outlined"
+                class="mb-4"
+              ></v-text-field>
+              <v-text-field
+                label="Email"
+                v-model="userData.email"
+                variant="outlined"
+                type="email"
+                class="mb-4"
+              ></v-text-field>
+              <v-btn 
+                color="primary" 
+                @click="updateProfile"
+                :loading="savingProfile"
+                class="mb-4"
+              >
+                Update Profile
+              </v-btn>
+              <p class="text-body-2 text-medium-emphasis">
+                Update your personal information above.
+              </p>
+            </v-form>
+          </v-card-text>
+        </v-card>
+
+        <!-- Workspace Information -->
+        <v-card class="mb-6">
+          <v-card-title class="d-flex align-center">
+            <v-icon class="mr-2">mdi-information</v-icon>
+            Workspace Information
+          </v-card-title>
+          <v-card-text>
+            <div class="mb-3">
+              <strong>Your Role:</strong>
+              <v-chip 
+                :color="'{{ user_role }}' === 'admin' ? 'primary' : 'default'"
+                size="small"
+                class="ml-2"
+              >
+                {{ user_role.title() }}
+              </v-chip>
+            </div>
+            <div class="mb-3">
+              <strong>Created:</strong> 
+              <span v-if="workspaceData.created_at">${ new Date(workspaceData.created_at).toLocaleDateString() }</span>
+              <span v-else>Unknown</span>
+            </div>
+            <div>
+              <strong>Members:</strong> ${ memberCount }
+            </div>
+          </v-card-text>
+        </v-card>
+
+        <!-- Danger Zone -->
+        <v-card color="error" variant="outlined">
+          <v-card-title class="d-flex align-center">
+            <v-icon class="mr-2">mdi-alert</v-icon>
+            Danger Zone
+          </v-card-title>
+          <v-card-text>
+            {% if user_role == 'admin' %}
+            <div class="mb-4">
+              <v-btn
+                color="error"
+                variant="outlined"
+                prepend-icon="mdi-delete"
+                @click="confirmDeleteWorkspace"
+              >
+                Delete Workspace
+              </v-btn>
+              <p class="text-body-2 text-medium-emphasis mt-2">
+                Permanently delete this workspace and all its data. This action cannot be undone.
+              </p>
+            </div>
+            {% else %}
+            <div class="mb-4">
+              <v-btn
+                color="warning"
+                variant="outlined" 
+                prepend-icon="mdi-exit-to-app"
+                @click="confirmLeaveWorkspace"
+              >
+                Leave Workspace
+              </v-btn>
+              <p class="text-body-2 text-medium-emphasis mt-2">
+                Remove yourself from this workspace. You'll lose access immediately.
+              </p>
+            </div>
+            {% endif %}
+          </v-card-text>
+        </v-card>
+    </v-card-text>
+</v-card>
+
+<!-- Success/Error Messages -->
+<v-snackbar 
+    v-model="snackbar" 
+    :color="snackColor"
+    timeout="4000"
+    location="bottom right"
+>
+    ${ snackMessage }
+    <template v-slot:actions>
+        <v-btn variant="text" @click="snackbar = false">Close</v-btn>
+    </template>
+</v-snackbar>
+
+{% endblock %}
+
+{% block js %}
+
+<script type="application/json" id="workspace-data">
+{{ workspace.to_dict()|tojson|safe }}
+</script>
+
+<script type="application/json" id="user-data">
+{{ {"name": current_user.name, "email": current_user.email}|tojson|safe }}
+</script>
+
+<script>
+const { createApp } = Vue;
+const { createVuetify } = Vuetify;
+const vuetify = createVuetify(config.vuetifyConfig);
+
+const app = createApp({
+    data() {
+        return {
+            drawer: true, // Required for layout.html navigation drawer
+            memberCount: 'Loading...',
+            workspaceData: {
+                id: null,
+                name: 'Loading...',
+                created_at: null
+            },
+            userData: {
+                name: '',
+                email: ''
+            },
+            savingWorkspace: false,
+            savingProfile: false,
+            snackbar: false,
+            snackMessage: '',
+            snackColor: 'success'
+        };
+    },
+    delimiters: config.delimiters,
+    
+    methods: {
+        async updateWorkspaceName() {
+            this.savingWorkspace = true;
+            try {
+                const response = await axios.put(`/api/workspace/${this.workspaceData.id}`, {
+                    name: this.workspaceData.name
+                });
+                this.showMessage('Workspace name updated successfully!', 'success');
+            } catch (error) {
+                this.showMessage('Failed to update workspace name', 'error');
+                console.error('Error updating workspace:', error);
+            } finally {
+                this.savingWorkspace = false;
+            }
+        },
+        
+        async updateProfile() {
+            this.savingProfile = true;
+            try {
+                const response = await axios.put('/api/profile', {
+                    name: this.userData.name,
+                    email: this.userData.email
+                });
+                this.showMessage('Profile updated successfully!', 'success');
+            } catch (error) {
+                this.showMessage('Failed to update profile', 'error');
+                console.error('Error updating profile:', error);
+            } finally {
+                this.savingProfile = false;
+            }
+        },
+        
+        showMessage(message, color = 'success') {
+            this.snackMessage = message;
+            this.snackColor = color;
+            this.snackbar = true;
+        },
+        
+        confirmDeleteWorkspace() {
+            if (confirm('Are you sure you want to delete this workspace? This action cannot be undone.')) {
+                alert('Workspace deletion not yet implemented');
+            }
+        },
+        confirmLeaveWorkspace() {
+            if (confirm('Are you sure you want to leave this workspace? You\'ll lose access immediately.')) {
+                alert('Leave workspace not yet implemented');
+            }
+        },
+        async loadStats() {
+            try {
+                const response = await axios.get(`/api/workspace/${this.workspaceData.id}/stats`);
+                this.memberCount = response.data.member_count || 0;
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+                this.memberCount = 'Error';
+            }
+        }
+    },
+    
+    async mounted() {
+        // Load workspace data from JSON
+        this.workspaceData = JSON.parse(document.querySelector('#workspace-data').textContent);
+        // Load user data from JSON
+        this.userData = JSON.parse(document.querySelector('#user-data').textContent);
+        // Load workspace stats
+        await this.loadStats();
+    }
+}).use(vuetify).mount('#app');
+</script>
+{% endblock %}

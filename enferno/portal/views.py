@@ -66,6 +66,17 @@ def workspace_team(workspace_id):
     )
 
 
+@portal.route("/workspace/<int:workspace_id>/settings/")
+@require_workspace_access("member")
+def workspace_settings(workspace_id):
+    """Workspace settings"""
+    workspace = get_current_workspace()
+    user_role = current_user.get_workspace_role(workspace_id)
+    return render_template(
+        "workspace_settings.html", workspace=workspace, user_role=user_role
+    )
+
+
 @portal.route("/workspace/<int:workspace_id>/switch/")
 @auth_required("session")
 def switch_workspace(workspace_id):
@@ -113,6 +124,44 @@ def workspace_stats(workspace_id):
     ).scalar()
 
     return jsonify({"member_count": member_count or 0})
+
+
+@portal.route("/api/workspace/<int:workspace_id>", methods=["PUT"])
+@require_workspace_access("admin")
+def workspace_update(workspace_id):
+    """Update workspace details"""
+    workspace = get_current_workspace()
+    data = request.json
+
+    if "name" in data:
+        workspace.name = data["name"]
+
+    try:
+        db.session.commit()
+        return jsonify({"message": "Workspace updated successfully"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Failed to update workspace", "error": str(e)}), 400
+
+
+@portal.route("/api/profile", methods=["PUT"])
+@auth_required("session")
+def profile_update():
+    """Update user profile"""
+    data = request.json
+
+    if "name" in data:
+        current_user.name = data["name"]
+
+    if "email" in data:
+        current_user.email = data["email"]
+
+    try:
+        db.session.commit()
+        return jsonify({"message": "Profile updated successfully"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Failed to update profile", "error": str(e)}), 400
 
 
 @portal.route("/api/workspace/<int:workspace_id>/members", methods=["POST"])

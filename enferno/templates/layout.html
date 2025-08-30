@@ -76,6 +76,11 @@
                                 title="Manage Team"
                             ></v-list-item>
                             <v-list-item 
+                                href="/workspace/{{ current_workspace.id }}/settings/" 
+                                prepend-icon="mdi-cog"
+                                title="Settings"
+                            ></v-list-item>
+                            <v-list-item 
                                 href="/dashboard" 
                                 prepend-icon="mdi-swap-horizontal"
                                 title="Switch Workspace"
@@ -102,6 +107,13 @@
                                     title="Manage Team"
                                 ></v-list-item>
                             {% endif %}
+                            
+                            <!-- Settings -->
+                            <v-list-item 
+                                href="/workspace/{{ current_workspace.id }}/settings/" 
+                                prepend-icon="mdi-cog"
+                                title="Settings"
+                            ></v-list-item>
                             
                             <!-- Show workspace switcher if user has multiple workspaces -->
                             {% if current_user.get_workspaces()|length > 1 %}
