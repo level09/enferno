@@ -1,6 +1,6 @@
 [project]
 name = "enferno"
-version = "11.2.0"
+version = "12.0.0"
 description = "A modern Flask framework optimized for AI-assisted development workflows"
 authors = [
     {name = "Level09", email = "hello@level09.com"}
