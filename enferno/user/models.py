@@ -237,11 +237,9 @@ class Workspace(db.Model, BaseMixin):
     @staticmethod
     def generate_slug(name):
         """Generate URL-safe slug from name"""
-        import re
+        from sluggi import slugify
 
-        slug = re.sub(r"[^\w\s-]", "", name.lower())
-        slug = re.sub(r"[-\s]+", "-", slug)
-        return slug.strip("-")
+        return slugify(name)
 
 
 @dataclasses.dataclass
