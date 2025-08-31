@@ -16,6 +16,7 @@ from oauthlib.oauth2.rfc6749.errors import OAuth2Error
 from sqlalchemy.orm.exc import NoResultFound
 
 from enferno.extensions import db
+from enferno.services.auth import AuthService
 from enferno.user.models import OAuth, User
 
 public = Blueprint("public", __name__, static_folder="../static")
@@ -182,13 +183,17 @@ def oauth_logged_in(blueprint, token):
                 login_user(existing_user)
                 flash("Account linked successfully.", category="success")
             else:
-                # Create new user
+                # Create new user with workspace
                 user = create_oauth_user(provider_data, token, real_ip)
                 oauth.user = user
                 db.session.add_all([user, oauth])
+                db.session.flush()  # Get user ID before creating workspace
+
+                workspace = AuthService.create_user_workspace(user, provider_data)
+                db.session.add(workspace)
                 db.session.commit()
                 login_user(user)
-                flash("Successfully signed in.")
+                flash("Welcome! Your workspace has been created.")
 
         return redirect(url_for("portal.dashboard"))
 
