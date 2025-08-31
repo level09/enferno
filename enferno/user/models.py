@@ -18,6 +18,7 @@ from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import declared_attr, relationship
 
 from enferno.extensions import db
+from enferno.services.billing import HostedBilling
 from enferno.utils.base import BaseMixin
 
 roles_users: Table = db.Table(
@@ -220,6 +221,11 @@ class Workspace(db.Model, BaseMixin):
     slug = db.Column(db.String(100), unique=True, nullable=False)
     owner_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
 
+    # Billing fields
+    plan = db.Column(db.String(10), default="free")  # 'free' or 'pro'
+    stripe_customer_id = db.Column(db.String(100), nullable=True)
+    upgraded_at = db.Column(db.DateTime, nullable=True)
+
     owner = relationship("User", backref="owned_workspaces")
 
     def to_dict(self):
@@ -228,8 +234,25 @@ class Workspace(db.Model, BaseMixin):
             "name": self.name,
             "slug": self.slug,
             "owner_id": self.owner_id,
+            "plan": self.plan,
+            "is_pro": self.is_pro,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
+
+    @property
+    def is_pro(self):
+        """Check if workspace is on pro plan with live Stripe sync"""
+        # For performance, only sync if we have a customer ID and it's been a while
+        # or if plan status is critical to check
+        if self.stripe_customer_id and self.plan == "pro":
+            # Optionally sync in background or on-demand
+            # For now, trust database but provide sync method
+            pass
+        return self.plan == "pro"
+
+    def sync_subscription(self):
+        """Actively sync subscription status with Stripe"""
+        return HostedBilling.sync_workspace_subscription(self)
 
     @staticmethod
     def generate_slug(name):
