@@ -44,14 +44,14 @@ const config = {
                 light: {
                     dark: false,
                     colors: {
-                        // Coinbase-inspired colors
-                        primary: '#0052FF',      // Coinbase Blue
-                        secondary: '#1652F0',    // Secondary Blue
-                        accent: '#05D2DD',       // Teal Accent
-                        error: '#FF7452',        // Error Red
-                        info: '#56B4FC',         // Light Blue
-                        success: '#05BE7A',      // Green
-                        warning: '#F6B74D',      // Orange/Yellow
+                        // Modern gradient-ready colors
+                        primary: '#667eea',      // Purple-blue (matches gradient start)
+                        secondary: '#764ba2',    // Purple (matches gradient end)
+                        accent: '#06B6D4',       // Cyan
+                        error: '#EF4444',        // Red
+                        info: '#3B82F6',         // Blue
+                        success: '#10B981',      // Emerald
+                        warning: '#F59E0B',      // Amber
                         background: '#FFFFFF',   // White
                         surface: '#F9FBFD',      // Light Gray
                     }
@@ -59,16 +59,20 @@ const config = {
                 dark: {
                     dark: true,
                     colors: {
-                        // Coinbase dark theme
-                        primary: '#1652F0',      // Coinbase Blue (slightly darker)
-                        secondary: '#0A46E4',    // Secondary Blue
-                        accent: '#00B4D8',       // Teal Accent
-                        error: '#E94B35',        // Error Red
-                        info: '#3A9BF4',         // Light Blue
-                        success: '#00A661',      // Green
-                        warning: '#DEA54B',      // Orange/Yellow
-                        background: '#0A0B0D',   // Very Dark Gray (near black)
-                        surface: '#1E2026',      // Dark Gray for cards
+                        // Next.js inspired dark palette with gradient support
+                        primary: '#667eea',      // Purple-blue base color (gradient applied via CSS)
+                        secondary: '#8B5CF6',    // Purple
+                        accent: '#06B6D4',       // Cyan
+                        error: '#EF4444',        // Red
+                        info: '#3B82F6',         // Blue
+                        success: '#10B981',      // Emerald
+                        warning: '#F59E0B',      // Amber
+                        background: '#0F0F0F',   // Almost black
+                        surface: '#1A1A1A',      // Dark surface
+                        'surface-variant': '#262626',  // Slightly lighter surface
+                        'on-background': '#FAFAFA',    // Light text on dark background
+                        'on-surface': '#E5E5E5',       // Light text on surface
+                        'on-primary': '#FFFFFF',       // White text on primary
                     }
                 }
             }

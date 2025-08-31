@@ -27,6 +27,17 @@
             height: 40vh;
         }
     }
+    
+    /* Gradient primary button styling */
+    .v-btn--variant-elevated.bg-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: none;
+    }
+    
+    .v-btn.bg-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+    }
 </style>
 {% endblock %}
 
@@ -199,7 +210,7 @@
     <script>
         const {createApp} = Vue;
         const {createVuetify} = Vuetify;
-        const vuetify = createVuetify();
+        const vuetify = createVuetify(config.vuetifyConfig);
 
         const app = createApp({
             data() {
