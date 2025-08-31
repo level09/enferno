@@ -37,8 +37,11 @@ class Config:
     SECURITY_REGISTERABLE = True
     SECURITY_RECOVERABLE = False
     SECURITY_CONFIRMABLE = False
-    SECURITY_CHANGEABLE = True
+    SECURITY_CHANGEABLE = True  # Password changes allowed
     SECURITY_TRACKABLE = True
+
+    # Disable email changes - critical for multi-tenant SaaS
+    SECURITY_EMAIL_CHANGEABLE = False
     SECURITY_PASSWORD_HASH = "argon2"
     SECURITY_PASSWORD_SALT = os.environ.get(
         "SECURITY_PASSWORD_SALT",

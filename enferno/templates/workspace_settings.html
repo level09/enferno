@@ -72,7 +72,10 @@
                 v-model="userData.email"
                 variant="outlined"
                 type="email"
+                readonly
                 class="mb-4"
+                hint="Email cannot be changed for security reasons"
+                persistent-hint
               ></v-text-field>
               <v-btn 
                 color="primary" 
@@ -231,8 +234,8 @@ const app = createApp({
             this.savingProfile = true;
             try {
                 const response = await axios.put('/api/profile', {
-                    name: this.userData.name,
-                    email: this.userData.email
+                    name: this.userData.name
+                    // Email excluded - cannot be changed for security
                 });
                 this.showMessage('Profile updated successfully!', 'success');
             } catch (error) {
