@@ -150,7 +150,17 @@
                                 {% endif %}
                             </div>
 
-                            
+                            <!-- Flash Messages Alert -->
+                            <v-alert
+                                v-if="flashMessage"
+                                :type="flashType"
+                                density="compact"
+                                class="mb-4"
+                                closable
+                                @click:close="flashMessage = ''"
+                            >
+                                ${ flashMessage }
+                            </v-alert>
                             
                             <div class="text-center mt-4 mb-4">
                                 <p class="text-caption text-medium-emphasis">
@@ -197,13 +207,22 @@
                     menu: null,
                     errors: '',
                     email: "",
-                    password: ""
+                    password: "",
+                    flashMessage: '',
+                    flashType: 'info'
                 };
             },
             methods: {
                 submit() {
                     document.getElementById('loginForm').submit();
                 }
+            },
+            mounted() {
+                // Show flash messages from Flask
+                {% for category, message in get_flashed_messages(with_categories=true) %}
+                this.flashMessage = '{{ message }}';
+                this.flashType = '{{ category }}' === 'error' ? 'error' : ('{{ category }}' === 'warning' ? 'warning' : 'info');
+                {% endfor %}
             },
             delimiters: ['${', '}']
         });
