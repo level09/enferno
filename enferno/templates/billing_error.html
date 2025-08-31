@@ -1,0 +1,93 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<v-card class="ma-2 w-100">
+    <v-card-text class="text-center pa-8">
+        <!-- Error Icon -->
+        <div class="mb-6">
+            {% if error_type == "portal_config" %}
+            <v-icon size="80" color="warning">mdi-cog-outline</v-icon>
+            {% else %}
+            <v-icon size="80" color="error">mdi-alert-circle-outline</v-icon>
+            {% endif %}
+        </div>
+
+        <!-- Title -->
+        <h1
+            class="text-h4 font-weight-bold mb-4 {% if error_type == 'portal_config' %}text-warning{% else %}text-error{% endif %}">
+            {{ title }}
+        </h1>
+
+        <!-- Message -->
+        <p class="text-h6 mb-4 text-medium-emphasis">
+            {{ message }}
+        </p>
+
+        <!-- Details -->
+        {% if details %}
+        <v-alert type="{% if error_type == 'portal_config' %}warning{% else %}error{% endif %}" variant="outlined"
+            class="text-left ma-6">
+            <strong>{% if error_type == "portal_config" %}Configuration Required:{% else %}Error Details:{% endif
+                %}</strong><br>
+            <small>{{ details }}</small>
+
+            {% if error_type == "portal_config" %}
+            <div class="mt-3 pa-3 rounded" style="background-color: rgba(255, 152, 0, 0.1);">
+                <div class="text-body-2 font-weight-medium mb-2">
+                    <strong>What this means:</strong>
+                </div>
+                <div class="text-body-2">
+                    The billing portal needs to be configured in your Stripe account settings.
+                    This is a one-time setup that enables customers to manage their subscriptions.
+                </div>
+            </div>
+            {% endif %}
+        </v-alert>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        <div class="d-flex gap-3 justify-center flex-wrap">
+            <v-btn color="primary" size="large" href="/dashboard" class="px-6">
+                <v-icon start>mdi-arrow-left</v-icon>
+                Go Back
+            </v-btn>
+
+            <v-btn color="{% if error_type == 'portal_config' %}warning{% else %}primary{% endif %}" size="large"
+                href="{{ action_url }}" variant="outlined" class="px-6">
+                <v-icon start>{% if error_type == "portal_config" %}mdi-cog{% else %}mdi-refresh{% endif %}</v-icon>
+                {{ action_text }}
+            </v-btn>
+
+            {% if error_type == "portal_config" %}
+            <v-btn color="warning" size="large" href="/dashboard" class="px-6">
+                <v-icon start>mdi-home</v-icon>
+                Return to Dashboard
+            </v-btn>
+            {% endif %}
+        </div>
+    </v-card-text>
+</v-card>
+{% endblock %}
+
+{% block js %}
+<script>
+    const { createApp } = Vue;
+    const { createVuetify } = Vuetify;
+    const vuetify = createVuetify(config.vuetifyConfig);
+
+    const app = createApp({
+        data() {
+            return {
+                drawer: true,
+                error_type: '{{ error_type }}',
+                title: '{{ title }}',
+                message: '{{ message }}',
+                details: '{{ details }}'
+            };
+        },
+        delimiters: ['${', '}']
+    });
+
+    app.use(vuetify).mount('#app');
+</script>
+{% endblock %}

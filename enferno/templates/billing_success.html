@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<v-card class="ma-2 w-100">
+    <v-card-text class="text-center pa-12">
+        {% if success %}
+        <!-- Success -->
+        <div class="mb-6">
+            <v-icon size="80" color="success">mdi-check-circle</v-icon>
+        </div>
+        <h1 class="text-h4 font-weight-bold text-success mb-4">Welcome to Pro!</h1>
+        <p class="text-h6 mb-4">🎉 Your workspace has been upgraded successfully!</p>
+        <p class="text-body-1 mb-6 text-medium-emphasis">
+            You now have access to unlimited team members, advanced analytics, and all Pro features.
+        </p>
+        <v-btn color="success" size="large" href="/dashboard" class="px-8">
+            Go to Dashboard
+        </v-btn>
+        {% else %}
+        <!-- Error -->
+        <div class="mb-6">
+            <v-icon size="80" color="error">mdi-alert-circle</v-icon>
+        </div>
+        <h1 class="text-h4 font-weight-bold text-error mb-4">Payment Issue</h1>
+        <p class="text-h6 mb-4">There was an issue processing your payment.</p>
+        
+        {% if error %}
+        <v-alert type="error" variant="outlined" class="text-left ma-6">
+            <strong>Error Details:</strong><br>
+            <small>{{ error }}</small>
+        </v-alert>
+        {% endif %}
+        
+        <div class="d-flex gap-3 justify-center flex-wrap">
+            <v-btn color="primary" size="large" href="/dashboard" class="px-6">
+                Go Back
+            </v-btn>
+            <v-btn color="error" variant="outlined" size="large" href="/workspace/1/settings" class="px-6">
+                Try Again
+            </v-btn>
+        </div>
+        {% endif %}
+    </v-card-text>
+</v-card>
+{% endblock %}
+
+{% block js %}
+<script type="application/json" id="page-data">
+{
+    "success": {{ 'true' if success else 'false' }},
+    "error": {{ error|tojson if error else 'null' }}
+}
+</script>
+
+<script>
+const {createApp} = Vue;
+const {createVuetify} = Vuetify;
+const vuetify = createVuetify(config.vuetifyConfig);
+
+const pageData = JSON.parse(document.getElementById('page-data').textContent);
+
+const app = createApp({
+    data() {
+        return {
+            drawer: true,
+            ...pageData
+        };
+    },
+    delimiters: ['${', '}']
+});
+
+app.use(vuetify).mount('#app');
+</script>
+{% endblock %}
