@@ -583,6 +583,7 @@ dependencies = [
     { name = "sluggi" },
     { name = "speaklater" },
     { name = "sqlalchemy" },
+    { name = "stripe" },
     { name = "uwsgi", marker = "sys_platform != 'win32'" },
     { name = "vine" },
     { name = "webauthn" },
@@ -653,6 +654,7 @@ requires-dist = [
     { name = "sluggi", specifier = ">=0.1.1" },
     { name = "speaklater", specifier = ">=1.3" },
     { name = "sqlalchemy", specifier = ">=2.0.41" },
+    { name = "stripe", specifier = ">=12.0.0" },
     { name = "uwsgi", marker = "sys_platform != 'win32'", specifier = ">=2.0.30" },
     { name = "vine", specifier = ">=5.1.0" },
     { name = "webauthn", specifier = ">=2.6.0" },
@@ -1745,6 +1747,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/28/e3/55dcc2cfbc3ca9c29519eb6884dd1415ecb53b0e934862d3559ddcb7e20b/stack_data-0.6.3.tar.gz", hash = "sha256:836a778de4fec4dcd1dcd89ed8abff8a221f58308462e1c4aa2a3cf30148f0b9", size = 44707 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f1/7b/ce1eafaf1a76852e2ec9b22edecf1daa58175c090266e9f6c64afcd81d91/stack_data-0.6.3-py3-none-any.whl", hash = "sha256:d5558e0c25a4cb0853cddad3d77da9891a08cb85dd9f9f91b9f8cd66e511e695", size = 24521 },
+]
+
+[[package]]
+name = "stripe"
+version = "12.5.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/fa/2b/953b5305ccc771d139861a3d51d463024eea74ae2e854950245a2ebb3198/stripe-12.5.0.tar.gz", hash = "sha256:cd2b8e71216b6aed5dc1e9b5e6f658b5e21d69a60d44fb8c08f41e1f7bddedd0", size = 1432368 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f2/57/97b0a2680103b4fe662c31ed0035d8340fca180e806ce6dea5595dcb3f5f/stripe-12.5.0-py2.py3-none-any.whl", hash = "sha256:9256226ed5c64282045a025687b34279af6227af21c954d0ddd9ff9d4b69a335", size = 1664060 },
 ]
 
 [[package]]

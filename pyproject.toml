@@ -67,6 +67,8 @@ dependencies = [
     # Production server
     "uwsgi>=2.0.30; sys_platform != 'win32'",
     "sluggi>=0.1.1",
+    # Payments and billing
+    "stripe>=12.0.0",
 ]
 
 [project.optional-dependencies]
