@@ -1,11 +1,11 @@
 import datetime
 
 import orjson as json
-from flask import Blueprint, Response, render_template, request
+from flask import Blueprint, Response, abort, render_template, request
 from flask_security import auth_required, current_user
 
 from enferno.extensions import db
-from enferno.user.models import Activity, User
+from enferno.user.models import Activity, User, Workspace
 
 bp_user = Blueprint("users", __name__, static_folder="../static")
 
@@ -17,23 +17,19 @@ PER_PAGE = 25
 def before_request():
     # Ensure only super admins can access user management
     if not current_user.is_superadmin:
-        from flask import abort
-
         abort(403)
 
 
-@bp_user.route("/users/")
+@bp_user.get("/users/")
 def users():
     # Get all workspaces for assignment
-    from enferno.user.models import Workspace
-
     workspaces = db.session.execute(db.select(Workspace)).scalars().all()
     workspace_list = [{"id": w.id, "name": w.name} for w in workspaces]
 
     return render_template("cms/users.html", workspaces=workspace_list)
 
 
-@bp_user.route("/api/users")
+@bp_user.get("/api/users")
 def api_user():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", PER_PAGE, type=int)
@@ -170,7 +166,7 @@ def api_user_update(id):
     return {"message": "User successfully updated!"}
 
 
-@bp_user.route("/api/user/<int:id>", methods=["DELETE"])
+@bp_user.delete("/api/user/<int:id>")
 def api_user_delete(id):
     user = db.get_or_404(User, id)
     # Store user data for activity log before deletion
@@ -182,12 +178,12 @@ def api_user_delete(id):
     return {"message": "User successfully deleted!"}
 
 
-@bp_user.route("/activities/")
+@bp_user.get("/activities/")
 def activities():
     return render_template("cms/activities.html")
 
 
-@bp_user.route("/api/activities")
+@bp_user.get("/api/activities")
 def api_activities():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", PER_PAGE, type=int)
