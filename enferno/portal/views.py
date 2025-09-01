@@ -1,8 +1,21 @@
-from flask import Blueprint, jsonify, redirect, render_template, request, url_for
+import time
+from datetime import datetime
+
+from flask import (
+    Blueprint,
+    current_app,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from flask_security import auth_required, current_user
+from flask_security.utils import hash_password
 
 from enferno.extensions import db
 from enferno.services.auth import require_superadmin_api
+from enferno.services.billing import HostedBilling
 from enferno.user.models import Membership, User, Workspace
 from enferno.utils.tenant import (
     WorkspaceService,
@@ -20,13 +33,7 @@ def before_request():
     pass
 
 
-@portal.after_request
-def add_header(response):
-    response.headers["Cache-Control"] = "public, max-age=10800"
-    return response
-
-
-@portal.route("/dashboard/")
+@portal.get("/dashboard/")
 def dashboard():
     """Show workspace selection for user"""
     if current_user.is_superadmin:
@@ -46,16 +53,17 @@ def dashboard():
     return render_template("dashboard.html", workspaces=workspace_data)
 
 
-@portal.route("/workspace/<int:workspace_id>/")
+@portal.get("/workspace/<int:workspace_id>/")
 @require_workspace_access("member")
 def workspace_view(workspace_id):
     """Main workspace interface"""
     workspace = get_current_workspace()
+
     user_role = current_user.get_workspace_role(workspace_id)
     return render_template("workspace.html", workspace=workspace, user_role=user_role)
 
 
-@portal.route("/workspace/<int:workspace_id>/team/")
+@portal.get("/workspace/<int:workspace_id>/team/")
 @require_workspace_access("admin")
 def workspace_team(workspace_id):
     """Team management (admin only)"""
@@ -66,18 +74,19 @@ def workspace_team(workspace_id):
     )
 
 
-@portal.route("/workspace/<int:workspace_id>/settings/")
+@portal.get("/workspace/<int:workspace_id>/settings/")
 @require_workspace_access("member")
 def workspace_settings(workspace_id):
     """Workspace settings"""
     workspace = get_current_workspace()
+
     user_role = current_user.get_workspace_role(workspace_id)
     return render_template(
         "workspace_settings.html", workspace=workspace, user_role=user_role
     )
 
 
-@portal.route("/workspace/<int:workspace_id>/switch/")
+@portal.get("/workspace/<int:workspace_id>/switch/")
 @auth_required("session")
 def switch_workspace(workspace_id):
     """Switch to a workspace"""
@@ -90,7 +99,7 @@ def switch_workspace(workspace_id):
 
 
 # API Endpoints
-@portal.route("/api/workspaces", methods=["POST"])
+@portal.post("/api/workspaces")
 @require_superadmin_api()
 def create_workspace():
     """Create new workspace - super admin only"""
@@ -113,7 +122,7 @@ def create_workspace():
         return jsonify({"error": str(e)}), 500
 
 
-@portal.route("/api/workspace/<int:workspace_id>/stats")
+@portal.get("/api/workspace/<int:workspace_id>/stats")
 @require_workspace_access("member")
 def workspace_stats(workspace_id):
     """Get workspace statistics"""
@@ -126,7 +135,7 @@ def workspace_stats(workspace_id):
     return jsonify({"member_count": member_count or 0})
 
 
-@portal.route("/api/workspace/<int:workspace_id>", methods=["PUT"])
+@portal.put("/api/workspace/<int:workspace_id>")
 @require_workspace_access("admin")
 def workspace_update(workspace_id):
     """Update workspace details"""
@@ -144,7 +153,7 @@ def workspace_update(workspace_id):
         return jsonify({"message": "Failed to update workspace", "error": str(e)}), 400
 
 
-@portal.route("/api/profile", methods=["PUT"])
+@portal.put("/api/profile")
 @auth_required("session")
 def profile_update():
     """Update user profile"""
@@ -164,7 +173,7 @@ def profile_update():
         return jsonify({"message": "Failed to update profile", "error": str(e)}), 400
 
 
-@portal.route("/api/workspace/<int:workspace_id>/members", methods=["POST"])
+@portal.post("/api/workspace/<int:workspace_id>/members")
 @require_workspace_access("member")
 def workspace_members(workspace_id):
     """List workspace members with pagination"""
@@ -209,7 +218,7 @@ def workspace_members(workspace_id):
     return jsonify({"items": items, "total": total_count, "perPage": per_page})
 
 
-@portal.route("/api/workspace/<int:workspace_id>/members/add", methods=["POST"])
+@portal.post("/api/workspace/<int:workspace_id>/members/add")
 @require_workspace_access("admin")
 def add_workspace_member(workspace_id):
     """Add new member to workspace"""
@@ -238,7 +247,6 @@ def add_workspace_member(workspace_id):
             return jsonify({"error": "This username is already taken"}), 400
 
     # Create new user
-    from flask_security.utils import hash_password
 
     user = User(
         name=name,
@@ -256,9 +264,7 @@ def add_workspace_member(workspace_id):
     return jsonify({"message": f"{name} added to workspace"})
 
 
-@portal.route(
-    "/api/workspace/<int:workspace_id>/members/<int:user_id>", methods=["PUT"]
-)
+@portal.put("/api/workspace/<int:workspace_id>/members/<int:user_id>")
 @require_workspace_access("admin")
 def update_workspace_member(workspace_id, user_id):
     """Update member role"""
@@ -275,9 +281,7 @@ def update_workspace_member(workspace_id, user_id):
         return jsonify({"error": "Failed to update role"}), 400
 
 
-@portal.route(
-    "/api/workspace/<int:workspace_id>/members/<int:user_id>", methods=["DELETE"]
-)
+@portal.delete("/api/workspace/<int:workspace_id>/members/<int:user_id>")
 @require_workspace_access("admin")
 def remove_workspace_member(workspace_id, user_id):
     """Remove member from workspace"""
@@ -292,13 +296,10 @@ def remove_workspace_member(workspace_id, user_id):
 
 
 # Super Admin API Endpoints
-@portal.route("/api/admin/stats")
+@portal.get("/api/admin/stats")
 @require_superadmin_api()
 def admin_stats():
     """Get platform statistics - super admin only"""
-
-    from datetime import datetime
-
     today = datetime.now().date()
 
     # Total counts
@@ -336,7 +337,7 @@ def admin_stats():
     )
 
 
-@portal.route("/api/admin/workspaces")
+@portal.get("/api/admin/workspaces")
 @require_superadmin_api()
 def admin_workspaces():
     """Get all workspaces - super admin only"""
@@ -372,7 +373,7 @@ def admin_workspaces():
     return jsonify({"workspaces": workspaces})
 
 
-@portal.route("/api/admin/users")
+@portal.get("/api/admin/users")
 @require_superadmin_api()
 def admin_users():
     """Get all users with workspace counts - super admin only"""
@@ -406,3 +407,91 @@ def admin_users():
         )
 
     return jsonify({"users": user_data})
+
+
+# Billing Routes
+@portal.get("/workspace/<int:workspace_id>/upgrade")
+@require_workspace_access("admin")
+def upgrade_workspace(workspace_id):
+    """Redirect to Stripe Checkout - fully hosted"""
+    current_app.logger.info(
+        f"NEW UPGRADE REQUEST - workspace {workspace_id} for user {current_user.email} at {time.time()}"
+    )
+
+    # Get workspace to check current status
+    workspace = get_current_workspace()
+    current_app.logger.debug(
+        f"Current workspace plan: {workspace.plan}, stripe_customer_id: {workspace.stripe_customer_id}"
+    )
+
+    try:
+        session = HostedBilling.create_upgrade_session(
+            workspace_id, current_user.email, request.url_root
+        )
+        current_app.logger.info(f"Created NEW session {session.id}")
+        current_app.logger.debug(f"Session URL: {session.url}")
+        current_app.logger.debug(f"Session status: {session.status}")
+        return redirect(session.url)
+    except Exception as e:
+        current_app.logger.exception(
+            f"FAILED - Error creating checkout session: {type(e).__name__}: {e}"
+        )
+        return jsonify(
+            {"error": "Failed to create checkout session", "details": str(e)}
+        ), 500
+
+
+@portal.get("/workspace/<int:workspace_id>/billing")
+@require_workspace_access("admin")
+def billing_portal(workspace_id):
+    """Redirect to Stripe Customer Portal - fully hosted"""
+
+    workspace = get_current_workspace()
+    if workspace.stripe_customer_id:
+        try:
+            session = HostedBilling.create_portal_session(
+                workspace.stripe_customer_id, workspace_id, request.url_root
+            )
+            return redirect(session.url)
+        except Exception as e:
+            error_msg = str(e)
+
+            # Handle specific Stripe Customer Portal configuration error
+            if "No configuration provided" in error_msg:
+                return render_template(
+                    "billing_error.html",
+                    error_type="portal_config",
+                    title="Customer Portal Not Configured",
+                    message="The billing portal needs to be set up in Stripe.",
+                    action_text="Contact Support",
+                    action_url="/dashboard",
+                    details="Please contact support to enable billing management features.",
+                )
+            else:
+                return render_template(
+                    "billing_error.html",
+                    error_type="portal_error",
+                    title="Billing Portal Error",
+                    message="Unable to access billing portal at this time.",
+                    action_text="Try Again Later",
+                    action_url=f"/workspace/{workspace_id}/settings",
+                    details=error_msg,
+                )
+    else:
+        # No customer ID, redirect to upgrade
+        return redirect(url_for("portal.upgrade_workspace", workspace_id=workspace_id))
+
+
+@portal.get("/billing/success")
+@auth_required("session")
+def billing_success():
+    """Success page with session_id validation - lean but secure"""
+    session_id = request.args.get("session_id")
+
+    # Must have session_id from Stripe redirect
+    if not session_id:
+        return redirect("/dashboard")
+
+    # Simple validation: if session_id exists in URL, payment was successful
+    # (Stripe only redirects with session_id after payment completes)
+    return render_template("billing_success.html", success=True)
