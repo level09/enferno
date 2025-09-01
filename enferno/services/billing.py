@@ -3,13 +3,15 @@ Ultra-minimal Stripe billing service using hosted pages.
 """
 
 from datetime import datetime
+from functools import wraps
 from typing import Any
 
 import stripe
-from flask import current_app
+from flask import current_app, jsonify, redirect, request, url_for
 
 from enferno.extensions import db
 from enferno.user.models import Workspace
+from enferno.utils.tenant import get_current_workspace
 
 
 class HostedBilling:
@@ -122,3 +124,53 @@ class HostedBilling:
         except Exception:
             pass
         return True
+
+
+def requires_pro_plan(feature_name=None):
+    """Decorator to require pro plan for workspace features"""
+
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            workspace = get_current_workspace()
+
+            # Trust webhook-updated database state for billing checks
+            # Webhooks handle real-time subscription updates
+
+            if not workspace.is_pro:
+                # Check if this is an API request
+                if request.is_json or request.path.startswith("/api/"):
+                    return jsonify(
+                        {
+                            "error": "Pro plan required",
+                            "feature": feature_name,
+                            "upgrade_url": f"/workspace/{workspace.id}/upgrade",
+                        }
+                    ), 402  # Payment Required
+                else:
+                    # For web requests, redirect to upgrade page
+                    return redirect(
+                        url_for("portal.upgrade_workspace", workspace_id=workspace.id)
+                    )
+
+            return f(*args, **kwargs)
+
+        return decorated_function
+
+    return decorator
+
+
+class PlanLimits:
+    """Simple limits helper for workspace plans"""
+
+    @staticmethod
+    def can_add_member(workspace):
+        """Free: 3 members, Pro: unlimited"""
+        if workspace.is_pro:
+            return True
+        return len(workspace.memberships) < 3
+
+    @staticmethod
+    def max_members(workspace):
+        """Get max members display text"""
+        return "Unlimited" if workspace.is_pro else "3"
