@@ -113,12 +113,12 @@ def get_oauth_user_data(blueprint):
     return None
 
 
-@public.route("/")
+@public.get("/")
 def index():
     return render_template("index.html")
 
 
-@public.route("/robots.txt")
+@public.get("/robots.txt")
 def static_from_root():
     return send_from_directory(public.static_folder, request.path[1:])
 
