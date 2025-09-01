@@ -9,6 +9,7 @@ from flask_dance.contrib.google import make_google_blueprint
 from flask_security import Security, SQLAlchemyUserDatastore, current_user
 
 import enferno.commands as commands
+from enferno.api.webhooks import webhooks_bp
 from enferno.extensions import babel, cache, db, debug_toolbar, mail, session
 from enferno.portal.views import portal
 from enferno.public.views import public
@@ -72,6 +73,9 @@ def register_blueprints(app):
     app.register_blueprint(bp_user)
     app.register_blueprint(public)
     app.register_blueprint(portal)
+
+    # Register stripe webhooks
+    app.register_blueprint(webhooks_bp)
 
     # Setup OAuth if enabled
     if app.config.get("GOOGLE_AUTH_ENABLED") and app.config.get(
