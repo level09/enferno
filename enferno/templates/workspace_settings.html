@@ -110,15 +110,95 @@
               </v-chip>
             </div>
             <div class="mb-3">
+              <strong>Plan:</strong>
+              <v-chip 
+                :color="workspaceData.is_pro ? 'success' : 'default'"
+                size="small"
+                class="ml-2"
+              >
+                ${ workspaceData.is_pro ? 'Pro' : 'Free' }
+              </v-chip>
+            </div>
+            <div class="mb-3">
               <strong>Created:</strong> 
               <span v-if="workspaceData.created_at">${ new Date(workspaceData.created_at).toLocaleDateString() }</span>
               <span v-else>Unknown</span>
             </div>
             <div>
               <strong>Members:</strong> ${ memberCount }
+              <span v-if="!workspaceData.is_pro" class="text-medium-emphasis ml-2">(Max 3 on Free plan)</span>
             </div>
           </v-card-text>
         </v-card>
+
+        <!-- Billing Section (Admin Only) -->
+        {% if user_role == 'admin' %}
+        <v-card class="mb-6" v-if="workspaceData.plan">
+          <v-card-title class="d-flex align-center">
+            <v-icon class="mr-2">mdi-credit-card</v-icon>
+            Billing & Subscription
+          </v-card-title>
+          <v-card-text>
+            <div v-if="!workspaceData.is_pro">
+              <div class="mb-4">
+                <h3 class="text-h6 mb-2">Upgrade to Pro</h3>
+                <p class="text-body-2 text-medium-emphasis mb-4">
+                  Get unlimited Pro features.
+                </p>
+                <v-list class="mb-4">
+                  <v-list-item>
+                    <template v-slot:prepend>
+                      <v-icon color="success">mdi-check</v-icon>
+                    </template>
+                    <v-list-item-title>Unlimited team members</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item>
+                    <template v-slot:prepend>
+                      <v-icon color="success">mdi-check</v-icon>
+                    </template>
+                    <v-list-item-title>Advanced analytics & reporting</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item>
+                    <template v-slot:prepend>
+                      <v-icon color="success">mdi-check</v-icon>
+                    </template>
+                    <v-list-item-title>Data export capabilities</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item>
+                    <template v-slot:prepend>
+                      <v-icon color="success">mdi-check</v-icon>
+                    </template>
+                    <v-list-item-title>Priority support</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+                <v-btn 
+                  color="primary" 
+                  size="large"
+                  :href="`/workspace/${workspaceData.id}/upgrade`"
+                  prepend-icon="mdi-rocket-launch"
+                >
+                  Upgrade to Pro - $29/month
+                </v-btn>
+              </div>
+            </div>
+            <div v-else>
+              <div class="mb-4">
+                <h3 class="text-h6 mb-2">Pro Plan Active</h3>
+                <p class="text-body-2 text-medium-emphasis mb-4">
+                  You're on the Pro plan with access to all features.
+                </p>
+                <v-btn 
+                  variant="outlined"
+                  :href="`/workspace/${workspaceData.id}/billing`"
+                  prepend-icon="mdi-credit-card-settings"
+                >
+                  Manage Subscription
+                </v-btn>
+              </div>
+            </div>
+          </v-card-text>
+        </v-card>
+        {% endif %}
 
         <!-- Danger Zone -->
         <v-card color="error" variant="outlined">
