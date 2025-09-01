@@ -18,7 +18,6 @@ from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import declared_attr, relationship
 
 from enferno.extensions import db
-from enferno.services.billing import HostedBilling
 from enferno.utils.base import BaseMixin
 
 roles_users: Table = db.Table(
@@ -249,10 +248,6 @@ class Workspace(db.Model, BaseMixin):
             # For now, trust database but provide sync method
             pass
         return self.plan == "pro"
-
-    def sync_subscription(self):
-        """Actively sync subscription status with Stripe"""
-        return HostedBilling.sync_workspace_subscription(self)
 
     @staticmethod
     def generate_slug(name):
