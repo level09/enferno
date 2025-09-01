@@ -125,6 +125,25 @@ class HostedBilling:
             pass
         return True
 
+    @staticmethod
+    def get_pro_price_info():
+        """Get Pro plan pricing info from Stripe"""
+        secret = current_app.config.get("STRIPE_SECRET_KEY")
+        price_id = current_app.config.get("STRIPE_PRO_PRICE_ID")
+        if not secret or not price_id:
+            return {"amount": "N/A", "currency": "USD", "interval": "month"}
+
+        stripe.api_key = secret
+        try:
+            price = stripe.Price.retrieve(price_id)
+            return {
+                "amount": price.unit_amount / 100,  # Convert cents to dollars
+                "currency": price.currency.upper(),
+                "interval": price.recurring.interval if price.recurring else "one-time",
+            }
+        except Exception:
+            return {"amount": "N/A", "currency": "USD", "interval": "month"}
+
 
 def requires_pro_plan(feature_name=None):
     """Decorator to require pro plan for workspace features"""

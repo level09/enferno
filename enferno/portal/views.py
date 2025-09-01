@@ -81,8 +81,12 @@ def workspace_settings(workspace_id):
     workspace = get_current_workspace()
 
     user_role = current_user.get_workspace_role(workspace_id)
+    price_info = HostedBilling.get_pro_price_info()
     return render_template(
-        "workspace_settings.html", workspace=workspace, user_role=user_role
+        "workspace_settings.html",
+        workspace=workspace,
+        user_role=user_role,
+        price_info=price_info,
     )
 
 
