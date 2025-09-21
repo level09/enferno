@@ -19,12 +19,15 @@ def set_current_workspace(workspace_id):
     session["current_workspace_id"] = workspace_id
 
 
+def clear_current_workspace():
+    """Clear current workspace from session."""
+    session.pop("current_workspace_id", None)
+
+
 def get_current_workspace():
     """Get current workspace object"""
     workspace_id = get_current_workspace_id()
-    if not workspace_id:
-        return None
-    return db.session.get(Workspace, workspace_id)
+    return db.session.get(Workspace, workspace_id) if workspace_id else None
 
 
 def require_workspace_access(required_role="member"):

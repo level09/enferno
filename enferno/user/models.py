@@ -195,14 +195,25 @@ class OAuth(OAuthConsumerMixin, db.Model):
 
 class Activity(db.Model, BaseMixin):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    workspace_id = db.Column(
+        db.Integer, db.ForeignKey("workspace.id", ondelete="CASCADE"), nullable=True
+    )
     action = db.Column(db.String(255), nullable=False)
     data = db.Column(db.JSON, nullable=True)
 
+    # Optional relationships for convenience
+    user = relationship("User", lazy="joined")
+    workspace = relationship("Workspace", lazy="joined")
+
     @classmethod
-    def register(cls, user_id, action, data=None):
-        """Register an activity for audit purposes"""
-        activity = cls(user_id=user_id, action=action, data=data)
+    def register(cls, user_id, action, data=None, workspace_id=None):
+        """Register an activity for audit purposes (optionally workspace-scoped)."""
+        activity = cls(
+            user_id=user_id, action=action, data=data, workspace_id=workspace_id
+        )
         db.session.add(activity)
         try:
             db.session.commit()
@@ -211,6 +222,14 @@ class Activity(db.Model, BaseMixin):
             print(f"Error registering activity: {e}")
             db.session.rollback()
             return None
+
+
+class StripeEvent(db.Model, BaseMixin):
+    """Durable store for processed Stripe webhook events (idempotency)."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    event_id = db.Column(db.String(255), unique=True, nullable=False)
+    event_type = db.Column(db.String(128), nullable=True)
 
 
 @dataclasses.dataclass

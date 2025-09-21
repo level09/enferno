@@ -1,6 +1,8 @@
+# Standard library imports
 import inspect
 import warnings
 
+# Third-party imports
 import click
 from flask import Flask, render_template
 from flask_dance.consumer.storage.sqla import SQLAlchemyStorage
@@ -8,6 +10,7 @@ from flask_dance.contrib.github import make_github_blueprint
 from flask_dance.contrib.google import make_google_blueprint
 from flask_security import Security, SQLAlchemyUserDatastore, current_user
 
+# Local application imports
 import enferno.commands as commands
 from enferno.api.webhooks import webhooks_bp
 from enferno.extensions import babel, cache, db, debug_toolbar, mail, session
@@ -17,6 +20,7 @@ from enferno.settings import Config
 from enferno.user.forms import ExtendedRegisterForm
 from enferno.user.models import OAuth, Role, User, WebAuthn
 from enferno.user.views import bp_user
+from enferno.utils.tenant import clear_current_workspace, get_current_workspace
 
 # Suppress passlib pkg_resources deprecation warning at import time
 warnings.filterwarnings(
@@ -59,14 +63,17 @@ def register_extensions(app):
         default_locale="en",
     )
 
+    # Clear workspace context on logout to prevent data leakage
+    from flask_login import user_logged_out
+
+    user_logged_out.connect(
+        lambda sender, user, **kwargs: clear_current_workspace(), app
+    )
+
     # Add template context processors
     @app.context_processor
     def inject_workspace_helpers():
-        from enferno.utils.tenant import get_current_workspace
-
         return {"get_current_workspace": get_current_workspace}
-
-    return None
 
 
 def register_blueprints(app):
@@ -128,7 +135,7 @@ def register_shellcontext(app):
     app.shell_context_processor(shell_context)
 
 
-def register_commands(app: Flask, commands_module):
+def register_commands(app, commands_module):
     """
     Automatically register all Click commands and command groups in the given module.
 

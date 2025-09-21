@@ -3,6 +3,7 @@
 import os
 import secrets
 import string
+import sys
 
 import click
 from flask.cli import AppGroup, with_appcontext
@@ -29,11 +30,19 @@ def create_db():
     "--password", "-p", help="Admin password (auto-generated if not provided)"
 )
 @click.option("--non-interactive", "-n", is_flag=True, help="Non-interactive mode")
+@click.option("--yes", "-y", is_flag=True, help="Assume yes; non-interactive")
 @with_appcontext
-def install(email=None, password=None, non_interactive=False):
+def install(email=None, password=None, non_interactive=False, yes=False):
     """Install a default admin user and add an admin role to it."""
     # check if admin exists
     from enferno.user.models import Role
+
+    # Determine effective non-interactive mode
+    env_email = os.environ.get("ADMIN_EMAIL") or os.environ.get("ENFERNO_ADMIN_EMAIL")
+    env_password = os.environ.get("ADMIN_PASSWORD") or os.environ.get(
+        "ENFERNO_ADMIN_PASSWORD"
+    )
+    non_interactive = non_interactive or yes or (not sys.stdin.isatty())
 
     # create admin role if it doesn't exist
     admin_role = db.session.execute(
@@ -44,15 +53,9 @@ def install(email=None, password=None, non_interactive=False):
         db.session.add(admin_role)
         db.session.commit()
 
-    # check if admin users already installed
-    admin_user = db.session.execute(
-        db.select(User).where(User.roles.any(Role.name == "admin"))
-    ).scalar_one_or_none()
-    if admin_user:
-        console.print(
-            f"[yellow]An admin user already exists:[/] [blue]{admin_user.email}[/]"
-        )
-        return
+    # If email is explicitly provided (via arg or env), prefer operating on that user
+    if email is None:
+        email = env_email
 
     # Get email
     if email is None:
@@ -61,7 +64,10 @@ def install(email=None, password=None, non_interactive=False):
         else:
             email = click.prompt("Admin email", default="admin@example.com")
 
-    # Get or generate password
+    # Get or generate password (env has priority)
+    if password is None:
+        password = env_password
+
     if password is None:
         if non_interactive:
             # Generate a secure password for non-interactive mode
@@ -85,14 +91,48 @@ def install(email=None, password=None, non_interactive=False):
     # Extract username from email for backwards compatibility
     username = email.split("@")[0]
 
+    # If a user with this email exists, ensure admin role and optionally reset password
+    existing_user = db.session.execute(
+        db.select(User).where(User.email == email)
+    ).scalar_one_or_none()
+    if existing_user:
+        if not any(getattr(r, "name", None) == "admin" for r in existing_user.roles):
+            existing_user.roles.append(admin_role)
+        # Only reset password if it was explicitly provided
+        if env_password is not None or (not non_interactive):
+            # In non-interactive with no env password we avoid silently changing
+            if password:
+                existing_user.password = hash_password(password)
+        db.session.commit()
+        console.print("\n[green]✓[/] Admin setup verified for existing user")
+        console.print(f"[blue]Email:[/] {existing_user.email}")
+        if env_password:
+            console.print("[yellow]Password was updated from provided value[/]")
+        return
+
+    # Otherwise, if any admin already exists, don't create another implicitly
+    admin_user = db.session.execute(
+        db.select(User).where(User.roles.any(Role.name == "admin"))
+    ).scalar_one_or_none()
+    if admin_user:
+        console.print(
+            f"[yellow]An admin user already exists:[/] [blue]{admin_user.email}[/]"
+        )
+        return
+
     user = User(
         username=username,
         email=email,
         name="Super Admin",
         password=hash_password(password),
         active=True,
-        is_superadmin=True,  # Set as super admin
     )
+    # Try to enable superadmin if supported by model
+    if hasattr(user, "is_superadmin"):
+        try:
+            user.is_superadmin = True
+        except Exception:
+            pass
     user.roles.append(admin_role)
     db.session.add(user)
     db.session.commit()
