@@ -19,7 +19,9 @@ from enferno.services.billing import HostedBilling
 from enferno.user.models import Membership, User, Workspace
 from enferno.utils.tenant import (
     WorkspaceService,
+    clear_current_workspace,
     get_current_workspace,
+    get_current_workspace_id,
     require_workspace_access,
     set_current_workspace,
 )
@@ -30,7 +32,10 @@ portal = Blueprint("portal", __name__, static_folder="../static")
 @portal.before_request
 @auth_required("session")
 def before_request():
-    pass
+    workspace_id = get_current_workspace_id()
+    if workspace_id and not current_user.can_access_workspace(workspace_id):
+        # Ensure sidebar and context reflect the active user's memberships
+        clear_current_workspace()
 
 
 @portal.get("/dashboard/")
