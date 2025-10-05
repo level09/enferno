@@ -19,9 +19,7 @@ from enferno.services.billing import HostedBilling
 from enferno.user.models import Membership, User, Workspace
 from enferno.utils.tenant import (
     WorkspaceService,
-    clear_current_workspace,
     get_current_workspace,
-    get_current_workspace_id,
     require_workspace_access,
     set_current_workspace,
 )
@@ -32,10 +30,7 @@ portal = Blueprint("portal", __name__, static_folder="../static")
 @portal.before_request
 @auth_required("session")
 def before_request():
-    workspace_id = get_current_workspace_id()
-    if workspace_id and not current_user.can_access_workspace(workspace_id):
-        # Ensure sidebar and context reflect the active user's memberships
-        clear_current_workspace()
+    pass
 
 
 @portal.get("/dashboard/")
@@ -149,7 +144,7 @@ def workspace_stats(workspace_id):
 def workspace_update(workspace_id):
     """Update workspace details"""
     workspace = get_current_workspace()
-    data = request.json
+    data = request.get_json(silent=True) or {}
 
     if "name" in data:
         workspace.name = data["name"]
@@ -166,7 +161,7 @@ def workspace_update(workspace_id):
 @auth_required("session")
 def profile_update():
     """Update user profile"""
-    data = request.json
+    data = request.get_json(silent=True) or {}
 
     if "name" in data:
         current_user.name = data["name"]
@@ -231,6 +226,8 @@ def workspace_members(workspace_id):
 @require_workspace_access("admin")
 def add_workspace_member(workspace_id):
     """Add new member to workspace"""
+    from sqlalchemy.exc import IntegrityError
+
     data = request.get_json()
     name = data.get("name")
     username = data.get("username")
@@ -255,22 +252,27 @@ def add_workspace_member(workspace_id):
         elif existing_user.username == username:
             return jsonify({"error": "This username is already taken"}), 400
 
-    # Create new user
+    try:
+        with db.session.begin_nested():
+            # Create new user
+            user = User(
+                name=name,
+                username=username,
+                email=email,
+                password=hash_password(password),
+                active=True,
+            )
+            db.session.add(user)
+            db.session.flush()  # Get user.id
 
-    user = User(
-        name=name,
-        username=username,
-        email=email,
-        password=hash_password(password),
-        active=True,
-    )
-    db.session.add(user)
-    db.session.commit()
+            # Add to workspace
+            WorkspaceService.add_member(workspace_id, user, role)
 
-    # Add to workspace
-    WorkspaceService.add_member(workspace_id, user, role)
-
-    return jsonify({"message": f"{name} added to workspace"})
+        db.session.commit()
+        return jsonify({"message": f"{name} added to workspace"})
+    except (IntegrityError, ValueError) as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
 
 
 @portal.put("/api/workspace/<int:workspace_id>/members/<int:user_id>")
@@ -283,11 +285,14 @@ def update_workspace_member(workspace_id, user_id):
     if new_role not in ["admin", "member"]:
         return jsonify({"error": "Invalid role"}), 400
 
-    success = WorkspaceService.update_member_role(workspace_id, user_id, new_role)
-    if success:
-        return jsonify({"message": "Role updated successfully"})
-    else:
-        return jsonify({"error": "Failed to update role"}), 400
+    try:
+        success = WorkspaceService.update_member_role(workspace_id, user_id, new_role)
+        if success:
+            return jsonify({"message": "Role updated successfully"})
+        else:
+            return jsonify({"error": "Failed to update role"}), 400
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
 
 
 @portal.delete("/api/workspace/<int:workspace_id>/members/<int:user_id>")
@@ -297,11 +302,14 @@ def remove_workspace_member(workspace_id, user_id):
     if user_id == current_user.id:
         return jsonify({"error": "Cannot remove yourself from workspace"}), 400
 
-    success = WorkspaceService.remove_member(workspace_id, user_id)
-    if success:
-        return jsonify({"message": "Member removed from workspace"})
-    else:
-        return jsonify({"error": "Failed to remove member"}), 400
+    try:
+        success = WorkspaceService.remove_member(workspace_id, user_id)
+        if success:
+            return jsonify({"message": "Member removed from workspace"})
+        else:
+            return jsonify({"error": "Failed to remove member"}), 400
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
 
 
 # Super Admin API Endpoints
@@ -432,6 +440,20 @@ def upgrade_workspace(workspace_id):
     current_app.logger.debug(
         f"Current workspace plan: {workspace.plan}, stripe_customer_id: {workspace.stripe_customer_id}"
     )
+
+    # Prevent duplicate subscriptions - redirect to billing portal if already Pro
+    if workspace.is_pro:
+        current_app.logger.info(
+            f"Workspace {workspace_id} already on Pro plan, redirecting to billing portal"
+        )
+        # Only redirect if we have a customer ID, otherwise show settings
+        if workspace.stripe_customer_id:
+            return redirect(url_for("portal.billing_portal", workspace_id=workspace_id))
+        else:
+            # Pro workspace without Stripe customer (manual upgrade, legacy)
+            return redirect(
+                url_for("portal.workspace_settings", workspace_id=workspace_id)
+            )
 
     try:
         session = HostedBilling.create_upgrade_session(

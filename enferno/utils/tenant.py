@@ -81,41 +81,73 @@ class WorkspaceService:
     @staticmethod
     def create_workspace(name, owner_user):
         """Create new workspace with owner as admin"""
+        from sqlalchemy.exc import IntegrityError
+
         slug = Workspace.generate_slug(name)
-
-        # Ensure unique slug
-        counter = 1
         original_slug = slug
-        while db.session.execute(
-            db.select(Workspace).where(Workspace.slug == slug)
-        ).scalar_one_or_none():
-            slug = f"{original_slug}-{counter}"
-            counter += 1
+        counter = 1
+        max_attempts = 100
 
-        workspace = Workspace(name=name, slug=slug, owner_id=owner_user.id)
-        db.session.add(workspace)
-        db.session.commit()
+        # Try creating workspace with unique slug
+        # DB constraint enforces uniqueness, catch and retry with suffix
+        for attempt in range(max_attempts):
+            try:
+                with db.session.begin_nested():
+                    workspace = Workspace(name=name, slug=slug, owner_id=owner_user.id)
+                    db.session.add(workspace)
+                    db.session.flush()  # Get workspace.id and trigger constraint check
 
-        # Add owner as admin
-        membership = Membership(
-            workspace_id=workspace.id, user_id=owner_user.id, role="admin"
-        )
-        db.session.add(membership)
-        db.session.commit()
+                    # Add owner as admin
+                    membership = Membership(
+                        workspace_id=workspace.id, user_id=owner_user.id, role="admin"
+                    )
+                    db.session.add(membership)
 
-        return workspace
+                db.session.commit()
+                return workspace
+            except IntegrityError as e:
+                db.session.rollback()
+                # If slug collision, try with suffix
+                if "slug" in str(e).lower() or "unique" in str(e).lower():
+                    slug = f"{original_slug}-{counter}"
+                    counter += 1
+                    if attempt >= max_attempts - 1:
+                        raise ValueError(
+                            "Failed to create workspace: too many slug conflicts"
+                        ) from e
+                else:
+                    # Other integrity error
+                    raise ValueError(f"Failed to create workspace: {str(e)}") from e
 
     @staticmethod
     def add_member(workspace_id, user, role="member"):
-        """Add user to workspace"""
+        """Add user to workspace (caller must commit)"""
+        # Validate role
+        if role not in {"admin", "member"}:
+            raise ValueError(f"Invalid role: {role}")
+
+        # Check for existing membership
+        existing = db.session.execute(
+            db.select(Membership).where(
+                Membership.workspace_id == workspace_id, Membership.user_id == user.id
+            )
+        ).scalar_one_or_none()
+
+        if existing:
+            raise ValueError("User is already a member of this workspace")
+
         membership = Membership(workspace_id=workspace_id, user_id=user.id, role=role)
         db.session.add(membership)
-        db.session.commit()
         return membership
 
     @staticmethod
     def remove_member(workspace_id, user_id):
         """Remove user from workspace"""
+        # Check if user is workspace owner
+        workspace = db.session.get(Workspace, workspace_id)
+        if workspace and workspace.owner_id == user_id:
+            raise ValueError("Cannot remove workspace owner")
+
         membership = db.session.execute(
             db.select(Membership).where(
                 Membership.workspace_id == workspace_id, Membership.user_id == user_id
@@ -131,6 +163,15 @@ class WorkspaceService:
     @staticmethod
     def update_member_role(workspace_id, user_id, new_role):
         """Update user's role in workspace"""
+        # Validate role
+        if new_role not in {"admin", "member"}:
+            raise ValueError(f"Invalid role: {new_role}")
+
+        # Check if user is workspace owner
+        workspace = db.session.get(Workspace, workspace_id)
+        if workspace and workspace.owner_id == user_id:
+            raise ValueError("Cannot change workspace owner's role")
+
         membership = db.session.execute(
             db.select(Membership).where(
                 Membership.workspace_id == workspace_id, Membership.user_id == user_id

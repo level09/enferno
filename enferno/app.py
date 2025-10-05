@@ -5,10 +5,11 @@ import warnings
 # Third-party imports
 import click
 from flask import Flask, render_template
+from flask import session as flask_session
 from flask_dance.consumer.storage.sqla import SQLAlchemyStorage
 from flask_dance.contrib.github import make_github_blueprint
 from flask_dance.contrib.google import make_google_blueprint
-from flask_security import Security, SQLAlchemyUserDatastore, current_user
+from flask_security import Security, SQLAlchemyUserDatastore, current_user, signals
 
 # Local application imports
 import enferno.commands as commands
@@ -49,6 +50,12 @@ def register_extensions(app):
     db.init_app(app)
     user_datastore = SQLAlchemyUserDatastore(db, User, Role, webauthn_model=WebAuthn)
     Security(app, user_datastore, register_form=ExtendedRegisterForm)
+
+    @signals.user_authenticated.connect_via(app)
+    def clear_workspace_on_login(sender, user, **extra):
+        """Clear workspace context on login to prevent data leakage between users."""
+        flask_session.pop("workspace_id", None)
+
     mail.init_app(app)
     if debug_toolbar:
         debug_toolbar.init_app(app)
@@ -63,7 +70,7 @@ def register_extensions(app):
         default_locale="en",
     )
 
-    # Clear workspace context on logout to prevent data leakage
+    # Clear workspace context when a session ends to prevent data leakage
     from flask_login import user_logged_out
 
     user_logged_out.connect(

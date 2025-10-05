@@ -7,7 +7,8 @@ from functools import wraps
 from typing import Any
 
 import stripe
-from flask import current_app, jsonify, redirect, request, url_for
+from flask import abort, current_app, jsonify, redirect, request, url_for
+from flask_security import current_user
 
 from enferno.extensions import db
 from enferno.user.models import Workspace
@@ -89,10 +90,37 @@ class HostedBilling:
                 extra={
                     "session_id": getattr(session, "id", None),
                     "subscription": getattr(session, "subscription", None),
+                    "status": getattr(session, "status", None),
+                    "payment_status": getattr(session, "payment_status", None),
                 },
             )
         except Exception:
             pass
+
+        # Verify payment actually completed
+        if session.status != "complete":
+            try:
+                current_app.logger.warning(
+                    "Checkout session not complete",
+                    extra={"session_id": session.id, "status": session.status},
+                )
+            except Exception:
+                pass
+            return False
+
+        if session.payment_status not in {"paid", "no_payment_required"}:
+            try:
+                current_app.logger.warning(
+                    "Payment not confirmed",
+                    extra={
+                        "session_id": session.id,
+                        "payment_status": session.payment_status,
+                    },
+                )
+            except Exception:
+                pass
+            return False
+
         workspace_id = (session.metadata or {}).get("workspace_id")
         if not workspace_id:
             return False
@@ -152,6 +180,26 @@ def requires_pro_plan(feature_name=None):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             workspace = get_current_workspace()
+
+            # Guard: workspace context must exist
+            if workspace is None:
+                if request.is_json or request.path.startswith("/api/"):
+                    return jsonify({"error": "Workspace context required"}), 403
+                else:
+                    abort(403, "Workspace context required")
+
+            # Re-validate user is authenticated and still has access
+            if not current_user.is_authenticated:
+                if request.is_json or request.path.startswith("/api/"):
+                    return jsonify({"error": "Authentication required"}), 401
+                else:
+                    abort(401)
+
+            if not current_user.can_access_workspace(workspace.id):
+                if request.is_json or request.path.startswith("/api/"):
+                    return jsonify({"error": "Access denied to workspace"}), 403
+                else:
+                    abort(403, "Access denied to workspace")
 
             # Trust webhook-updated database state for billing checks
             # Webhooks handle real-time subscription updates
