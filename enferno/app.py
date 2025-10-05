@@ -53,16 +53,8 @@ def register_extensions(app):
 
     @signals.user_authenticated.connect_via(app)
     def clear_workspace_on_login(sender, user, **extra):
-        """Clear workspace context on login to prevent data leakage between users."""
-        # Store old value for logging
-        old_workspace_id = flask_session.get("current_workspace_id")
-        if old_workspace_id:
-            app.logger.info(
-                f"Clearing workspace context on login: user={user.id}, old_workspace={old_workspace_id}"
-            )
-        # Clear workspace context
+        """Clear workspace context to prevent data leakage between users."""
         flask_session.pop("current_workspace_id", None)
-        # Force session to be marked as modified
         flask_session.modified = True
 
     mail.init_app(app)
