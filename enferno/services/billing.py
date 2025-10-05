@@ -76,13 +76,20 @@ class HostedBilling:
         return session
 
     @staticmethod
-    def handle_successful_payment(session_id: str) -> bool:
-        """Handle successful Stripe payment by upgrading the workspace."""
+    def handle_successful_payment(session_id: str) -> int:
+        """Handle successful Stripe payment by upgrading the workspace.
+
+        Security: session_id is the security token - validated via Stripe API.
+
+        Returns:
+            Workspace ID if successful, None otherwise
+        """
         secret = current_app.config.get("STRIPE_SECRET_KEY")
         if not secret:
             raise RuntimeError("Stripe is not configured")
         stripe.api_key = secret
 
+        # Validate session with Stripe API (can't fake this)
         session = stripe.checkout.Session.retrieve(session_id)
         try:
             current_app.logger.info(
@@ -123,35 +130,23 @@ class HostedBilling:
 
         workspace_id = (session.metadata or {}).get("workspace_id")
         if not workspace_id:
-            return False
+            return None
 
         workspace = db.session.get(Workspace, int(workspace_id))
         if not workspace:
-            return False
+            return None
 
-        # Idempotency: no-op if already pro
+        # Idempotent: if already pro, just return success
         if workspace.plan == "pro":
-            try:
-                current_app.logger.info(
-                    "Workspace already on pro plan",
-                    extra={"workspace_id": workspace.id},
-                )
-            except Exception:
-                pass
-            return True
+            return workspace.id
 
+        # Upgrade workspace
         workspace.plan = "pro"
         workspace.stripe_customer_id = session.customer
         workspace.upgraded_at = datetime.utcnow()
         db.session.commit()
-        try:
-            current_app.logger.info(
-                "Workspace upgraded to pro",
-                extra={"workspace_id": workspace.id},
-            )
-        except Exception:
-            pass
-        return True
+
+        return workspace.id
 
     @staticmethod
     def get_pro_price_info():

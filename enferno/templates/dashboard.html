@@ -172,11 +172,14 @@
                 >
                     <v-card-text class="pa-4">
                         <div class="d-flex align-center mb-3">
-                            <v-avatar size="40" color="primary" variant="tonal">
-                                <v-icon>mdi-briefcase-outline</v-icon>
+                            <v-avatar size="40" :color="workspace.is_pro ? 'success' : 'primary'" variant="tonal">
+                                <v-icon>${workspace.is_pro ? 'mdi-briefcase-check' : 'mdi-briefcase-outline'}</v-icon>
                             </v-avatar>
                             <div class="ml-3 flex-grow-1">
-                                <div class="text-h6 font-weight-medium">${workspace.name}</div>
+                                <div class="d-flex align-center">
+                                    <div class="text-h6 font-weight-medium mr-2">${workspace.name}</div>
+                                    <v-chip v-if="workspace.is_pro" size="x-small" color="success" variant="flat">Pro</v-chip>
+                                </div>
                                 <div class="text-body-2 text-medium-emphasis">
                                     {% if current_user.is_superadmin %}
                                         Client workspace

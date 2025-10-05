@@ -64,7 +64,12 @@
                         {% set current_workspace = get_current_workspace() %}
                         {% if current_workspace %}
                             <v-divider class="my-2"></v-divider>
-                            <v-list-subheader>Current Workspace: {{ current_workspace.name }}</v-list-subheader>
+                            <v-list-subheader class="d-flex align-center justify-space-between">
+                                <span>{{ current_workspace.name }}</span>
+                                {% if current_workspace.is_pro %}
+                                <v-chip size="x-small" color="success" variant="flat" class="ml-2">Pro</v-chip>
+                                {% endif %}
+                            </v-list-subheader>
                             <v-list-item 
                                 href="/workspace/{{ current_workspace.id }}/" 
                                 prepend-icon="mdi-briefcase"
@@ -92,7 +97,12 @@
                         {% set current_workspace = get_current_workspace() %}
                         {% if current_workspace %}
                             <!-- User is in a workspace -->
-                            <v-list-subheader>{{ current_workspace.name }}</v-list-subheader>
+                            <v-list-subheader class="d-flex align-center justify-space-between">
+                                <span>{{ current_workspace.name }}</span>
+                                {% if current_workspace.is_pro %}
+                                <v-chip size="x-small" color="success" variant="flat" class="ml-2">Pro</v-chip>
+                                {% endif %}
+                            </v-list-subheader>
                             <v-list-item 
                                 href="/workspace/{{ current_workspace.id }}/" 
                                 prepend-icon="mdi-briefcase"

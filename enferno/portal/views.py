@@ -516,13 +516,17 @@ def billing_portal(workspace_id):
 @portal.get("/billing/success")
 @auth_required("session")
 def billing_success():
-    """Success page with session_id validation - lean but secure"""
+    """Handle successful Stripe checkout - validate and upgrade workspace"""
     session_id = request.args.get("session_id")
 
-    # Must have session_id from Stripe redirect
     if not session_id:
         return redirect("/dashboard")
 
-    # Simple validation: if session_id exists in URL, payment was successful
-    # (Stripe only redirects with session_id after payment completes)
-    return render_template("billing_success.html", success=True)
+    try:
+        workspace_id = HostedBilling.handle_successful_payment(session_id)
+        if workspace_id:
+            return render_template("billing_success.html", success=True)
+    except Exception as e:
+        current_app.logger.error(f"Payment processing error: {str(e)}")
+
+    return render_template("billing_error.html", error_type="payment_failed")
