@@ -34,33 +34,29 @@ def api_user():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", PER_PAGE, type=int)
 
-    # Start with base query - this pattern makes it easy to add filters later
     query = db.select(User)
-
-    # Paginate results
     pagination = db.paginate(query, page=page, per_page=per_page)
 
-    # Convert users to dictionaries with workspace info
-    items = []
-    for user in pagination.items:
-        user_dict = user.to_dict()
-        # Add workspace information
+    def user_with_workspaces(user):
+        """Add workspace info to user dict"""
         workspaces = user.get_workspaces()
-        user_dict["workspace_count"] = len(workspaces)
-        user_dict["workspaces"] = [
-            {"id": w.id, "name": w.name, "role": user.get_workspace_role(w.id)}
-            for w in workspaces[:3]
-        ]  # Show first 3
-        items.append(user_dict)
+        return {
+            **user.to_dict(),
+            "workspace_count": len(workspaces),
+            "workspaces": [
+                {"id": w.id, "name": w.name, "role": user.get_workspace_role(w.id)}
+                for w in workspaces[:3]  # Show first 3
+            ],
+        }
 
-    # Create consistent response structure with metadata
-    response_data = {
-        "items": items,
-        "total": pagination.total,
-        "perPage": pagination.per_page,
-    }
+    items = [user_with_workspaces(user) for user in pagination.items]
 
-    return Response(json.dumps(response_data), content_type="application/json")
+    return Response(
+        json.dumps(
+            {"items": items, "total": pagination.total, "perPage": pagination.per_page}
+        ),
+        content_type="application/json",
+    )
 
 
 @bp_user.post("/api/user/")
@@ -188,34 +184,25 @@ def api_activities():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", PER_PAGE, type=int)
 
-    # Start with base query - newest activities first
     query = db.select(Activity).order_by(Activity.created_at.desc())
-
-    # Paginate results
     pagination = db.paginate(query, page=page, per_page=per_page)
 
-    # Convert activities to dictionaries
-    items = []
-    for activity in pagination.items:
-        # Get user info if available
+    def activity_to_dict(activity):
+        """Convert activity to dict with user info"""
         user = db.session.get(User, activity.user_id)
-        username = user.username if user else f"User ID: {activity.user_id}"
+        return {
+            "id": activity.id,
+            "user": user.username if user else f"User ID: {activity.user_id}",
+            "action": activity.action,
+            "data": activity.data,
+            "created_at": activity.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+        }
 
-        items.append(
-            {
-                "id": activity.id,
-                "user": username,
-                "action": activity.action,
-                "data": activity.data,
-                "created_at": activity.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-            }
-        )
+    items = [activity_to_dict(activity) for activity in pagination.items]
 
-    # Create consistent response structure with metadata
-    response_data = {
-        "items": items,
-        "total": pagination.total,
-        "perPage": pagination.per_page,
-    }
-
-    return Response(json.dumps(response_data), content_type="application/json")
+    return Response(
+        json.dumps(
+            {"items": items, "total": pagination.total, "perPage": pagination.per_page}
+        ),
+        content_type="application/json",
+    )
