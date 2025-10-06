@@ -131,3 +131,7 @@ class Config:
     STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
     STRIPE_PRO_PRICE_ID = os.environ.get("STRIPE_PRO_PRICE_ID")
     STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET")
+
+    # Pricing Display (update when Stripe price changes)
+    PRO_PRICE_DISPLAY = os.environ.get("PRO_PRICE_DISPLAY", "$29")
+    PRO_PRICE_INTERVAL = os.environ.get("PRO_PRICE_INTERVAL", "month")

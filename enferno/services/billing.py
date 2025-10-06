@@ -111,24 +111,6 @@ class HostedBilling:
             current_app.logger.error(f"Failed to upgrade workspace {workspace_id}: {e}")
             return None
 
-    @staticmethod
-    def get_pro_price_info():
-        """Get Pro plan pricing info from Stripe"""
-        price_id = current_app.config.get("STRIPE_PRO_PRICE_ID")
-        if not price_id:
-            return {"amount": "N/A", "currency": "USD", "interval": "month"}
-
-        try:
-            _init_stripe()
-            price = stripe.Price.retrieve(price_id)
-            return {
-                "amount": price.unit_amount / 100,  # Convert cents to dollars
-                "currency": price.currency.upper(),
-                "interval": price.recurring.interval if price.recurring else "one-time",
-            }
-        except Exception:
-            return {"amount": "N/A", "currency": "USD", "interval": "month"}
-
 
 def requires_pro_plan(f):
     """Require Pro plan - assumes workspace context already set by require_workspace_access"""

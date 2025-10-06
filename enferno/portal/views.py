@@ -71,12 +71,12 @@ def workspace_team(workspace_id):
 @require_workspace_access("member")
 def workspace_settings(workspace_id):
     """Workspace settings"""
-    price_info = HostedBilling.get_pro_price_info()
     return render_template(
         "workspace_settings.html",
         workspace=g.current_workspace,
         user_role=g.user_workspace_role,
-        price_info=price_info,
+        pro_price=current_app.config.get("PRO_PRICE_DISPLAY", "$29"),
+        pro_interval=current_app.config.get("PRO_PRICE_INTERVAL", "month"),
     )
 
 
