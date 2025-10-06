@@ -9,24 +9,9 @@ from enferno.extensions import db
 from enferno.user.models import Membership, Workspace
 
 
-def get_current_workspace_id():
-    """Get current workspace ID from session"""
-    return session.get("current_workspace_id")
-
-
-def set_current_workspace(workspace_id):
-    """Set current workspace in session"""
-    session["current_workspace_id"] = workspace_id
-
-
-def clear_current_workspace():
-    """Clear current workspace from session."""
-    session.pop("current_workspace_id", None)
-
-
 def get_current_workspace():
-    """Get current workspace object"""
-    workspace_id = get_current_workspace_id()
+    """Get current workspace object from session"""
+    workspace_id = session.get("current_workspace_id")
     return db.session.get(Workspace, workspace_id) if workspace_id else None
 
 
@@ -53,10 +38,8 @@ def require_workspace_access(required_role="member"):
             if required_role == "admin" and user_role != "admin":
                 abort(403, "Admin access required")
 
-            # Only set session after all security checks pass
-            set_current_workspace(workspace_id)
-
-            # Store workspace in g for easy access in views
+            # Set workspace context after all security checks pass
+            session["current_workspace_id"] = workspace_id
             g.current_workspace = get_current_workspace()
             g.user_workspace_role = user_role
 
@@ -69,7 +52,7 @@ def require_workspace_access(required_role="member"):
 
 def workspace_query(model_class):
     """Helper to create workspace-scoped queries"""
-    workspace_id = get_current_workspace_id()
+    workspace_id = session.get("current_workspace_id")
     if not workspace_id:
         raise ValueError("No workspace context available")
     return db.select(model_class).where(model_class.workspace_id == workspace_id)
@@ -196,7 +179,7 @@ class WorkspaceScoped:
     @classmethod
     def get_by_id(cls, record_id):
         """Get record by ID within current workspace"""
-        workspace_id = get_current_workspace_id()
+        workspace_id = session.get("current_workspace_id")
         if not workspace_id:
             return None
 
