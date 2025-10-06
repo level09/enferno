@@ -4,6 +4,7 @@ from datetime import datetime
 from flask import (
     Blueprint,
     current_app,
+    g,
     jsonify,
     redirect,
     render_template,
@@ -18,11 +19,7 @@ from enferno.extensions import db
 from enferno.services.auth import require_superadmin_api
 from enferno.services.billing import HostedBilling
 from enferno.user.models import Membership, User, Workspace
-from enferno.utils.tenant import (
-    WorkspaceService,
-    get_current_workspace,
-    require_workspace_access,
-)
+from enferno.utils.tenant import WorkspaceService, require_workspace_access
 
 portal = Blueprint("portal", __name__, static_folder="../static")
 
@@ -30,25 +27,20 @@ portal = Blueprint("portal", __name__, static_folder="../static")
 @portal.before_request
 @auth_required("session")
 def before_request():
+    """Ensure all portal routes require authentication"""
     pass
 
 
 @portal.get("/dashboard/")
 def dashboard():
     """Show workspace selection for user"""
-    if current_user.is_superadmin:
-        # Super admin sees all workspaces
-        workspaces = current_user.get_workspaces()
-    else:
-        # Regular users only see their own workspaces
-        workspaces = current_user.get_workspaces()
+    workspaces = current_user.get_workspaces()
 
-    # Add user role info to each workspace
-    workspace_data = []
-    for workspace in workspaces:
-        workspace_dict = workspace.to_dict()
-        workspace_dict["user_role"] = current_user.get_workspace_role(workspace.id)
-        workspace_data.append(workspace_dict)
+    # Add user role to each workspace dict
+    workspace_data = [
+        {**ws.to_dict(), "user_role": current_user.get_workspace_role(ws.id)}
+        for ws in workspaces
+    ]
 
     return render_template("dashboard.html", workspaces=workspace_data)
 
@@ -57,20 +49,21 @@ def dashboard():
 @require_workspace_access("member")
 def workspace_view(workspace_id):
     """Main workspace interface"""
-    workspace = get_current_workspace()
-
-    user_role = current_user.get_workspace_role(workspace_id)
-    return render_template("workspace.html", workspace=workspace, user_role=user_role)
+    return render_template(
+        "workspace.html",
+        workspace=g.current_workspace,
+        user_role=g.user_workspace_role,
+    )
 
 
 @portal.get("/workspace/<int:workspace_id>/team/")
 @require_workspace_access("admin")
 def workspace_team(workspace_id):
     """Team management (admin only)"""
-    workspace = get_current_workspace()
-    user_role = current_user.get_workspace_role(workspace_id)
     return render_template(
-        "workspace_team.html", workspace=workspace, user_role=user_role
+        "workspace_team.html",
+        workspace=g.current_workspace,
+        user_role=g.user_workspace_role,
     )
 
 
@@ -78,14 +71,11 @@ def workspace_team(workspace_id):
 @require_workspace_access("member")
 def workspace_settings(workspace_id):
     """Workspace settings"""
-    workspace = get_current_workspace()
-
-    user_role = current_user.get_workspace_role(workspace_id)
     price_info = HostedBilling.get_pro_price_info()
     return render_template(
         "workspace_settings.html",
-        workspace=workspace,
-        user_role=user_role,
+        workspace=g.current_workspace,
+        user_role=g.user_workspace_role,
         price_info=price_info,
     )
 
@@ -143,11 +133,10 @@ def workspace_stats(workspace_id):
 @require_workspace_access("admin")
 def workspace_update(workspace_id):
     """Update workspace details"""
-    workspace = get_current_workspace()
     data = request.get_json(silent=True) or {}
 
     if "name" in data:
-        workspace.name = data["name"]
+        g.current_workspace.name = data["name"]
 
     try:
         db.session.commit()
@@ -435,8 +424,7 @@ def upgrade_workspace(workspace_id):
         f"NEW UPGRADE REQUEST - workspace {workspace_id} for user {current_user.email} at {time.time()}"
     )
 
-    # Get workspace to check current status
-    workspace = get_current_workspace()
+    workspace = g.current_workspace
     current_app.logger.debug(
         f"Current workspace plan: {workspace.plan}, stripe_customer_id: {workspace.stripe_customer_id}"
     )
@@ -476,8 +464,7 @@ def upgrade_workspace(workspace_id):
 @require_workspace_access("admin")
 def billing_portal(workspace_id):
     """Redirect to Stripe Customer Portal - fully hosted"""
-
-    workspace = get_current_workspace()
+    workspace = g.current_workspace
     if workspace.stripe_customer_id:
         try:
             session = HostedBilling.create_portal_session(
