@@ -14,6 +14,19 @@ from enferno.user.models import Workspace
 from enferno.utils.tenant import get_current_workspace
 
 
+def _init_stripe():
+    """Initialize Stripe API key from config"""
+    secret = current_app.config.get("STRIPE_SECRET_KEY")
+    if not secret:
+        raise RuntimeError("Stripe is not configured")
+    stripe.api_key = secret
+
+
+def _normalize_base_url(url: str) -> str:
+    """Ensure URL ends with slash"""
+    return url if url.endswith("/") else f"{url}/"
+
+
 class HostedBilling:
     """Minimal billing service using Stripe's hosted pages."""
 
@@ -22,15 +35,12 @@ class HostedBilling:
         workspace_id: int, user_email: str, base_url: str
     ) -> Any:
         """Create Stripe Checkout session for workspace upgrade."""
-        secret = current_app.config.get("STRIPE_SECRET_KEY")
+        _init_stripe()
         price_id = current_app.config.get("STRIPE_PRO_PRICE_ID")
-        if not secret or not price_id:
-            raise RuntimeError("Stripe is not configured")
-        stripe.api_key = secret
+        if not price_id:
+            raise RuntimeError("Stripe price not configured")
 
-        if not base_url.endswith("/"):
-            base_url = base_url + "/"
-
+        base_url = _normalize_base_url(base_url)
         session = stripe.checkout.Session.create(
             customer_email=user_email,
             line_items=[{"price": price_id, "quantity": 1}],
@@ -47,14 +57,8 @@ class HostedBilling:
         customer_id: str, workspace_id: int, base_url: str
     ) -> Any:
         """Create Stripe Customer Portal session for billing management."""
-        secret = current_app.config.get("STRIPE_SECRET_KEY")
-        if not secret:
-            raise RuntimeError("Stripe is not configured")
-        stripe.api_key = secret
-
-        if not base_url.endswith("/"):
-            base_url = base_url + "/"
-
+        _init_stripe()
+        base_url = _normalize_base_url(base_url)
         session = stripe.billing_portal.Session.create(
             customer=customer_id,
             return_url=f"{base_url}workspace/{workspace_id}/settings",
@@ -71,12 +75,7 @@ class HostedBilling:
         Returns:
             Workspace ID if successful, None otherwise
         """
-        secret = current_app.config.get("STRIPE_SECRET_KEY")
-        if not secret:
-            raise RuntimeError("Stripe is not configured")
-        stripe.api_key = secret
-
-        # Validate session with Stripe API (can't fake this)
+        _init_stripe()
         session = stripe.checkout.Session.retrieve(session_id)
         current_app.logger.info(
             f"Processing checkout: {session.id} status={session.status} payment={session.payment_status}"
@@ -118,13 +117,12 @@ class HostedBilling:
     @staticmethod
     def get_pro_price_info():
         """Get Pro plan pricing info from Stripe"""
-        secret = current_app.config.get("STRIPE_SECRET_KEY")
         price_id = current_app.config.get("STRIPE_PRO_PRICE_ID")
-        if not secret or not price_id:
+        if not price_id:
             return {"amount": "N/A", "currency": "USD", "interval": "month"}
 
-        stripe.api_key = secret
         try:
+            _init_stripe()
             price = stripe.Price.retrieve(price_id)
             return {
                 "amount": price.unit_amount / 100,  # Convert cents to dollars
@@ -141,7 +139,9 @@ def requires_pro_plan(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         workspace = get_current_workspace()
-        if not workspace or not workspace.is_pro:
+        if not workspace:
+            return jsonify({"error": "Workspace not found"}), 404
+        if not workspace.is_pro:
             if request.is_json or request.path.startswith("/api/"):
                 return jsonify({"error": "Pro plan required"}), 402
             return redirect(
