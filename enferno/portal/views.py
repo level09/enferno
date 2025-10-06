@@ -8,6 +8,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    session,
     url_for,
 )
 from flask_security import auth_required, current_user
@@ -21,7 +22,6 @@ from enferno.utils.tenant import (
     WorkspaceService,
     get_current_workspace,
     require_workspace_access,
-    set_current_workspace,
 )
 
 portal = Blueprint("portal", __name__, static_folder="../static")
@@ -96,7 +96,7 @@ def switch_workspace(workspace_id):
     """Switch to a workspace"""
     # Verify user has access
     if current_user.can_access_workspace(workspace_id):
-        set_current_workspace(workspace_id)
+        session["current_workspace_id"] = workspace_id
         return redirect(url_for("portal.workspace_view", workspace_id=workspace_id))
     else:
         return redirect(url_for("portal.dashboard"))
