@@ -79,15 +79,15 @@ class HostedBilling:
             current_app.logger.warning(
                 f"Checkout session not complete: {session.id} status={session.status}"
             )
-            return False
+            return None
 
         if session.payment_status not in {"paid", "no_payment_required"}:
             current_app.logger.warning(
                 f"Payment not confirmed: {session.id} payment_status={session.payment_status}"
             )
-            return False
+            return None
 
-        workspace_id = (session.metadata or {}).get("workspace_id")
+        workspace_id = session.metadata.get("workspace_id")
         if not workspace_id:
             return None
 
@@ -96,16 +96,20 @@ class HostedBilling:
             return None
 
         # Idempotent: if already pro, just return success
-        if workspace.plan == "pro":
+        if workspace.is_pro:
             return workspace.id
 
         # Upgrade workspace
-        workspace.plan = "pro"
-        workspace.stripe_customer_id = session.customer
-        workspace.upgraded_at = datetime.utcnow()
-        db.session.commit()
-
-        return workspace.id
+        try:
+            workspace.plan = "pro"
+            workspace.stripe_customer_id = session.customer
+            workspace.upgraded_at = datetime.utcnow()
+            db.session.commit()
+            return workspace.id
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Failed to upgrade workspace {workspace_id}: {e}")
+            return None
 
     @staticmethod
     def get_pro_price_info():
