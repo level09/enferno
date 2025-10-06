@@ -22,11 +22,6 @@ def _init_stripe():
     stripe.api_key = secret
 
 
-def _normalize_base_url(url: str) -> str:
-    """Ensure URL ends with slash"""
-    return url if url.endswith("/") else f"{url}/"
-
-
 class HostedBilling:
     """Minimal billing service using Stripe's hosted pages."""
 
@@ -40,7 +35,6 @@ class HostedBilling:
         if not price_id:
             raise RuntimeError("Stripe price not configured")
 
-        base_url = _normalize_base_url(base_url)
         session = stripe.checkout.Session.create(
             customer_email=user_email,
             line_items=[{"price": price_id, "quantity": 1}],
@@ -58,7 +52,6 @@ class HostedBilling:
     ) -> Any:
         """Create Stripe Customer Portal session for billing management."""
         _init_stripe()
-        base_url = _normalize_base_url(base_url)
         session = stripe.billing_portal.Session.create(
             customer=customer_id,
             return_url=f"{base_url}workspace/{workspace_id}/settings",
