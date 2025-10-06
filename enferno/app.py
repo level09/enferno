@@ -21,7 +21,7 @@ from enferno.settings import Config
 from enferno.user.forms import ExtendedRegisterForm
 from enferno.user.models import OAuth, Role, User, WebAuthn
 from enferno.user.views import bp_user
-from enferno.utils.tenant import clear_current_workspace, get_current_workspace
+from enferno.utils.tenant import get_current_workspace
 
 # Suppress passlib pkg_resources deprecation warning at import time
 warnings.filterwarnings(
@@ -75,7 +75,8 @@ def register_extensions(app):
     from flask_login import user_logged_out
 
     user_logged_out.connect(
-        lambda sender, user, **kwargs: clear_current_workspace(), app
+        lambda sender, user, **kwargs: flask_session.pop("current_workspace_id", None),
+        app,
     )
 
     # Add template context processors
