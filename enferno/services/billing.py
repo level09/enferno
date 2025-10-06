@@ -7,8 +7,7 @@ from functools import wraps
 from typing import Any
 
 import stripe
-from flask import abort, current_app, jsonify, redirect, request, url_for
-from flask_security import current_user
+from flask import current_app, jsonify, redirect, request, url_for
 
 from enferno.extensions import db
 from enferno.user.models import Workspace
@@ -136,71 +135,18 @@ class HostedBilling:
             return {"amount": "N/A", "currency": "USD", "interval": "month"}
 
 
-def requires_pro_plan(feature_name=None):
-    """Decorator to require pro plan for workspace features"""
+def requires_pro_plan(f):
+    """Require Pro plan - assumes workspace context already set by require_workspace_access"""
 
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            workspace = get_current_workspace()
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        workspace = get_current_workspace()
+        if not workspace or not workspace.is_pro:
+            if request.is_json or request.path.startswith("/api/"):
+                return jsonify({"error": "Pro plan required"}), 402
+            return redirect(
+                url_for("portal.upgrade_workspace", workspace_id=workspace.id)
+            )
+        return f(*args, **kwargs)
 
-            # Guard: workspace context must exist
-            if workspace is None:
-                if request.is_json or request.path.startswith("/api/"):
-                    return jsonify({"error": "Workspace context required"}), 403
-                else:
-                    abort(403, "Workspace context required")
-
-            # Re-validate user is authenticated and still has access
-            if not current_user.is_authenticated:
-                if request.is_json or request.path.startswith("/api/"):
-                    return jsonify({"error": "Authentication required"}), 401
-                else:
-                    abort(401)
-
-            if not current_user.can_access_workspace(workspace.id):
-                if request.is_json or request.path.startswith("/api/"):
-                    return jsonify({"error": "Access denied to workspace"}), 403
-                else:
-                    abort(403, "Access denied to workspace")
-
-            # Trust webhook-updated database state for billing checks
-            # Webhooks handle real-time subscription updates
-
-            if not workspace.is_pro:
-                # Check if this is an API request
-                if request.is_json or request.path.startswith("/api/"):
-                    return jsonify(
-                        {
-                            "error": "Pro plan required",
-                            "feature": feature_name,
-                            "upgrade_url": f"/workspace/{workspace.id}/upgrade",
-                        }
-                    ), 402  # Payment Required
-                else:
-                    # For web requests, redirect to upgrade page
-                    return redirect(
-                        url_for("portal.upgrade_workspace", workspace_id=workspace.id)
-                    )
-
-            return f(*args, **kwargs)
-
-        return decorated_function
-
-    return decorator
-
-
-class PlanLimits:
-    """Simple limits helper for workspace plans"""
-
-    @staticmethod
-    def can_add_member(workspace):
-        """Free: 3 members, Pro: unlimited"""
-        if workspace.is_pro:
-            return True
-        return len(workspace.memberships) < 3
-
-    @staticmethod
-    def max_members(workspace):
-        """Get max members display text"""
-        return "Unlimited" if workspace.is_pro else "3"
+    return decorated
