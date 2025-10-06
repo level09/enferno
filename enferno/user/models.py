@@ -8,12 +8,8 @@ from flask_dance.consumer.storage.sqla import OAuthConsumerMixin
 from flask_security import AsaList
 from flask_security.core import RoleMixin, UserMixin
 from flask_security.utils import hash_password
-from sqlalchemy import (
-    Column,
-    ForeignKey,
-    Integer,
-    Table,
-)
+from sluggi import slugify
+from sqlalchemy import Column, ForeignKey, Integer, Table, select
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import declared_attr, relationship
 
@@ -120,7 +116,6 @@ class User(UserMixin, db.Model, BaseMixin):
 
     def get_workspaces(self):
         """Get all workspaces user has access to"""
-        from sqlalchemy import select
 
         return (
             db.session.execute(
@@ -271,7 +266,6 @@ class Workspace(db.Model, BaseMixin):
     @staticmethod
     def generate_slug(name):
         """Generate URL-safe slug from name"""
-        from sluggi import slugify
 
         return slugify(name)
 
