@@ -40,13 +40,7 @@ class HostedBilling:
             cancel_url=f"{base_url}dashboard",
             metadata={"workspace_id": str(workspace_id)},
         )
-        try:
-            current_app.logger.info(
-                "Created Stripe Checkout session",
-                extra={"session_id": getattr(session, "id", None)},
-            )
-        except Exception:
-            pass
+        current_app.logger.info(f"Created Stripe Checkout session: {session.id}")
         return session
 
     @staticmethod
@@ -66,13 +60,7 @@ class HostedBilling:
             customer=customer_id,
             return_url=f"{base_url}workspace/{workspace_id}/settings",
         )
-        try:
-            current_app.logger.info(
-                "Created Stripe Portal session",
-                extra={"portal_session_id": getattr(session, "id", None)},
-            )
-        except Exception:
-            pass
+        current_app.logger.info(f"Created Stripe Portal session: {session.id}")
         return session
 
     @staticmethod
@@ -91,41 +79,21 @@ class HostedBilling:
 
         # Validate session with Stripe API (can't fake this)
         session = stripe.checkout.Session.retrieve(session_id)
-        try:
-            current_app.logger.info(
-                "Processing checkout success",
-                extra={
-                    "session_id": getattr(session, "id", None),
-                    "subscription": getattr(session, "subscription", None),
-                    "status": getattr(session, "status", None),
-                    "payment_status": getattr(session, "payment_status", None),
-                },
-            )
-        except Exception:
-            pass
+        current_app.logger.info(
+            f"Processing checkout: {session.id} status={session.status} payment={session.payment_status}"
+        )
 
         # Verify payment actually completed
         if session.status != "complete":
-            try:
-                current_app.logger.warning(
-                    "Checkout session not complete",
-                    extra={"session_id": session.id, "status": session.status},
-                )
-            except Exception:
-                pass
+            current_app.logger.warning(
+                f"Checkout session not complete: {session.id} status={session.status}"
+            )
             return False
 
         if session.payment_status not in {"paid", "no_payment_required"}:
-            try:
-                current_app.logger.warning(
-                    "Payment not confirmed",
-                    extra={
-                        "session_id": session.id,
-                        "payment_status": session.payment_status,
-                    },
-                )
-            except Exception:
-                pass
+            current_app.logger.warning(
+                f"Payment not confirmed: {session.id} payment_status={session.payment_status}"
+            )
             return False
 
         workspace_id = (session.metadata or {}).get("workspace_id")
