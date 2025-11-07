@@ -85,6 +85,11 @@ uv run flask install    # Create admin user
 uv run flask run        # Start development server
 ```
 
+For Unix deployments that need uWSGI, install the optional extra:
+```bash
+uv sync --extra wsgi
+```
+
 Or activate environment manually:
 ```bash
 source .venv/bin/activate  # Linux/Mac
@@ -169,5 +174,4 @@ Contributions welcome! Please read our [Contributing Guide](CONTRIBUTING.md).
 License
 -------
 MIT licensed.
-
 

@@ -15,27 +15,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Alternatively, use: curl -sSf https://astral.sh/uv/install.sh | sh
 RUN pip install --no-cache-dir uv
 
-# Create virtual environment
-RUN uv venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-# Install Python dependencies
-COPY requirements.txt .
-RUN uv pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies using uv (with optional wsgi extra)
+COPY pyproject.toml uv.lock ./
+RUN uv sync --extra wsgi --frozen --no-install-project
 
 # Runtime stage
 FROM python:3.12-slim
 
-# Copy virtual environment from build stage
-COPY --from=builder /opt/venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
 # Set working directory
 WORKDIR /app
 
-# Create non-root user
+# Copy virtual environment from build stage
+COPY --from=builder /app/.venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Create non-root user and ensure permissions
 RUN useradd -m -u 1000 enferno && \
-    chown -R enferno:enferno /app
+    chown -R enferno:enferno /app /opt/venv
 
 # Install only runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
