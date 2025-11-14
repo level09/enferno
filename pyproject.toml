@@ -85,6 +85,9 @@ dev = [
     # "pytest>=7.0.0",
     # "pytest-flask>=1.2.0",
 ]
+wsgi = [
+    "uwsgi>=2.0.30",
+]
 
 [build-system]
 requires = ["hatchling"]
