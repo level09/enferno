@@ -29,19 +29,30 @@ def require_workspace_access(required_role="member"):
             if not workspace_id:
                 abort(400, "No workspace specified")
 
+            # Fetch workspace and membership in one query (avoid duplicate lookups)
+            workspace = db.session.get(Workspace, workspace_id)
+            if not workspace:
+                abort(404, "Workspace not found")
+
             # Verify user has access to this workspace
-            user_role = current_user.get_workspace_role(workspace_id)
-            if not user_role:
+            membership = db.session.execute(
+                db.select(Membership).where(
+                    Membership.workspace_id == workspace_id,
+                    Membership.user_id == current_user.id,
+                )
+            ).scalar_one_or_none()
+
+            if not membership:
                 abort(403, "Access denied to workspace")
 
             # Check role requirements
-            if required_role == "admin" and user_role != "admin":
+            if required_role == "admin" and membership.role != "admin":
                 abort(403, "Admin access required")
 
             # Set workspace context after all security checks pass
             session["current_workspace_id"] = workspace_id
-            g.current_workspace = get_current_workspace()
-            g.user_workspace_role = user_role
+            g.current_workspace = workspace
+            g.user_workspace_role = membership.role
 
             return f(*args, **kwargs)
 

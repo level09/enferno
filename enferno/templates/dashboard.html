@@ -37,110 +37,6 @@
         </v-col>
     </v-row>
 
-    <!-- Super Admin Quick Actions -->
-    {% if current_user.is_superadmin %}
-    <v-row class="mb-6">
-        <v-col cols="12" sm="6" md="3">
-            <v-card 
-                variant="elevated" 
-                class="text-center pa-4 h-100"
-                @click="openAllWorkspaces"
-                hover
-                style="cursor: pointer"
-            >
-                <v-icon size="40" color="primary" class="mb-3">mdi-office-building-outline</v-icon>
-                <div class="text-h6 mb-2">All Workspaces</div>
-                <div class="text-body-2 text-medium-emphasis">Manage all client workspaces</div>
-            </v-card>
-        </v-col>
-        <v-col cols="12" sm="6" md="3">
-            <v-card 
-                variant="elevated" 
-                class="text-center pa-4 h-100"
-                @click="openAllUsers"
-                hover
-                style="cursor: pointer"
-            >
-                <v-icon size="40" color="success" class="mb-3">mdi-account-group</v-icon>
-                <div class="text-h6 mb-2">All Users</div>
-                <div class="text-body-2 text-medium-emphasis">View platform users</div>
-            </v-card>
-        </v-col>
-        <v-col cols="12" sm="6" md="3">
-            <v-card 
-                variant="elevated" 
-                class="text-center pa-4 h-100"
-                @click="systemStatsDialog = true"
-                hover
-                style="cursor: pointer"
-            >
-                <v-icon size="40" color="info" class="mb-3">mdi-chart-line</v-icon>
-                <div class="text-h6 mb-2">System Stats</div>
-                <div class="text-body-2 text-medium-emphasis">Platform metrics</div>
-            </v-card>
-        </v-col>
-        <v-col cols="12" sm="6" md="3">
-            <v-card 
-                variant="elevated" 
-                class="text-center pa-4 h-100"
-                hover
-                style="cursor: pointer"
-            >
-                <v-icon size="40" color="warning" class="mb-3">mdi-cog</v-icon>
-                <div class="text-h6 mb-2">Settings</div>
-                <div class="text-body-2 text-medium-emphasis">Platform configuration</div>
-            </v-card>
-        </v-col>
-    </v-row>
-
-    <!-- Platform Stats for Super Admin -->
-    <v-row class="mb-6" v-if="platformStats">
-        <v-col cols="12" sm="6" md="3">
-            <v-card variant="tonal" color="primary" class="pa-4">
-                <div class="d-flex align-center">
-                    <v-icon size="32" class="mr-3">mdi-office-building</v-icon>
-                    <div>
-                        <div class="text-h5 font-weight-bold">${platformStats.total_workspaces}</div>
-                        <div class="text-body-2">Total Workspaces</div>
-                    </div>
-                </div>
-            </v-card>
-        </v-col>
-        <v-col cols="12" sm="6" md="3">
-            <v-card variant="tonal" color="success" class="pa-4">
-                <div class="d-flex align-center">
-                    <v-icon size="32" class="mr-3">mdi-account-group</v-icon>
-                    <div>
-                        <div class="text-h5 font-weight-bold">${platformStats.total_users}</div>
-                        <div class="text-body-2">Total Users</div>
-                    </div>
-                </div>
-            </v-card>
-        </v-col>
-        <v-col cols="12" sm="6" md="3">
-            <v-card variant="tonal" color="info" class="pa-4">
-                <div class="d-flex align-center">
-                    <v-icon size="32" class="mr-3">mdi-account-plus</v-icon>
-                    <div>
-                        <div class="text-h5 font-weight-bold">${platformStats.new_users_today}</div>
-                        <div class="text-body-2">New Today</div>
-                    </div>
-                </div>
-            </v-card>
-        </v-col>
-        <v-col cols="12" sm="6" md="3">
-            <v-card variant="tonal" color="warning" class="pa-4">
-                <div class="d-flex align-center">
-                    <v-icon size="32" class="mr-3">mdi-chart-line</v-icon>
-                    <div>
-                        <div class="text-h5 font-weight-bold">${platformStats.active_workspaces}</div>
-                        <div class="text-body-2">Active This Week</div>
-                    </div>
-                </div>
-            </v-card>
-        </v-col>
-    </v-row>
-    {% endif %}
 
     <!-- Workspaces Section -->
     <div v-if="workspaces.length > 0">
@@ -311,151 +207,6 @@
     </template>
 </v-snackbar>
 
-<!-- Super Admin Dialogs -->
-{% if current_user.is_superadmin %}
-
-<!-- All Workspaces Dialog -->
-<v-dialog v-model="allWorkspacesDialog" width="900" scrollable>
-    <v-card>
-        <v-toolbar>
-            <v-toolbar-title>All Workspaces</v-toolbar-title>
-            <template v-slot:append>
-                <v-btn @click="allWorkspacesDialog=false" size="small" icon="mdi-close" variant="text"></v-btn>
-            </template>
-        </v-toolbar>
-        
-        <v-card-text style="height: 500px;">
-            <v-data-table
-                :items="allWorkspaces"
-                :headers="workspaceHeaders"
-                :loading="loadingWorkspaces"
-                item-key="id"
-                class="elevation-1"
-            >
-                <template v-slot:item.created_at="{ item }">
-                    ${formatDate(item.created_at)}
-                </template>
-                
-                <template v-slot:item.actions="{ item }">
-                    <v-btn 
-                        size="small" 
-                        color="primary" 
-                        variant="outlined"
-                        :href="`/workspace/${item.id}/switch/`"
-                    >
-                        Access
-                    </v-btn>
-                </template>
-            </v-data-table>
-        </v-card-text>
-    </v-card>
-</v-dialog>
-
-<!-- All Users Dialog -->
-<v-dialog v-model="allUsersDialog" width="900" scrollable>
-    <v-card>
-        <v-toolbar>
-            <v-toolbar-title>All Users</v-toolbar-title>
-            <template v-slot:append>
-                <v-btn @click="allUsersDialog=false" size="small" icon="mdi-close" variant="text"></v-btn>
-            </template>
-        </v-toolbar>
-        
-        <v-card-text style="height: 500px;">
-            <v-data-table
-                :items="allUsers"
-                :headers="userHeaders"
-                :loading="loadingUsers"
-                item-key="id"
-                class="elevation-1"
-            >
-                <template v-slot:item.workspace_count="{ item }">
-                    <v-chip size="small" variant="outlined">
-                        ${item.workspace_count}
-                    </v-chip>
-                </template>
-                
-                <template v-slot:item.active="{ item }">
-                    <v-chip 
-                        :color="item.active ? 'success' : 'error'" 
-                        size="small"
-                    >
-                        ${item.active ? 'Active' : 'Inactive'}
-                    </v-chip>
-                </template>
-                
-                <template v-slot:item.role_display="{ item }">
-                    <v-chip 
-                        :color="item.is_superadmin ? 'warning' : 'default'" 
-                        size="small"
-                        :prepend-icon="item.is_superadmin ? 'mdi-crown' : 'mdi-account'"
-                    >
-                        ${item.is_superadmin ? 'Super Admin' : 'User'}
-                    </v-chip>
-                </template>
-                
-                <template v-slot:item.created_at="{ item }">
-                    ${formatDate(item.created_at)}
-                </template>
-            </v-data-table>
-        </v-card-text>
-    </v-card>
-</v-dialog>
-
-<!-- System Stats Dialog -->
-<v-dialog v-model="systemStatsDialog" width="600">
-    <v-card>
-        <v-toolbar>
-            <v-toolbar-title>System Statistics</v-toolbar-title>
-            <template v-slot:append>
-                <v-btn @click="systemStatsDialog=false" size="small" icon="mdi-close" variant="text"></v-btn>
-            </template>
-        </v-toolbar>
-        
-        <v-card-text>
-            <v-row v-if="platformStats">
-                <v-col cols="6">
-                    <v-card variant="tonal" color="primary">
-                        <v-card-text class="text-center">
-                            <v-icon size="40" class="mb-2">mdi-office-building</v-icon>
-                            <div class="text-h4">${platformStats.total_workspaces}</div>
-                            <div>Total Workspaces</div>
-                        </v-card-text>
-                    </v-card>
-                </v-col>
-                <v-col cols="6">
-                    <v-card variant="tonal" color="success">
-                        <v-card-text class="text-center">
-                            <v-icon size="40" class="mb-2">mdi-account-group</v-icon>
-                            <div class="text-h4">${platformStats.total_users}</div>
-                            <div>Total Users</div>
-                        </v-card-text>
-                    </v-card>
-                </v-col>
-                <v-col cols="6">
-                    <v-card variant="tonal" color="info">
-                        <v-card-text class="text-center">
-                            <v-icon size="40" class="mb-2">mdi-account-plus</v-icon>
-                            <div class="text-h4">${platformStats.new_users_today}</div>
-                            <div>New Today</div>
-                        </v-card-text>
-                    </v-card>
-                </v-col>
-                <v-col cols="6">
-                    <v-card variant="tonal" color="warning">
-                        <v-card-text class="text-center">
-                            <v-icon size="40" class="mb-2">mdi-chart-line</v-icon>
-                            <div class="text-h4">${platformStats.active_workspaces}</div>
-                            <div>Active This Week</div>
-                        </v-card-text>
-                    </v-card>
-                </v-col>
-            </v-row>
-        </v-card-text>
-    </v-card>
-</v-dialog>
-
-{% endif %}
 
 {% endblock %}
 
@@ -477,36 +228,7 @@ const app = createApp({
             snackBar: false,
             snackMessage: '',
             snackColor: 'success',
-            
-            // Super admin data
-            {% if current_user.is_superadmin %}
-            allWorkspacesDialog: false,
-            allUsersDialog: false,
-            systemStatsDialog: false,
-            platformStats: null,
-            allWorkspaces: [],
-            allUsers: [],
-            loadingWorkspaces: false,
-            loadingUsers: false,
-            
-            workspaceHeaders: [
-                { title: 'Name', value: 'name' },
-                { title: 'Owner', value: 'owner_name' },
-                { title: 'Members', value: 'member_count' },
-                { title: 'Created', value: 'created_at' },
-                { title: 'Actions', value: 'actions', sortable: false }
-            ],
-            
-            userHeaders: [
-                { title: 'Name', value: 'name' },
-                { title: 'Email', value: 'email' },
-                { title: 'Workspaces', value: 'workspace_count' },
-                { title: 'Status', value: 'active' },
-                { title: 'Role', value: 'role_display' },
-                { title: 'Joined', value: 'created_at' }
-            ],
-            {% endif %}
-            
+
             rules: {
                 required: value => !!value || 'Required'
             }
@@ -517,11 +239,6 @@ const app = createApp({
     mounted() {
         // Load workspace data from template (already includes user roles)
         this.workspaces = {{ workspaces | tojson | safe }};
-        
-        {% if current_user.is_superadmin %}
-        // Load platform stats for super admin
-        this.loadPlatformStats();
-        {% endif %}
     },
     
     methods: {
@@ -560,53 +277,7 @@ const app = createApp({
                 this.creating = false;
             }
         },
-        
-        {% if current_user.is_superadmin %}
-        // Super admin methods
-        async loadPlatformStats() {
-            try {
-                const response = await axios.get('/api/admin/stats');
-                this.platformStats = response.data;
-            } catch (error) {
-                console.error('Failed to load platform stats:', error);
-            }
-        },
-        
-        async loadAllWorkspaces() {
-            this.loadingWorkspaces = true;
-            try {
-                const response = await axios.get('/api/admin/workspaces');
-                this.allWorkspaces = response.data.workspaces;
-            } catch (error) {
-                this.showSnack('Failed to load workspaces', 'error');
-            } finally {
-                this.loadingWorkspaces = false;
-            }
-        },
-        
-        async loadAllUsers() {
-            this.loadingUsers = true;
-            try {
-                const response = await axios.get('/api/admin/users');
-                this.allUsers = response.data.users;
-            } catch (error) {
-                this.showSnack('Failed to load users', 'error');
-            } finally {
-                this.loadingUsers = false;
-            }
-        },
-        
-        openAllWorkspaces() {
-            this.allWorkspacesDialog = true;
-            this.loadAllWorkspaces();
-        },
-        
-        openAllUsers() {
-            this.allUsersDialog = true;
-            this.loadAllUsers();
-        },
-        {% endif %}
-        
+
         formatDate(dateString) {
             if (!dateString) return 'Unknown';
             return new Date(dateString).toLocaleDateString('en-US', {

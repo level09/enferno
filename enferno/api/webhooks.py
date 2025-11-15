@@ -43,4 +43,40 @@ def stripe_webhook():
         HostedBilling.handle_successful_payment(session_id)
         current_app.logger.info(f"Processed checkout: {session_id}")
 
+    # Handle subscription cancellation (downgrade to free)
+    elif event["type"] == "customer.subscription.deleted":
+        subscription = event["data"]["object"]
+        customer_id = subscription.get("customer")
+
+        from enferno.user.models import Workspace
+
+        workspace = db.session.execute(
+            db.select(Workspace).where(Workspace.stripe_customer_id == customer_id)
+        ).scalar_one_or_none()
+
+        if workspace:
+            workspace.plan = "free"
+            db.session.commit()
+            current_app.logger.info(
+                f"Downgraded workspace {workspace.id} to free (subscription cancelled)"
+            )
+
+    # Handle payment failure (downgrade to free)
+    elif event["type"] == "invoice.payment_failed":
+        invoice = event["data"]["object"]
+        customer_id = invoice.get("customer")
+
+        from enferno.user.models import Workspace
+
+        workspace = db.session.execute(
+            db.select(Workspace).where(Workspace.stripe_customer_id == customer_id)
+        ).scalar_one_or_none()
+
+        if workspace and workspace.plan == "pro":
+            workspace.plan = "free"
+            db.session.commit()
+            current_app.logger.warning(
+                f"Downgraded workspace {workspace.id} to free (payment failed)"
+            )
+
     return "OK", 200
