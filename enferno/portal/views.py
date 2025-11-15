@@ -33,8 +33,14 @@ def before_request():
 
 @portal.get("/dashboard/")
 def dashboard():
-    """Show workspace selection for user"""
+    """Show workspace selection for user (or auto-redirect if only one)"""
     workspaces = current_user.get_workspaces()
+
+    # Auto-redirect solo users to their workspace (make workspaces invisible)
+    if len(workspaces) == 1 and not current_user.is_superadmin:
+        return redirect(
+            url_for("portal.switch_workspace", workspace_id=workspaces[0].id)
+        )
 
     # Add user role to each workspace dict
     workspace_data = [
