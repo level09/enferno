@@ -1,4 +1,4 @@
-"""Simple tenant utilities for workspace context."""
+"""Workspace management service for multi-tenant operations."""
 
 from functools import wraps
 
@@ -62,9 +62,24 @@ class WorkspaceService:
     """Simple workspace business logic"""
 
     @staticmethod
-    def create_workspace(name, owner_user):
-        """Create new workspace with owner as admin"""
+    def create_workspace(name, owner_user, auto_name=False):
+        """Create new workspace with owner as admin
+
+        Args:
+            name: Workspace name (ignored if auto_name=True)
+            owner_user: User who will own the workspace
+            auto_name: If True, generate friendly name from user data
+        """
         from sqlalchemy.exc import IntegrityError
+
+        # Auto-generate name for OAuth/self-service signups
+        if auto_name:
+            if owner_user.name:
+                name = f"{owner_user.name.split()[0]}'s Workspace"
+            elif owner_user.email:
+                name = f"{owner_user.email.split('@')[0]}'s Workspace"
+            else:
+                name = "My Workspace"
 
         slug = Workspace.generate_slug(name)
         original_slug = slug

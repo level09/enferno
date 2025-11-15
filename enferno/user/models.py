@@ -137,14 +137,6 @@ class User(UserMixin, db.Model, BaseMixin):
         ).scalar_one_or_none()
         return membership.role if membership else None
 
-    def can_access_workspace(self, workspace_id):
-        """Check if user can access workspace"""
-        return self.get_workspace_role(workspace_id) is not None
-
-    def is_workspace_admin(self, workspace_id):
-        """Check if user is admin of workspace"""
-        return self.get_workspace_role(workspace_id) == "admin"
-
 
 class WebAuthn(db.Model):
     id = db.Column(db.Integer, primary_key=True)

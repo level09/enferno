@@ -34,7 +34,9 @@ class Config:
     )
 
     # security
-    SECURITY_REGISTERABLE = True
+    SECURITY_REGISTERABLE = (
+        False  # OAuth-only self-service, admins create users manually
+    )
     SECURITY_RECOVERABLE = False
     SECURITY_CONFIRMABLE = False
     SECURITY_CHANGEABLE = True  # Password changes allowed

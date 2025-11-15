@@ -10,8 +10,8 @@ import stripe
 from flask import current_app, jsonify, redirect, request, url_for
 
 from enferno.extensions import db
+from enferno.services.workspace import get_current_workspace
 from enferno.user.models import Workspace
-from enferno.utils.tenant import get_current_workspace
 
 
 def _init_stripe():

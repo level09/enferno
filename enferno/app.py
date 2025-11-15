@@ -17,11 +17,11 @@ from enferno.api.webhooks import webhooks_bp
 from enferno.extensions import babel, cache, db, debug_toolbar, mail, session
 from enferno.portal.views import portal
 from enferno.public.views import public
+from enferno.services.workspace import get_current_workspace
 from enferno.settings import Config
 from enferno.user.forms import ExtendedRegisterForm
 from enferno.user.models import OAuth, Role, User, WebAuthn
 from enferno.user.views import bp_user
-from enferno.utils.tenant import get_current_workspace
 
 # Suppress passlib pkg_resources deprecation warning at import time
 warnings.filterwarnings(

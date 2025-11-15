@@ -110,9 +110,9 @@
                             ></v-list-item>
                             
                             <!-- Show team management if user is workspace admin -->
-                            {% if current_user.is_workspace_admin(current_workspace.id) %}
-                                <v-list-item 
-                                    href="/workspace/{{ current_workspace.id }}/team/" 
+                            {% if current_user.get_workspace_role(current_workspace.id) == 'admin' %}
+                                <v-list-item
+                                    href="/workspace/{{ current_workspace.id }}/team/"
                                     prepend-icon="mdi-account-group"
                                     title="Manage Team"
                                 ></v-list-item>

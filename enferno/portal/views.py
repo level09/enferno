@@ -18,8 +18,8 @@ from flask_security.utils import hash_password
 from enferno.extensions import db
 from enferno.services.auth import require_superadmin_api
 from enferno.services.billing import HostedBilling
+from enferno.services.workspace import WorkspaceService, require_workspace_access
 from enferno.user.models import Membership, User, Workspace
-from enferno.utils.tenant import WorkspaceService, require_workspace_access
 
 portal = Blueprint("portal", __name__, static_folder="../static")
 
@@ -85,7 +85,7 @@ def workspace_settings(workspace_id):
 def switch_workspace(workspace_id):
     """Switch to a workspace"""
     # Verify user has access
-    if current_user.can_access_workspace(workspace_id):
+    if current_user.get_workspace_role(workspace_id):
         session["current_workspace_id"] = workspace_id
         return redirect(url_for("portal.workspace_view", workspace_id=workspace_id))
     else:
