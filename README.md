@@ -4,6 +4,9 @@
 
 Enferno is a modern Flask framework optimized for AI-assisted development workflows. By combining carefully crafted development patterns, smart Cursor Rules, and modern libraries, it enables developers to build sophisticated web applications with unprecedented speed. Whether you're using AI-powered IDEs like Cursor or traditional tools, Enferno's intelligent patterns and contextual guides help you create production-ready SAAS applications faster than ever.
 
+> **Looking for a production-ready SaaS starter?** → Check out **[ReadyKit](https://github.com/level09/readykit)** — a complete multi-tenant SaaS template with Stripe billing, OAuth, and team collaboration built on Enferno. [Visit readykit.dev](https://readykit.dev)
+
+
 ![Enferno Demo](docs/enferno-demo.gif)
 
 Key Features
