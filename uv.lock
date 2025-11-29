@@ -376,14 +376,14 @@ wheels = [
 
 [[package]]
 name = "click"
-version = "8.3.0"
+version = "8.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama", marker = "platform_system == 'Windows'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/46/61/de6cd827efad202d7057d93e0fed9294b96952e188f7384832791c7b2254/click-8.3.0.tar.gz", hash = "sha256:e7b8232224eba16f4ebe410c25ced9f7875cb5f3263ffc93cc3e8da705e229c4", size = 276943 }
+sdist = { url = "https://files.pythonhosted.org/packages/3d/fa/656b739db8587d7b5dfa22e22ed02566950fbfbcdc20311993483657a5c0/click-8.3.1.tar.gz", hash = "sha256:12ff4785d337a1bb490bb7e9c2b1ee5da3112e94a8622f26a6c77f5d2fc6842a", size = 295065 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/db/d3/9dcc0f5797f070ec8edf30fbadfb200e71d9db6b84d211e3b2085a7589a0/click-8.3.0-py3-none-any.whl", hash = "sha256:9b9f285302c6e3064f4330c05f05b81945b2a39544279343e6e7c5f27a9baddc", size = 107295 },
+    { url = "https://files.pythonhosted.org/packages/98/78/01c019cdb5d6498122777c1a43056ebb3ebfeef2076d9d026bfe15583b2b/click-8.3.1-py3-none-any.whl", hash = "sha256:981153a64e25f12d547d3426c367a4857371575ee7ad18df2a6183ab0545b2a6", size = 108274 },
 ]
 
 [[package]]
@@ -597,7 +597,7 @@ requires-dist = [
     { name = "blinker", specifier = ">=1.9.0" },
     { name = "celery", specifier = ">=5.5.3" },
     { name = "cffi", specifier = ">=1.17.1" },
-    { name = "click", specifier = ">=8.2.1" },
+    { name = "click", specifier = ">=8.3.1" },
     { name = "cryptography", specifier = ">=45.0.5" },
     { name = "email-validator", specifier = ">=2.2.0" },
     { name = "flask", specifier = ">=3.1.1" },
@@ -608,7 +608,7 @@ requires-dist = [
     { name = "flask-login", specifier = ">=0.6.3" },
     { name = "flask-mail", specifier = ">=0.10.0" },
     { name = "flask-script", specifier = ">=2.0.6" },
-    { name = "flask-security-too", specifier = ">=5.6.2" },
+    { name = "flask-security-too", specifier = ">=5.7.1" },
     { name = "flask-session", specifier = ">=0.8.0" },
     { name = "flask-sqlalchemy", specifier = ">=3.1.1" },
     { name = "flask-wtf", specifier = ">=1.2.2" },
@@ -628,7 +628,7 @@ requires-dist = [
     { name = "python-editor", specifier = ">=1.0.4" },
     { name = "pytz", specifier = ">=2025.2" },
     { name = "qrcode", specifier = ">=8.2" },
-    { name = "redis", specifier = ">=6.2.0" },
+    { name = "redis", specifier = ">=7.1.0" },
     { name = "rich", specifier = ">=14.0.0" },
     { name = "ruff", marker = "extra == 'dev'" },
     { name = "setuptools", specifier = ">=80.9.0" },
@@ -638,7 +638,7 @@ requires-dist = [
     { name = "uwsgi", marker = "extra == 'wsgi'", specifier = ">=2.0.30" },
     { name = "vine", specifier = ">=5.1.0" },
     { name = "webauthn", specifier = ">=2.6.0" },
-    { name = "werkzeug", specifier = ">=3.1.3" },
+    { name = "werkzeug", specifier = ">=3.1.4" },
     { name = "wtforms", specifier = ">=3.2.1" },
 ]
 
@@ -772,7 +772,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/00/a4/cd587b2b19f043b65
 
 [[package]]
 name = "flask-security-too"
-version = "5.6.2"
+version = "5.7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "email-validator" },
@@ -780,16 +780,13 @@ dependencies = [
     { name = "flask-login" },
     { name = "flask-principal" },
     { name = "flask-wtf" },
-    { name = "importlib-resources" },
-    { name = "libpass", marker = "python_full_version >= '3.13'" },
+    { name = "libpass" },
     { name = "markupsafe" },
-    { name = "passlib", marker = "python_full_version < '3.13'" },
-    { name = "setuptools", marker = "python_full_version < '3.13'" },
     { name = "wtforms" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/db/40/f1fcb25614e5b38eb7a5914a7aee482f67ba4b3f1bd3523e6faa43eab0c8/flask_security_too-5.6.2.tar.gz", hash = "sha256:5a48b9165146a02cb86a8073832df4ca177fbf4a7dbd707909279fbfad8a4032", size = 698849 }
+sdist = { url = "https://files.pythonhosted.org/packages/e1/68/f8a59409cbbce9b8ef1d30162d1e3f9ac16510655dde66587356369f5ea4/flask_security_too-5.7.1.tar.gz", hash = "sha256:fff0bdf5cde048b89736523dc061fabd308e074f0ece6dcca0c745555dab7b5a", size = 717869 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a7/20/f4f732a3e231bc2c0f4d4ce63e32dc02aaea4ab6d7ed3739b69c708b1a3a/flask_security_too-5.6.2-py3-none-any.whl", hash = "sha256:61da7f4b6349e2cdf9f3ea53565cda2ed3588cd740a346be17f024f159e52c93", size = 438888 },
+    { url = "https://files.pythonhosted.org/packages/00/45/41a0f084a95b171d5c9e8820179e3aa1223bdc5c7c5842c2ef5c0cf467ed/flask_security_too-5.7.1-py3-none-any.whl", hash = "sha256:971772ca22a78a3f1971086fb11d6e30e0f7e7729a19f637de04b79873c28a54", size = 459110 },
 ]
 
 [[package]]
@@ -899,15 +896,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/6f/6d/0703ccc57f3a7233505399edb88de3cbd678da106337b9fcde432b65ed60/idna-3.11.tar.gz", hash = "sha256:795dafcc9c04ed0c1fb032c2aa73654d8e8c5023a7df64a53f39190ada629902", size = 194582 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/0e/61/66938bbb5fc52dbdf84594873d5b51fb1f7c7794e9c0f5bd885f30bc507b/idna-3.11-py3-none-any.whl", hash = "sha256:771a87f49d9defaf64091e6e6fe9c18d4833f140bd19464795bc32d966ca37ea", size = 71008 },
-]
-
-[[package]]
-name = "importlib-resources"
-version = "6.5.2"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/cf/8c/f834fbf984f691b4f7ff60f50b514cc3de5cc08abfc3295564dd89c5e2e7/importlib_resources-6.5.2.tar.gz", hash = "sha256:185f87adef5bcc288449d98fb4fba07cea78bc036455dd44c5fc4a2fe78fed2c", size = 44693 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/a4/ed/1f1afb2e9e7f38a545d628f864d562a5ae64fe6f7a10e28ffb9b185b4e89/importlib_resources-6.5.2-py3-none-any.whl", hash = "sha256:789cfdc3ed28c78b67a06acb8126751ced69a3d5f79c095a98298cd8a760ccec", size = 37461 },
 ]
 
 [[package]]
@@ -1510,14 +1498,14 @@ wheels = [
 
 [[package]]
 name = "redis"
-version = "7.0.1"
+version = "7.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "async-timeout", marker = "python_full_version < '3.11.3'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/57/8f/f125feec0b958e8d22c8f0b492b30b1991d9499a4315dfde466cf4289edc/redis-7.0.1.tar.gz", hash = "sha256:c949df947dca995dc68fdf5a7863950bf6df24f8d6022394585acc98e81624f1", size = 4755322 }
+sdist = { url = "https://files.pythonhosted.org/packages/43/c8/983d5c6579a411d8a99bc5823cc5712768859b5ce2c8afe1a65b37832c81/redis-7.1.0.tar.gz", hash = "sha256:b1cc3cfa5a2cb9c2ab3ba700864fb0ad75617b41f01352ce5779dabf6d5f9c3c", size = 4796669 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e9/97/9f22a33c475cda519f20aba6babb340fb2f2254a02fb947816960d1e669a/redis-7.0.1-py3-none-any.whl", hash = "sha256:4977af3c7d67f8f0eb8b6fec0dafc9605db9343142f634041fb0235f67c0588a", size = 339938 },
+    { url = "https://files.pythonhosted.org/packages/89/f0/8956f8a86b20d7bb9d6ac0187cf4cd54d8065bc9a1a09eb8011d4d326596/redis-7.1.0-py3-none-any.whl", hash = "sha256:23c52b208f92b56103e17c5d06bdc1a6c2c0b3106583985a76a18f83b265de2b", size = 354159 },
 ]
 
 [[package]]
@@ -1748,14 +1736,14 @@ wheels = [
 
 [[package]]
 name = "werkzeug"
-version = "3.1.3"
+version = "3.1.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "markupsafe" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9f/69/83029f1f6300c5fb2471d621ab06f6ec6b3324685a2ce0f9777fd4a8b71e/werkzeug-3.1.3.tar.gz", hash = "sha256:60723ce945c19328679790e3282cc758aa4a6040e4bb330f53d30fa546d44746", size = 806925 }
+sdist = { url = "https://files.pythonhosted.org/packages/45/ea/b0f8eeb287f8df9066e56e831c7824ac6bab645dd6c7a8f4b2d767944f9b/werkzeug-3.1.4.tar.gz", hash = "sha256:cd3cd98b1b92dc3b7b3995038826c68097dcb16f9baa63abe35f20eafeb9fe5e", size = 864687 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/52/24/ab44c871b0f07f491e5d2ad12c9bd7358e527510618cb1b803a88e986db1/werkzeug-3.1.3-py3-none-any.whl", hash = "sha256:54b78bf3716d19a65be4fceccc0d1d7b89e608834989dfae50ea87564639213e", size = 224498 },
+    { url = "https://files.pythonhosted.org/packages/2f/f9/9e082990c2585c744734f85bec79b5dae5df9c974ffee58fe421652c8e91/werkzeug-3.1.4-py3-none-any.whl", hash = "sha256:2ad50fb9ed09cc3af22c54698351027ace879a0b60a3b5edf5730b2f7d876905", size = 224960 },
 ]
 
 [[package]]
