@@ -14,3 +14,7 @@ node_modules/
 .parcel-cache
 enferno.sqlite3
 instance/
+
+# Claude Code
+.claude/settings.local.json
+*.skill
