@@ -1,5 +1,19 @@
 # Changelog
 
+## v11.3.0 (2025-12-02)
+
+### Added
+- Lite mode: Zero-config startup with `uv sync && flask run` — no Redis required
+- Full mode: Optional Redis + Celery via `uv sync --extra full`
+- SQLAlchemy-based sessions as default (Redis sessions optional)
+- AI-assisted development with AGENTS.md for Claude Code and Cursor
+
+### Changed
+- Redis and Celery moved to optional dependencies
+- SQLite database path now uses absolute path in `instance/enferno.db`
+- Updated documentation for lite/full mode workflow
+- Simplified README with clearer positioning
+
 ## v11.2.0 (2025-04-24)
 
 ### Added
