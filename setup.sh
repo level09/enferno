@@ -132,9 +132,8 @@ if ! awk -v sk="$SECRET_KEY" -v ts1="$TOTP_SECRET1" -v ts2="$TOTP_SECRET2" -v ps
         print "SECURITY_PASSWORD_SALT=\"" ps "\""
     }
     else if ($0 ~ /^SQLALCHEMY_DATABASE_URI=/) {
-        print "SQLALCHEMY_DATABASE_URI=sqlite:///enferno.sqlite3"
-        print "# PostgreSQL alternative:"
-        print "# SQLALCHEMY_DATABASE_URI=postgresql://postgres:pass@localhost/dbname"
+        # Skip - use default from settings.py (instance/enferno.db)
+        next
     }
     else if (docker == "true" && $0 ~ /^#REDIS_PASSWORD=/) {
         print "REDIS_PASSWORD=" rpass
@@ -184,7 +183,7 @@ echo -e "${GREEN}Generated secure values for: SECRET_KEY, SECURITY_TOTP_SECRETS,
 if [ "$DOCKER_CONFIG" = true ]; then
     echo -e "${GREEN}Docker configuration enabled with secure passwords for Redis and PostgreSQL${NC}"
 fi
-echo -e "${GREEN}SQLite database configured at: enferno.sqlite3${NC}"
+echo -e "${GREEN}SQLite database will be created at: instance/enferno.db${NC}"
 echo
 echo -e "${GREEN}Next steps:${NC}"
 echo -e "1. Update the remaining values in your .env file (mail settings, etc.)"
