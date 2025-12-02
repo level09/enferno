@@ -7,68 +7,63 @@ sidebarTitle: "Quick Start"
 ## Prerequisites
 
 - Python 3.11+
-- Redis (for caching and sessions)
-- PostgreSQL (optional, SQLite works for development)
-- Git
-- uv (fast Python package installer and resolver)
+- [uv](https://docs.astral.sh/uv/) (fast Python package manager)
+
+**Optional:**
+- Redis (for background tasks with Celery)
+- PostgreSQL (SQLite works by default)
 
 ## Local Setup
 
-1. Install uv:
 ```bash
-pip install uv
-# Or using the installer script
-curl -sSf https://astral.sh/uv/install.sh | bash
-```
+# Install uv
+pip install uv  # or: curl -sSf https://astral.sh/uv/install.sh | bash
 
-2. Clone and setup:
-```bash
+# Clone and setup
 git clone git@github.com:level09/enferno.git
 cd enferno
-./setup.sh  # Creates Python environment, installs requirements, and generates secure .env
-```
-
-3. Initialize application:
-```bash
-source .venv/bin/activate  # Activate environment
-flask create-db  # Setup database
-flask install    # Create admin user
-flask run        # Start development server
+./setup.sh                # Installs deps + generates secure .env
+uv run flask create-db    # Setup database
+uv run flask install      # Create admin user
+uv run flask run          # Start server
 ```
 
 Visit `http://localhost:5000` to see your application.
 
+## Adding Background Tasks
+
+When you need Celery for async jobs:
+
+```bash
+uv sync --extra full      # Adds Redis + Celery
+# Set REDIS_URL, CELERY_BROKER_URL in .env
+```
+
 ## Docker Setup
 
-One-command setup with Docker:
+Full production stack with one command:
+
 ```bash
 docker compose up --build
 ```
 
-Includes:
-- Redis for caching and sessions
-- PostgreSQL database
-- Nginx for static files
-- Celery for background tasks
+Includes Redis, PostgreSQL, Nginx, and Celery.
 
 ## Environment Configuration
 
 Key variables in `.env`:
 
 ```bash
-# Core
-FLASK_APP=run.py
-FLASK_DEBUG=1  # 0 in production
 SECRET_KEY=your_secret_key
+FLASK_APP=run.py
+FLASK_DEBUG=1                    # 0 in production
 
-# Database
-SQLALCHEMY_DATABASE_URI=sqlite:///enferno.sqlite3
-# Or: postgresql://username:password@localhost/dbname
+# PostgreSQL (optional - SQLite works by default)
+# SQLALCHEMY_DATABASE_URI=postgresql://user:pass@localhost/dbname
 
-# Redis & Celery
-REDIS_URL=redis://localhost:6379/0
-CELERY_BROKER_URL=redis://localhost:6379/1
-CELERY_RESULT_BACKEND=redis://localhost:6379/2
+# Background tasks (optional)
+# REDIS_URL=redis://localhost:6379/1
+# CELERY_BROKER_URL=redis://localhost:6379/2
 ```
 
 ## Next Steps

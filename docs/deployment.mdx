@@ -41,78 +41,57 @@ If you prefer manual deployment or need to deploy to a different environment, fo
 ### Prerequisites
 
 1. Python 3.11+
-2. PostgreSQL or SQLite
-3. Redis
-4. Nginx
-5. Systemd (for service management)
-6. uv (fast Python package installer)
+2. Nginx
+3. uv (fast Python package installer)
+
+**Optional:**
+- PostgreSQL (SQLite works by default)
+- Redis (for background tasks with Celery)
 
 ### Server Setup
 
-1. Update system packages:
 ```bash
-sudo apt update
-sudo apt upgrade -y
-```
+# Update system
+sudo apt update && sudo apt upgrade -y
 
-2. Install dependencies:
-```bash
-sudo apt install -y python3-pip python3-venv nginx redis-server
-```
-
-3. Install uv:
-```bash
+# Install core dependencies
+sudo apt install -y python3-pip nginx
 pip install uv
-```
 
-4. Install PostgreSQL (optional):
-```bash
+# Optional: PostgreSQL
 sudo apt install -y postgresql postgresql-contrib
+
+# Optional: Redis (for Celery background tasks)
+sudo apt install -y redis-server
 ```
 
 ### Application Setup
 
-1. Clone and setup:
 ```bash
 git clone https://github.com/level09/enferno.git
 cd enferno
-./setup.sh  # Creates Python environment, installs requirements, and generates secure .env
-```
-
-2. Initialize database:
-```bash
-source .venv/bin/activate
-flask create-db  # Setup database
-flask install    # Create admin user
+./setup.sh                # Install deps + generate secure .env
+uv run flask create-db    # Setup database
+uv run flask install      # Create admin user
 ```
 
 ### Database Configuration
 
-Enferno supports both SQLite (default) and PostgreSQL databases. Choose one of the following options:
-
 #### SQLite (Default)
-No additional configuration needed. The database will be created automatically when you run:
-```bash
-flask create-db  # Initialize database
-flask install    # Create admin user
-```
+Works out of the box - database created automatically in `instance/`.
 
 #### PostgreSQL
-1. Create database and user:
 ```bash
+# Create database
 sudo -u postgres createuser -s myuser
 sudo -u postgres createdb mydb
-```
 
-2. Update `.env` configuration:
-```bash
+# Update .env
 SQLALCHEMY_DATABASE_URI=postgresql://myuser:password@localhost/mydb
-```
 
-3. Initialize database:
-```bash
-flask create-db  # Initialize database
-flask install    # Create admin user
+# Initialize
+uv run flask create-db
+uv run flask install
 ```
 
 ### Nginx Configuration
@@ -174,7 +153,9 @@ sudo systemctl enable enferno
 sudo systemctl start enferno
 ```
 
-### Celery Worker Service
+### Celery Worker Service (Optional)
+
+Only needed if using background tasks. First install: `uv sync --extra full`
 
 Create `/etc/systemd/system/enferno-celery.service`:
 
@@ -186,14 +167,12 @@ After=network.target
 [Service]
 User=your_user
 WorkingDirectory=/path/to/enferno
-Environment="PATH=/path/to/enferno/venv/bin"
-ExecStart=/path/to/enferno/venv/bin/celery -A enferno.tasks worker --loglevel=info
+ExecStart=/path/to/enferno/.venv/bin/celery -A enferno.tasks worker --loglevel=info
 
 [Install]
 WantedBy=multi-user.target
 ```
 
-Enable and start the worker:
 ```bash
 sudo systemctl enable enferno-celery
 sudo systemctl start enferno-celery
@@ -231,9 +210,8 @@ sudo systemctl start enferno-celery
    - Verify environment variables
    - Check application logs
 
-4. **Redis connection issues**
+4. **Redis connection issues** (if using Celery)
    - Verify Redis is running: `sudo systemctl status redis`
-   - Check Redis connection settings
-   - Ensure proper permissions
+   - Check REDIS_URL in .env
 
-For more deployment options and troubleshooting, visit the [Enferno CLI documentation](https://github.com/level09/enferno-cli). 
+For more deployment options, visit the [Enferno CLI documentation](https://github.com/level09/enferno-cli). 

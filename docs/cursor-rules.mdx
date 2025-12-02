@@ -1,141 +1,99 @@
 ---
-title: "Cursor Rules"
-description: "AI-powered development assistance in Enferno"
-sidebarTitle: "Cursor Rules"
+title: "AI-Assisted Development"
+description: "Build faster with AI coding assistants"
+sidebarTitle: "AI Coding"
 ---
 
 ## Overview
 
-Enferno leverages Cursor Rules for AI-powered development assistance, providing context-aware code generation and guidance through modern IDEs like Cursor. This approach replaces traditional template-based generation with more flexible, intelligent assistance.
+Enferno is built for AI-assisted development. It ships with `AGENTS.md` — a comprehensive guide that AI assistants (Claude Code, Cursor, GitHub Copilot) use to understand the codebase instantly.
 
-## What Are Cursor Rules?
+## How It Works
 
-Cursor Rules are documentation-as-code specifications that provide structured guidance to AI assistants in modern IDEs. They contain information about:
+When you open the project in an AI-powered IDE or use Claude Code, the AI reads `AGENTS.md` and immediately understands:
 
-- Code patterns and conventions
-- Framework-specific best practices
-- Integration techniques
-- Component usage examples
-- UI/UX standards
+- Project structure and conventions
+- Database patterns (SQLAlchemy 2.x)
+- Frontend patterns (Vue 3 + Vuetify 3 without build tools)
+- Authentication system (Flask-Security)
+- CLI commands available
+- How to create new features
 
-## Available Rules
+## Using Claude Code
 
-Enferno includes rules for key development aspects:
+```bash
+# Claude Code understands Enferno out of the box
+claude
 
-### Vue-Jinja Patterns
-Guidelines for integrating Vue.js with Flask Jinja templates:
-```python
-# Template example
-@app.route('/products')
-def products():
-    return render_template('products.html', 
-                         products=products,
-                         vue_enabled=True)
+# Example prompts:
+> "Add a new Post model with title and content"
+> "Create an API endpoint to list all users"
+> "Add a new page to the dashboard"
 ```
 
-```html
-<!-- products.html -->
-{% extends "layout.html" %}
-{% block content %}
-<div id="app">
-    <v-data-table
-        :items="{% raw %}{{ products }}{% endraw %}"
-        :headers="headers"
-    ></v-data-table>
-</div>
-{% endblock %}
-```
+## Using Cursor
 
-### UI Components
-Standards for Vuetify components and usage:
-```html
-<!-- Recommended dialog pattern -->
-<v-dialog v-model="dialog" max-width="500px">
-    <template v-slot:activator="{ props }">
-        <v-btn v-bind="props">Open Dialog</v-btn>
-    </template>
-    <v-card>
-        <v-card-title>Dialog Title</v-card-title>
-        <v-card-text>Content here</v-card-text>
-    </v-card>
-</v-dialog>
-```
-
-### Python Standards
-Flask patterns and backend conventions:
-```python
-# Blueprint organization
-from flask import Blueprint
-from flask_security import auth_required
-
-portal = Blueprint('portal', __name__)
-
-@portal.before_request
-@auth_required()
-def before_request():
-    pass
-
-@portal.route('/dashboard')
-def dashboard():
-    return render_template('portal/dashboard.html')
-```
-
-### API Design
-RESTful API design patterns:
-```python
-@api.route('/resources', methods=['GET'])
-def get_resources():
-    stmt = db.session.select(Resource)
-    resources = db.session.scalars(stmt).all()
-    return jsonify([resource.to_dict() for resource in resources])
-```
-
-## Using Cursor Rules
-
-When working with Cursor IDE:
-
-1. The AI assistant automatically understands these rules
-2. Reference specific patterns in your questions
-3. Ask for help with implementation details
-4. Get context-aware suggestions
+Open the project in Cursor. The AI will automatically read `AGENTS.md` and provide context-aware suggestions.
 
 Example prompts:
-- "Create a data table for users following our UI patterns"
-- "Show how to integrate Vue with Jinja for a product page"
-- "Generate a RESTful endpoint following our API standards"
+- "Create a data table for products following our patterns"
+- "Add OAuth login with Microsoft"
+- "Generate a RESTful endpoint for orders"
+
+## What AGENTS.md Contains
+
+The file includes:
+
+### Development Commands
+```bash
+./setup.sh                    # Setup environment
+uv run flask create-db        # Initialize database
+uv run flask install          # Create admin user
+uv run flask run              # Start server
+```
+
+### Architecture Overview
+- Flask factory pattern in `enferno/app.py`
+- Blueprint organization (public, portal, user)
+- Extension initialization in `extensions.py`
+
+### Code Patterns
+```python
+# Query pattern (SQLAlchemy 2.x)
+query = db.select(User)
+pagination = db.paginate(query, page=page, per_page=per_page)
+
+# Response pattern
+return {
+    "items": [item.to_dict() for item in pagination.items],
+    "total": pagination.total
+}
+```
+
+### Frontend Patterns
+- Vue 3 with custom `${}` delimiters (avoids Jinja conflicts)
+- Vuetify 3 components
+- Per-page Vue instances
+
+## Customizing for Your Project
+
+Add project-specific patterns to `AGENTS.md`:
+
+```markdown
+## Custom Patterns
+
+### Order Processing
+Orders follow this flow:
+1. Create order via POST /api/orders
+2. Process payment via Stripe
+3. Update status to 'paid'
+```
+
+The AI will incorporate your additions when generating code.
 
 ## Benefits
 
-The Cursor Rules approach offers several advantages:
-
-1. **Contextual Awareness**
-   - AI understands your entire codebase
-   - Suggestions consider existing patterns
-   - Better integration with your code
-
-2. **Flexible Generation**
-   - Not limited to predefined templates
-   - Adaptable to your needs
-   - Custom implementations supported
-
-3. **Development Environment Integration**
-   - Works within your IDE
-   - No external dependencies
-   - Immediate feedback
-
-4. **Continuous Learning**
-   - Rules evolve with your codebase
-   - Team knowledge integration
-   - Pattern refinement over time
-
-## Creating Custom Rules
-
-Extend the rules for your project:
-
-1. Create markdown files in `cursor/rules`
-2. Follow the established format
-3. Include concrete examples
-4. Reference existing patterns
-5. Organize by domain or feature
-
-For more information about Cursor Rules or to contribute, check our [contribution guidelines](https://github.com/level09/enferno). 
+1. **Instant Context** — AI understands your codebase immediately
+2. **Consistent Code** — Generated code follows your patterns
+3. **Faster Development** — Less time explaining, more time building
+4. **Team Knowledge** — Document patterns once, AI applies everywhere

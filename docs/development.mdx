@@ -9,28 +9,24 @@ sidebarTitle: "Development"
 ```
 enferno/
 ├── enferno/                # Main application package
-│   ├── __init__.py
-│   ├── app.py             # Application factory and configuration
-│   ├── settings.py        # Application settings
-│   ├── extensions.py      # Flask extensions initialization
+│   ├── app.py             # Application factory
+│   ├── settings.py        # Configuration
+│   ├── extensions.py      # Flask extensions
 │   ├── commands.py        # CLI commands
-│   ├── portal/            # Blueprint: Usually protected routes
+│   ├── portal/            # Blueprint: Protected routes
 │   ├── public/            # Blueprint: Public routes
 │   ├── user/              # Blueprint: User management
-│   ├── tasks/             # Celery tasks
+│   ├── tasks/             # Background tasks (optional Celery)
 │   ├── utils/             # Utility functions
-│   ├── static/            # Static assets
+│   ├── static/            # Static assets (Vue, Vuetify, CSS)
 │   └── templates/         # Jinja2 templates
 ├── docs/                  # Documentation
-├── nginx/                 # Nginx configuration
-├── instance/             # Instance-specific files
-├── .env                  # Environment variables
-├── .env-sample           # Environment template
-├── requirements.txt      # Python dependencies
-├── setup.sh             # Setup script
-├── run.py               # Application entry point
-├── Dockerfile           # Docker configuration
-└── docker-compose.yml   # Docker Compose configuration
+├── instance/             # SQLite database
+├── pyproject.toml        # Dependencies and project config
+├── setup.sh              # Setup script
+├── run.py                # Entry point
+├── AGENTS.md             # AI coding instructions
+└── docker-compose.yml    # Docker configuration
 ```
 
 ## Blueprints
@@ -148,9 +144,15 @@ db.session.delete(post)
 db.session.commit()
 ```
 
-## Task Queue
+## Background Tasks (Optional)
 
-Enferno uses Celery for background tasks. Tasks are defined in `enferno/tasks/__init__.py`:
+Celery is available when you need async job processing. First, install the full extras:
+
+```bash
+uv sync --extra full    # Adds Redis + Celery
+```
+
+Define tasks in `enferno/tasks/__init__.py`:
 
 ```python
 from enferno.tasks import celery
@@ -159,57 +161,46 @@ from enferno.tasks import celery
 def send_email(user_id, subject, message):
     from enferno.extensions import db
     from enferno.user.models import User
-    
+
     user = db.session.get(User, user_id)
-    # Send email to user...
+    # Send email...
     return True
 ```
 
-Call tasks from anywhere in your application:
+Call tasks asynchronously:
 ```python
 from enferno.tasks import send_email
-
-# Call task asynchronously
 send_email.delay(user.id, 'Welcome', 'Welcome to Enferno!')
 ```
 
 Run Celery worker:
 ```bash
-celery -A enferno.tasks worker --loglevel=info
+uv run celery -A enferno.tasks worker --loglevel=info
 ```
 
 ## API Development
 
-API endpoints are defined in `app/api/`. Enferno follows RESTful principles.
+Add API endpoints to your blueprints:
 
 ```python
 from flask import Blueprint, jsonify
-from app.extensions import db
-from app.models import Post
+from enferno.extensions import db
 
 api = Blueprint('api', __name__)
 
 @api.route('/posts')
 def get_posts():
     query = db.select(Post).order_by(Post.created_at.desc())
-    posts = db.session.execute(query).scalars()
-    return jsonify([{
-        'id': post.id,
-        'title': post.title,
-        'content': post.content
-    } for post in posts])
+    posts = db.session.scalars(query).all()
+    return jsonify([post.to_dict() for post in posts])
 ```
 
 ## Development Server
 
-Run the development server with:
 ```bash
-flask run
-```
-
-For Celery worker:
-```bash
-celery -A enferno.tasks worker --loglevel=info
+uv run flask run              # Start server
+uv run ruff check --fix .     # Lint and auto-fix
+uv run ruff format .          # Format code
 ```
 
 ## Security Best Practices

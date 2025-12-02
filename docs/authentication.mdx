@@ -13,13 +13,11 @@ Enferno provides a robust authentication system built on Flask-Security-Too with
 - User registration and login
 - Role-based access control (RBAC)
 - Two-factor authentication (2FA)
-- WebAuthn support
+- WebAuthn / Passkeys
 - OAuth integration (Google, GitHub)
-- Password policies and recovery
+- Password policies
 - Session protection
 - CSRF protection
-- Rate limiting
-- XSS protection
 
 ## OAuth Integration
 
@@ -160,24 +158,23 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 ```
 
-## Rate Limiting
+## Rate Limiting (Optional)
 
-Protect against brute force attacks:
+Add rate limiting with flask-limiter:
+
+```bash
+uv add flask-limiter
+```
 
 ```python
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
-limiter = Limiter(
-    app,
-    key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"]
-)
+limiter = Limiter(app, key_func=get_remote_address)
 
 @app.route('/login', methods=['POST'])
 @limiter.limit("5 per minute")
 def login():
-    # Login logic here
     pass
 ```
 
