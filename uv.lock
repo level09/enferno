@@ -530,12 +530,10 @@ name = "enferno"
 version = "11.2.0"
 source = { editable = "." }
 dependencies = [
-    { name = "amqp" },
     { name = "babel" },
     { name = "bcrypt" },
     { name = "bleach" },
     { name = "blinker" },
-    { name = "celery" },
     { name = "cffi" },
     { name = "click" },
     { name = "cryptography" },
@@ -554,7 +552,6 @@ dependencies = [
     { name = "flask-wtf" },
     { name = "itsdangerous" },
     { name = "jinja2" },
-    { name = "kombu" },
     { name = "mako" },
     { name = "markupsafe" },
     { name = "orjson" },
@@ -567,13 +564,11 @@ dependencies = [
     { name = "python-editor" },
     { name = "pytz" },
     { name = "qrcode" },
-    { name = "redis" },
     { name = "rich" },
     { name = "setuptools" },
     { name = "six" },
     { name = "speaklater" },
     { name = "sqlalchemy" },
-    { name = "vine" },
     { name = "webauthn" },
     { name = "werkzeug" },
     { name = "wtforms" },
@@ -584,18 +579,25 @@ dev = [
     { name = "pre-commit" },
     { name = "ruff" },
 ]
+full = [
+    { name = "amqp" },
+    { name = "celery" },
+    { name = "kombu" },
+    { name = "redis" },
+    { name = "vine" },
+]
 wsgi = [
     { name = "uwsgi" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "amqp", specifier = ">=5.3.1" },
+    { name = "amqp", marker = "extra == 'full'", specifier = ">=5.3.1" },
     { name = "babel", specifier = ">=2.17.0" },
     { name = "bcrypt", specifier = ">=4.3.0" },
     { name = "bleach", specifier = ">=6.2.0" },
     { name = "blinker", specifier = ">=1.9.0" },
-    { name = "celery", specifier = ">=5.5.3" },
+    { name = "celery", marker = "extra == 'full'", specifier = ">=5.5.3" },
     { name = "cffi", specifier = ">=1.17.1" },
     { name = "click", specifier = ">=8.3.1" },
     { name = "cryptography", specifier = ">=45.0.5" },
@@ -614,7 +616,7 @@ requires-dist = [
     { name = "flask-wtf", specifier = ">=1.2.2" },
     { name = "itsdangerous", specifier = ">=2.2.0" },
     { name = "jinja2", specifier = ">=3.1.6" },
-    { name = "kombu", specifier = ">=5.5.4" },
+    { name = "kombu", marker = "extra == 'full'", specifier = ">=5.5.4" },
     { name = "mako", specifier = ">=1.3.10" },
     { name = "markupsafe", specifier = ">=3.0.2" },
     { name = "orjson", specifier = ">=3.10.18" },
@@ -628,7 +630,7 @@ requires-dist = [
     { name = "python-editor", specifier = ">=1.0.4" },
     { name = "pytz", specifier = ">=2025.2" },
     { name = "qrcode", specifier = ">=8.2" },
-    { name = "redis", specifier = ">=7.1.0" },
+    { name = "redis", marker = "extra == 'full'", specifier = ">=7.1.0" },
     { name = "rich", specifier = ">=14.0.0" },
     { name = "ruff", marker = "extra == 'dev'" },
     { name = "setuptools", specifier = ">=80.9.0" },
@@ -636,7 +638,7 @@ requires-dist = [
     { name = "speaklater", specifier = ">=1.3" },
     { name = "sqlalchemy", specifier = ">=2.0.41" },
     { name = "uwsgi", marker = "extra == 'wsgi'", specifier = ">=2.0.30" },
-    { name = "vine", specifier = ">=5.1.0" },
+    { name = "vine", marker = "extra == 'full'", specifier = ">=5.1.0" },
     { name = "webauthn", specifier = ">=2.6.0" },
     { name = "werkzeug", specifier = ">=3.1.4" },
     { name = "wtforms", specifier = ">=3.2.1" },
