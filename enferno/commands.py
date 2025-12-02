@@ -24,10 +24,11 @@ def create_db():
 
 
 @click.command()
+@click.option("-u", "--username", default=None, help="Admin username")
+@click.option("-p", "--password", default=None, help="Admin password")
 @with_appcontext
-def install():
+def install(username, password):
     """Install a default admin user and add an admin role to it."""
-    # check if admin exists
     from enferno.user.models import Role
 
     # create admin role if it doesn't exist
@@ -43,13 +44,18 @@ def install():
         )
         return
 
-    # else : create a new admin user
-    username = click.prompt("Admin username", default="admin")
-    # Generate a secure password
-    password = "".join(
-        secrets.choice(string.ascii_letters + string.digits + "@#$%^&*")
-        for _ in range(32)
-    )
+    # Interactive mode if no args provided
+    if not username:
+        username = click.prompt("Admin username", default="admin")
+
+    # Generate password if not provided
+    generated = False
+    if not password:
+        password = "".join(
+            secrets.choice(string.ascii_letters + string.digits + "@#$%^&*")
+            for _ in range(32)
+        )
+        generated = True
 
     user = User(
         username=username,
@@ -62,10 +68,11 @@ def install():
 
     console.print("\n[green]✓[/] Admin user created successfully!")
     console.print(f"[blue]Username:[/] {username}")
-    console.print(f"[blue]Password:[/] [red]{password}[/]")
-    console.print(
-        "\n[yellow]⚠️  Please save this password securely - you will not see it again![/]"
-    )
+    if generated:
+        console.print(f"[blue]Password:[/] [red]{password}[/]")
+        console.print(
+            "\n[yellow]⚠️  Please save this password securely - you will not see it again![/]"
+        )
 
 
 @click.command()

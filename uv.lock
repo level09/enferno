@@ -527,7 +527,7 @@ wheels = [
 
 [[package]]
 name = "enferno"
-version = "11.2.0"
+version = "11.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "babel" },

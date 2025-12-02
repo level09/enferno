@@ -37,12 +37,15 @@ services:
     build: .
     user: "${DOCKER_UID:-1000}"
     volumes:
-      - '.:/app'
+      - './enferno:/app/enferno'
+      - './run.py:/app/run.py'
     depends_on:
       - redis
       - postgres
     ports:
       - '8000:5000'
+    env_file:
+      - .env
     environment:
       - FLASK_APP=run.py
       - FLASK_DEBUG=0
@@ -84,9 +87,12 @@ services:
     user: "${DOCKER_UID:-1000}"
     command: celery -A enferno.tasks worker -l info
     volumes:
-      - '.:/app'
+      - './enferno:/app/enferno'
+      - './run.py:/app/run.py'
     depends_on:
       - redis
+    env_file:
+      - .env
     environment:
       - FLASK_APP=run.py
       - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD:-verystrongpass}@redis:6379/2
