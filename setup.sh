@@ -183,6 +183,8 @@ echo -e "${GREEN}Generated secure values for: SECRET_KEY, SECURITY_TOTP_SECRETS,
 if [ "$DOCKER_CONFIG" = true ]; then
     echo -e "${GREEN}Docker configuration enabled with secure passwords for Redis and PostgreSQL${NC}"
 fi
+# Create instance directory for SQLite database
+mkdir -p instance
 echo -e "${GREEN}SQLite database will be created at: instance/enferno.db${NC}"
 echo
 echo -e "${GREEN}Next steps:${NC}"
