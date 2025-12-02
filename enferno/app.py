@@ -41,7 +41,9 @@ def register_extensions(app):
     mail.init_app(app)
     debug_toolbar.init_app(app)
 
-    # Session initialization
+    # Session initialization - pass db for SQLAlchemy sessions
+    if app.config.get("SESSION_TYPE") == "sqlalchemy":
+        app.config["SESSION_SQLALCHEMY"] = db
     session.init_app(app)
 
     babel.init_app(
