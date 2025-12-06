@@ -1,3 +1,74 @@
 html, body {
     height: 100%;
 }
+
+/* ===== Card Hover Effect ===== */
+.v-card {
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.v-card:hover {
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ===== Global Scrollbars ===== */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.15);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.25);
+}
+
+.v-theme--dark ::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.v-theme--dark ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
+/* ===== Input Focus States ===== */
+.v-field--focused .v-field__outline {
+    --v-field-border-opacity: 1;
+}
+
+/* ===== Data Table Enhancements ===== */
+.v-data-table tbody tr:hover {
+    background-color: rgba(var(--v-theme-primary), 0.04) !important;
+}
+
+.v-data-table tbody tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.v-theme--dark .v-data-table tbody tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.v-data-table th {
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.5px;
+}
+
+/* ===== Links ===== */
+a {
+    color: rgb(var(--v-theme-primary));
+    transition: opacity 0.2s;
+}
+
+a:hover {
+    opacity: 0.8;
+}
