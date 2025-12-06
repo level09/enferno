@@ -44,6 +44,14 @@ uv sync --extra full        # Adds Redis + Celery
 # Set REDIS_URL, CELERY_BROKER_URL in .env
 ```
 
+### Sanity Checks
+
+No pytest ceremony - just real code paths:
+
+```bash
+uv run python checks.py     # Run before deploying
+```
+
 ### Docker
 
 Full production stack with one command:
