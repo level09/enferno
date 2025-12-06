@@ -1,0 +1,39 @@
+name: Checks
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Create database tables
+        env:
+          FLASK_APP: run.py
+          SECRET_KEY: test-secret-key-for-ci
+          SECURITY_PASSWORD_SALT: test-salt-for-ci
+          SECURITY_TOTP_SECRETS: test-totp-secret
+        run: uv run flask create-db
+
+      - name: Run checks
+        env:
+          FLASK_APP: run.py
+          SECRET_KEY: test-secret-key-for-ci
+          SECURITY_PASSWORD_SALT: test-salt-for-ci
+          SECURITY_TOTP_SECRETS: test-totp-secret
+        run: uv run python checks.py -v
