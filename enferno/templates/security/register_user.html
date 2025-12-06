@@ -125,45 +125,45 @@
                                 {{ register_user_form.hidden_tag() }}
                                 
                                 <v-text-field
-                                    density="compact"
                                     label="First Name"
                                     name="first_name"
                                     type="text"
                                     variant="outlined"
+                                    class="mb-2"
                                     required
                                 >
                                     <template v-slot:prepend-inner><i class="ti ti-user mr-2"></i></template>
                                 </v-text-field>
 
                                 <v-text-field
-                                    density="compact"
                                     label="Last Name"
                                     name="last_name"
                                     type="text"
                                     variant="outlined"
+                                    class="mb-2"
                                     required
                                 >
                                     <template v-slot:prepend-inner><i class="ti ti-user mr-2"></i></template>
                                 </v-text-field>
 
                                 <v-text-field
-                                    density="compact"
                                     label="Email"
                                     name="email"
                                     type="email"
                                     variant="outlined"
+                                    class="mb-2"
                                     required
                                 >
                                     <template v-slot:prepend-inner><i class="ti ti-mail mr-2"></i></template>
                                 </v-text-field>
 
                                 <v-text-field
-                                    density="compact"
                                     id="password"
                                     label="Password"
                                     name="password"
                                     type="password"
                                     variant="outlined"
+                                    class="mb-2"
                                     required
                                 >
                                     <template v-slot:prepend-inner><i class="ti ti-lock mr-2"></i></template>
@@ -171,12 +171,12 @@
 
                                 {% if register_user_form.password_confirm %}
                                 <v-text-field
-                                    density="compact"
                                     id="confirm-password"
                                     label="Confirm Password"
                                     name="password_confirm"
                                     type="password"
                                     variant="outlined"
+                                    class="mb-2"
                                     required
                                 >
                                     <template v-slot:prepend-inner><i class="ti ti-lock-check mr-2"></i></template>
