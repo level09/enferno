@@ -1,17 +1,111 @@
 {% extends 'layout.html' %}
 {% block content %}
-    <v-card class="ma-auto pa-10 h-100 w-100">
-        <v-card-text>
-        </v-card-text>
-        <v-card-text>
-            <div class="text-h5 mb-3">Welcome, {{ current_user.username }}</div>
-            Last login — {{ current_user.last_login_at.strftime('%B %-d, %Y at %-I:%M %p') if current_user.last_login_at else 'Never' }}
-        </v-card-text>
-        <v-card-actions class="justify-start">
-            <v-btn color="error" href="/logout" variant="elevated">Logout</v-btn>
-        </v-card-actions>
-    </v-card>
+    <v-container class="py-6">
+        <!-- Stats Row -->
+        <v-row class="mb-6">
+            <v-col cols="12" sm="4">
+                <v-card class="pa-4">
+                    <div class="d-flex align-center">
+                        <i class="ti ti-users mr-4 text-medium-emphasis" style="font-size: 32px;"></i>
+                        <div>
+                            <div class="text-h4 font-weight-bold">{{ stats.users }}</div>
+                            <div class="text-medium-emphasis">Users</div>
+                        </div>
+                    </div>
+                </v-card>
+            </v-col>
+            <v-col cols="12" sm="4">
+                <v-card class="pa-4">
+                    <div class="d-flex align-center">
+                        <i class="ti ti-shield mr-4 text-medium-emphasis" style="font-size: 32px;"></i>
+                        <div>
+                            <div class="text-h4 font-weight-bold">{{ stats.roles }}</div>
+                            <div class="text-medium-emphasis">Roles</div>
+                        </div>
+                    </div>
+                </v-card>
+            </v-col>
+            <v-col cols="12" sm="4">
+                <v-card class="pa-4">
+                    <div class="d-flex align-center">
+                        <i class="ti ti-history mr-4 text-medium-emphasis" style="font-size: 32px;"></i>
+                        <div>
+                            <div class="text-h4 font-weight-bold">{{ stats.activities }}</div>
+                            <div class="text-medium-emphasis">Activity Logs</div>
+                        </div>
+                    </div>
+                </v-card>
+            </v-col>
+        </v-row>
 
+        <!-- Profile Card -->
+        <v-row>
+            <v-col cols="12" md="6">
+                <v-card>
+                    <v-card-text class="pa-6">
+                        <div class="d-flex align-center mb-4">
+                            <v-avatar color="primary" size="64" class="mr-4">
+                                <span class="text-h5">{{ current_user.name[:2]|upper if current_user.name else 'U' }}</span>
+                            </v-avatar>
+                            <div>
+                                <div class="text-h5 font-weight-medium">{{ current_user.name or current_user.username }}</div>
+                                <div class="text-medium-emphasis">{{ current_user.email }}</div>
+                            </div>
+                        </div>
+                        <v-divider class="my-4"></v-divider>
+                        <div class="d-flex align-center text-medium-emphasis mb-2">
+                            <i class="ti ti-clock mr-2"></i>
+                            <span>Last login: {{ current_user.last_login_at.strftime('%B %-d, %Y at %-I:%M %p') if current_user.last_login_at else 'Never' }}</span>
+                        </div>
+                        <div class="d-flex align-center text-medium-emphasis">
+                            <i class="ti ti-shield-check mr-2"></i>
+                            <span>Roles: {% for role in current_user.roles %}{{ role.name }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
+                        </div>
+                    </v-card-text>
+                    <v-card-actions class="pa-6 pt-0">
+                        <v-btn href="/change" variant="text">
+                            <template v-slot:prepend><i class="ti ti-key"></i></template>
+                            Change Password
+                        </v-btn>
+                        <v-btn href="/logout" variant="text">
+                            <template v-slot:prepend><i class="ti ti-logout"></i></template>
+                            Logout
+                        </v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-col>
+
+            <!-- Quick Links Card -->
+            <v-col cols="12" md="6">
+                <v-card>
+                    <v-card-title class="pa-6 pb-2">Quick Links</v-card-title>
+                    <v-list class="pa-2">
+                        <v-list-item href="/users" class="rounded-lg mb-1">
+                            <template v-slot:prepend>
+                                <i class="ti ti-users mr-3 text-medium-emphasis" style="font-size: 22px;"></i>
+                            </template>
+                            <v-list-item-title>Manage Users</v-list-item-title>
+                            <v-list-item-subtitle>Add, edit, or remove users</v-list-item-subtitle>
+                        </v-list-item>
+                        <v-list-item href="/roles" class="rounded-lg mb-1">
+                            <template v-slot:prepend>
+                                <i class="ti ti-shield mr-3 text-medium-emphasis" style="font-size: 22px;"></i>
+                            </template>
+                            <v-list-item-title>Manage Roles</v-list-item-title>
+                            <v-list-item-subtitle>Configure user permissions</v-list-item-subtitle>
+                        </v-list-item>
+                        <v-list-item href="/activities" class="rounded-lg">
+                            <template v-slot:prepend>
+                                <i class="ti ti-history mr-3 text-medium-emphasis" style="font-size: 22px;"></i>
+                            </template>
+                            <v-list-item-title>Activity Logs</v-list-item-title>
+                            <v-list-item-subtitle>View system activity</v-list-item-subtitle>
+                        </v-list-item>
+                    </v-list>
+                </v-card>
+            </v-col>
+        </v-row>
+    </v-container>
 {% endblock %}
 
 {% block js %}
@@ -21,14 +115,17 @@
         const vuetify = createVuetify(config.vuetifyConfig);
 
         const app = createApp({
+            mixins: [layoutMixin],
             data() {
                 return {
-                    menu: null,
-                    drawer: true,
+                    // Page-specific data here
                 };
             },
             delimiters: config.delimiters
         });
+
+        // Register components
+        registerEnfernoComponents(app);
 
         app.use(vuetify).mount('#app');
     </script>
