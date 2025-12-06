@@ -33,6 +33,14 @@ What's Included
 - **Database**: SQLAlchemy ORM, migrations ready
 - **Patterns**: Data tables, dialogs, notifications - ready to use
 
+### UI Features
+
+- **Collapsible sidebar** - Nested navigation groups with smooth expand/collapse animations
+- **Dark mode** - Theme toggle with localStorage persistence, auto-detects system preference
+- **Tabler Icons** - 5000+ icons via CDN, no build step
+- **Ember color palette** - Fire-inspired theme matching the Enferno brand
+- **Polish included** - Card hover effects, smooth scrollbars, styled data tables
+
 Requirements: Python 3.11+ and [uv](https://docs.astral.sh/uv/)
 
 ### Background Tasks
