@@ -21,7 +21,10 @@
 
                 <template v-slot:top>
                     <v-toolbar class="mb-4" dense elevation="0" color="transparent">
-                        <v-btn class="ml-auto" prepend-icon="mdi-plus" @click="createItem" size="small" color="primary" variant="elevated">Add User</v-btn>
+                        <v-btn class="ml-auto" @click="createItem" size="small" color="primary" variant="elevated">
+                            <template v-slot:prepend><i class="ti ti-plus"></i></template>
+                            Add User
+                        </v-btn>
                         
                     </v-toolbar>
                 </template>
@@ -44,13 +47,13 @@
                             class="mr-2"
                             @click="editItem(item)"
                     >
-                        mdi-pencil
+                        ti ti-pencil
                     </v-icon>
                     <v-icon
                             small
                             @click="deleteItem(item)"
                     >
-                        mdi-delete
+                        ti ti-trash
                     </v-icon>
                 </template>
 
@@ -67,7 +70,7 @@
             <v-toolbar>
                 <v-toolbar-title>User Editor</v-toolbar-title>
                 <template v-slot:append>
-                    <v-btn @click="edialog=false" size="small" icon="mdi-close" variant="text"></v-btn>
+                    <v-btn @click="edialog=false" size="small" icon="ti ti-x" variant="text"></v-btn>
                 </template>
             </v-toolbar>
             
@@ -108,7 +111,7 @@
 
         ${snackMessage}
         <template v-slot:actions>
-            <v-btn @click="snackBar=false" icon="mdi-close" class="ml-auto" size="small" variant="text"></v-btn>
+            <v-btn @click="snackBar=false" icon="ti ti-x" class="ml-auto" size="small" variant="text"></v-btn>
         </template>
     </v-snackbar>
 
@@ -124,14 +127,12 @@
         const {createApp, toRaw} = Vue;
         const {createVuetify} = Vuetify;
 
-        const vuetify = createVuetify(config);
+        const vuetify = createVuetify(config.vuetifyConfig);
 
         window.app = createApp({
+            mixins: [layoutMixin],
             data() {
                 return {
-                    config: config,
-                    menu: config.menu,
-                    rail: config.rail,
                     errors: "",
                     snackBar: false,
                     snackMessage: "",
@@ -139,9 +140,8 @@
                     itemsLength: 0,
                     options: {
                         page: 1,
-                        itemsPerPage: config.itemsPerPage || 25
+                        itemsPerPage: 25
                     },
-                    drawer: true,
 
                     headers: [
                         {title: 'ID', value: 'id'},
@@ -261,6 +261,7 @@
 
         });
 
+        registerEnfernoComponents(app);
         app.use(vuetify).mount("#app");
     </script>
 {% endblock %}

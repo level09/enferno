@@ -38,7 +38,7 @@
             <v-card-title class="d-flex align-center">
                 Activity Data
                 <v-spacer></v-spacer>
-                <v-btn icon="mdi-close" size="small" variant="text" @click="dataDialog = false"></v-btn>
+                <v-btn icon="ti ti-x" size="small" variant="text" @click="dataDialog = false"></v-btn>
             </v-card-title>
 
             <v-card-text>
@@ -50,7 +50,7 @@
     <v-snackbar size="small" class="d-flex" v-model="snackBar" rounded="pill" elevation="25">
         ${snackMessage}
         <template v-slot:actions>
-            <v-btn @click="snackBar=false" icon="mdi-close" class="ml-auto" variant="text" size="small"></v-btn>
+            <v-btn @click="snackBar=false" icon="ti ti-x" class="ml-auto" variant="text" size="small"></v-btn>
         </template>
     </v-snackbar>
 
@@ -60,23 +60,20 @@
         const {createApp} = Vue;
         const {createVuetify} = Vuetify;
 
-        const vuetify = createVuetify(config);
+        const vuetify = createVuetify(config.vuetifyConfig);
 
         window.app = createApp({
+            mixins: [layoutMixin],
             data() {
                 return {
-                    config: config,
-                    menu: config.menu,
-                    rail: config.rail,
                     snackBar: false,
                     snackMessage: "",
                     items: [],
                     itemsLength: 0,
                     options: {
                         page: 1,
-                        itemsPerPage: config.itemsPerPage || 25
+                        itemsPerPage: 25
                     },
-                    drawer: true,
                     dataDialog: false,
                     currentData: null,
 
@@ -135,6 +132,7 @@
             }
         });
 
+        registerEnfernoComponents(app);
         app.use(vuetify).mount("#app");
     </script>
 {% endblock %} 
