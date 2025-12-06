@@ -35,9 +35,7 @@
             <v-spacer></v-spacer>
 
             {% if not current_user.is_authenticated %}
-            <!-- Anonymous: Login/Register buttons -->
-            <v-btn href="/login" variant="text">Login</v-btn>
-            <v-btn href="/register" color="primary" class="ml-2">Register</v-btn>
+            <v-btn href="/login" variant="text">Sign in</v-btn>
             {% else %}
             <!-- Theme Switcher -->
             <theme-switcher></theme-switcher>
