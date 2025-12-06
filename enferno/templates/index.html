@@ -3,49 +3,46 @@
     home
 {% endblock %}
 {% block content %}
-    <v-app id="app">
-        <v-container fluid class="fill-height">
-            <v-row align="center" justify="center">
-                <v-col cols="12" md="8" lg="6" class="text-center">
-                    <v-card class="pa-6">
-                        <v-img :width="200" class="ma-auto mb-6" cover src="/static/img/enferno.svg"></v-img>
-                        <v-card-title class="text-h4 mb-2">Welcome to Enferno</v-card-title>
-                        <v-card-text>
-                            <p class="text-subtitle-1 mb-6">Your development environment is ready. Use this framework to build your application.</p>
-                            
-                            <v-divider class="mb-4"></v-divider>
-                            
-                            <div class="d-flex flex-column align-start text-left mb-4">
-                                <p class="font-weight-bold mb-2">Getting Started:</p>
-                                <p>1. Edit templates in <code>enferno/templates/</code></p>
-                                <p>2. Add public routes in <code>enferno/public/views.py</code></p>
-                                <p>3. Create models in <code>enferno/public/models.py</code> or <code>enferno/portal/models.py</code></p>
-                            </div>
-                            
-                            <v-alert density="compact" type="info" class="mb-4" variant="tonal">
-                                <p>Current environment: <code>${ config.ENV || 'development' }</code></p>
-                                <p>Debug mode: <code>${ config.DEBUG || 'false' }</code></p>
-                            </v-alert>
-                        </v-card-text>
-                        
-                        <v-card-actions class="justify-center">
-                            {% if not current_user.is_authenticated %}
-                                <v-btn color="primary" href="/login" class="mx-2">Login</v-btn>
-                                <v-btn color="primary" variant="outlined" href="/register" class="mx-2">Create Account</v-btn>
-                            {% else %}
-                                <v-btn color="primary" href="/dashboard" class="mx-2">Dashboard</v-btn>
-                                <v-btn color="error" variant="text" href="/logout" class="mx-2">Logout</v-btn>
-                            {% endif %}
-                        </v-card-actions>
-                    </v-card>
-                    
-                    <div class="mt-8 text-center text-caption">
-                        <p>Enferno Framework • <a href="https://docs.enferno.io" target="_blank" rel="noopener">Documentation</a></p>
-                    </div>
-                </v-col>
-            </v-row>
-        </v-container>
-    </v-app>
+    <v-container fluid class="fill-height">
+        <v-row align="center" justify="center">
+            <v-col cols="12" md="8" lg="6" class="text-center">
+                <v-card class="pa-6">
+                    <v-img :width="200" class="ma-auto mb-6" cover src="/static/img/enferno.svg"></v-img>
+                    <v-card-title class="text-h4 mb-2">Welcome to Enferno</v-card-title>
+                    <v-card-text>
+                        <p class="text-subtitle-1 mb-6">Your development environment is ready. Use this framework to build your application.</p>
+
+                        <v-divider class="mb-4"></v-divider>
+
+                        <div class="d-flex flex-column align-start text-left mb-4">
+                            <p class="font-weight-bold mb-2">Getting Started:</p>
+                            <p>1. Edit templates in <code>enferno/templates/</code></p>
+                            <p>2. Add public routes in <code>enferno/public/views.py</code></p>
+                            <p>3. Create models in <code>enferno/public/models.py</code> or <code>enferno/portal/models.py</code></p>
+                        </div>
+
+                        <v-alert density="compact" type="info" class="mb-4" variant="tonal">
+                            <p>Enferno Framework v11</p>
+                        </v-alert>
+                    </v-card-text>
+
+                    <v-card-actions class="justify-center">
+                        {% if not current_user.is_authenticated %}
+                            <v-btn color="primary" href="/login" class="mx-2">Login</v-btn>
+                            <v-btn color="primary" variant="outlined" href="/register" class="mx-2">Create Account</v-btn>
+                        {% else %}
+                            <v-btn color="primary" href="/dashboard" class="mx-2">Dashboard</v-btn>
+                            <v-btn color="error" variant="text" href="/logout" class="mx-2">Logout</v-btn>
+                        {% endif %}
+                    </v-card-actions>
+                </v-card>
+
+                <div class="mt-8 text-center text-caption">
+                    <p>Enferno Framework • <a href="https://docs.enferno.io" target="_blank" rel="noopener">Documentation</a></p>
+                </div>
+            </v-col>
+        </v-row>
+    </v-container>
 {% endblock %}
 
 {% block js %}
@@ -55,13 +52,11 @@
         const vuetify = createVuetify(config.vuetifyConfig);
 
         const app = createApp({
+            mixins: [layoutMixin],
             data() {
                 return {
-                    drawer: false,
                     snackBar: false,
-                    snackMessage: '',
-                    menu: null,
-                    config: config
+                    snackMessage: ''
                 };
             },
             methods: {
@@ -73,6 +68,7 @@
             delimiters: config.delimiters
         });
 
+        registerEnfernoComponents(app);
         app.use(vuetify).mount('#app');
     </script>
 {% endblock %}

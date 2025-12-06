@@ -17,11 +17,12 @@
         class="my-2"
         v-model="q"
         label="Search"
-        prepend-inner-icon="mdi-magnify"
         variant="outlined"
         hide-details
         single-line
-      ></v-text-field>
+      >
+        <template v-slot:prepend-inner><i class="ti ti-search mr-2"></i></template>
+      </v-text-field>
 
     </v-card-text>
         <v-card-text>
@@ -38,8 +39,10 @@
 
                 <template v-slot:top>
                     <v-toolbar color="transparent" class="mb-4" dense elevation="0">
-                        <v-btn class="ml-auto" prepend-icon="mdi-plus" @click="createItem" size="small"
-                               variant="elevated" color="primary"> Add Project</v-btn>
+                        <v-btn class="ml-auto" @click="createItem" size="small" variant="elevated" color="primary">
+                            <template v-slot:prepend><i class="ti ti-plus"></i></template>
+                            Add Project
+                        </v-btn>
                     </v-toolbar>
                 </template>
 
@@ -63,13 +66,13 @@
                             class="mr-2"
                             @click="editItem(item)"
                     >
-                        mdi-pencil
+                        ti ti-pencil
                     </v-icon>
                     <v-icon
                             small
                             @click="deleteItem(item)"
                     >
-                        mdi-delete
+                        ti ti-trash
                     </v-icon>
                 </template>
 
@@ -81,7 +84,7 @@
     <v-dialog v-model="edialog" width="660">
         <v-card v-if="edialog" class="pa-6">
             <v-sheet class="d-flex justify-end">
-                <v-btn @click="edialog=false" size="small" icon="mdi-close" variant="text"></v-btn>
+                <v-btn @click="edialog=false" size="small" icon="ti ti-x" variant="text"></v-btn>
             </v-sheet>
             <v-card-title>Project Editor</v-card-title>
 
@@ -109,7 +112,7 @@
     <v-snackbar size="small" class="d-flex" v-model="snackBar" rounded="pill" elevation="25">
         ${snackMessage}
         <template v-slot:actions>
-            <v-btn @click="snackBar=false" icon="mdi-close" class="ml-auto" variant="text" size="small"></v-btn>
+            <v-btn @click="snackBar=false" icon="ti ti-x" class="ml-auto" variant="text" size="small"></v-btn>
         </template>
     </v-snackbar>
 
@@ -120,12 +123,12 @@
         const {createApp} = Vue;
         const {createVuetify} = Vuetify;
 
-        const vuetify = createVuetify();
+        const vuetify = createVuetify(config.vuetifyConfig);
 
         window.app = createApp({
+            mixins: [layoutMixin],
             data() {
                 return {
-                    menu: null,
                     snackBar: false,
                     snackMessage: "",
                     loading: false,
@@ -133,7 +136,6 @@
                     itemsPerPage: 20,
                     itemsLength: 0,
                     q: "",
-                    drawer: true,
 
                     headers: [
 
@@ -170,7 +172,7 @@
             mounted() {
                 this.refresh();
             },
-            delimiters: ["${", "}"],
+            delimiters: config.delimiters,
 
             methods: {
                 showSnack(message) {
@@ -238,6 +240,7 @@
             }
         });
 
+        registerEnfernoComponents(app);
         app.use(vuetify).mount("#app");
     </script>
 
