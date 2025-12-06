@@ -1,8 +1,7 @@
 /**
  * Enferno Framework - Central Configuration
- * Coinbase-inspired color palette
+ * Ember/Fire-inspired color palette
  */
-
 
 const config = {
     // Common Vue settings
@@ -38,8 +37,8 @@ const config = {
                 size: 'small'
             },
             VDataTableServer: {
-                itemsPerPage: 25 ,
-                itemsPerPageOptions: [ 25, 50, 100]
+                itemsPerPage: 25,
+                itemsPerPageOptions: [25, 50, 100]
             }
         },
         theme: {
@@ -48,31 +47,35 @@ const config = {
                 light: {
                     dark: false,
                     colors: {
-                        // Coinbase-inspired colors
-                        primary: '#0052FF',      // Coinbase Blue
-                        secondary: '#1652F0',    // Secondary Blue
-                        accent: '#05D2DD',       // Teal Accent
-                        error: '#FF7452',        // Error Red
-                        info: '#56B4FC',         // Light Blue
-                        success: '#05BE7A',      // Green
-                        warning: '#F6B74D',      // Orange/Yellow
+                        // Ember light theme
+                        primary: '#EA580C',      // Ember Orange
+                        secondary: '#1E293B',    // Slate (for contrast)
+                        accent: '#F97316',       // Bright Orange
+                        error: '#DC2626',        // Red
+                        info: '#0EA5E9',         // Sky Blue
+                        success: '#16A34A',      // Green
+                        warning: '#EAB308',      // Yellow
                         background: '#FFFFFF',   // White
-                        surface: '#F9FBFD',      // Light Gray
+                        surface: '#F8FAFC',      // Slate 50
+                        'surface-light': '#F1F5F9', // Slate 100
+                        'on-surface': '#1E293B', // Slate 800
                     }
                 },
                 dark: {
                     dark: true,
                     colors: {
-                        // Coinbase dark theme
-                        primary: '#1652F0',      // Coinbase Blue (slightly darker)
-                        secondary: '#0A46E4',    // Secondary Blue
-                        accent: '#00B4D8',       // Teal Accent
-                        error: '#E94B35',        // Error Red
-                        info: '#3A9BF4',         // Light Blue
-                        success: '#00A661',      // Green
-                        warning: '#DEA54B',      // Orange/Yellow
-                        background: '#0A0B0D',   // Very Dark Gray (near black)
-                        surface: '#1E2026',      // Dark Gray for cards
+                        // Ember dark theme
+                        primary: '#F97316',      // Bright Orange (more visible on dark)
+                        secondary: '#CBD5E1',    // Slate 300
+                        accent: '#FB923C',       // Orange 400
+                        error: '#EF4444',        // Red 500
+                        info: '#38BDF8',         // Sky 400
+                        success: '#22C55E',      // Green 500
+                        warning: '#FACC15',      // Yellow 400
+                        background: '#0F172A',   // Slate 900
+                        surface: '#1E293B',      // Slate 800
+                        'surface-light': '#334155', // Slate 700
+                        'on-surface': '#F1F5F9', // Slate 100
                     }
                 }
             }
