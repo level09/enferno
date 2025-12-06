@@ -10,7 +10,8 @@
     <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon">
 
     <link rel="stylesheet" href="/static/css/vuetify.min.css">
-    <link rel="stylesheet" href="/static/mdi/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
     <link rel="stylesheet" href="/static/css/app.css">
 
     {% block css %}{% endblock %}
@@ -19,86 +20,114 @@
 <body class="{% block body_class %} {% endblock %}">
 <v-app id="app">
     <v-layout class="rounded rounded-md">
-        <v-app-bar color="primary">
+        <!-- App Bar -->
+        <v-app-bar color="primary" density="comfortable">
+            <v-app-bar-nav-icon @click="drawer = !drawer" class="d-md-none"></v-app-bar-nav-icon>
 
-            <v-app-bar-title>
-
-                <a href="/"><img style="height: 60px; filter:invert()" class="pa-1" src="/static/img/enferno.svg"></a>
-
-
+            <v-app-bar-title class="d-none d-md-flex">
+                <a href="/" class="d-flex align-center text-decoration-none">
+                    <img style="height: 40px; filter:invert()" src="/static/img/enferno.svg">
+                </a>
             </v-app-bar-title>
+
             <v-spacer></v-spacer>
+
             {% if current_user.is_authenticated %}
-            <v-menu
-      v-model="menu"
-      :close-on-content-click="false"
-      location="bottom"
-    >
-      <template v-slot:activator="{ props }">
-        <v-btn
+            <!-- Theme Switcher -->
+            <theme-switcher></theme-switcher>
 
-          v-bind="props"
-          icon="mdi-account"
-        >
+            <!-- Notifications -->
+            <notification-dropdown
+                :notifications="notifications"
+                @click="handleNotificationClick"
+                @mark-read="markNotificationRead"
+                @mark-all-read="markAllNotificationsRead"
+                @remove="removeNotification"
+            ></notification-dropdown>
 
+            <!-- User Menu -->
+            <v-menu :close-on-content-click="false" location="bottom end">
+                <template v-slot:activator="{ props }">
+                    <v-btn v-bind="props" icon variant="text" size="small" class="ml-1">
+                        <v-avatar color="primary" size="32">
+                            <span class="text-body-2">{{ current_user.name[:2]|upper if current_user.name else 'U' }}</span>
+                        </v-avatar>
+                    </v-btn>
+                </template>
 
+                <v-card min-width="280">
+                    <v-list>
+                        <v-list-item
+                            title="{{ current_user.name }}"
+                            subtitle="{{ current_user.email }}"
+                        >
+                            <template v-slot:prepend><i class="ti ti-user mr-3" style="font-size: 20px;"></i></template>
+                        </v-list-item>
+                    </v-list>
 
+                    <v-divider></v-divider>
 
+                    <v-list density="compact">
+                        <v-list-item href="/dashboard">
+                            <template v-slot:prepend><i class="ti ti-layout-dashboard mr-3" style="font-size: 18px;"></i></template>
+                            <v-list-item-title>My Account</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item href="/change">
+                            <template v-slot:prepend><i class="ti ti-key mr-3" style="font-size: 18px;"></i></template>
+                            <v-list-item-title>Change Password</v-list-item-title>
+                        </v-list-item>
+                    </v-list>
 
-        </v-btn>
-      </template>
+                    <v-divider></v-divider>
 
-      <v-card min-width="300" >
-        <v-list>
-          <v-list-item
-            title="{{ current_user.name }}"
-            subtitle="{{ current_user.email}}"
-          >
-            <template v-slot:append>
-            </template>
-          </v-list-item>
-        </v-list>
-
-        <v-divider></v-divider>
-
-        <v-list>
-          <v-list-item>
-           <v-btn href="/dashboard" variant="plain" >My Account</v-btn>
-          </v-list-item>
-
-          <v-list-item>
-            <v-btn href="/change" variant="plain"  >Change Password</v-btn>
-          </v-list-item>
-
-             <v-list-item>
-            <v-btn color="red" href="/logout"  > Logout</v-btn>
-          </v-list-item>
-        </v-list>
-
-
-      </v-card>
-    </v-menu>
-
-            {% endif  %}
+                    <v-list density="compact">
+                        <v-list-item href="/logout" base-color="error">
+                            <template v-slot:prepend><i class="ti ti-logout mr-3" style="font-size: 18px;"></i></template>
+                            <v-list-item-title>Logout</v-list-item-title>
+                        </v-list-item>
+                    </v-list>
+                </v-card>
+            </v-menu>
+            {% endif %}
         </v-app-bar>
 
-        <v-navigation-drawer v-model="drawer">
-            <v-list>
-                <v-list-item href="/dashboard" title="Dashboard"></v-list-item>
-                {% if current_user.has_role('admin') %}
-                    <v-list-item href="/users" title="Users Management"></v-list-item>
-                    <v-list-item href="/roles" title="Roles Management"></v-list-item>
-                    <v-list-item href="/activities" title="Activity Logs"></v-list-item>
-                {% endif %}
-            </v-list>
+        <!-- Navigation Drawer -->
+        <v-navigation-drawer v-model="drawer" :rail="isNavCollapsed" :rail-width="68" width="260">
+            <!-- Nav Header -->
+            <div class="nav-header">
+                <span v-show="!isNavCollapsed" class="app-title">Navigation</span>
+                <v-spacer></v-spacer>
+                <v-btn
+                    v-show="!isMobile"
+                    icon
+                    variant="text"
+                    size="small"
+                    @click="toggleNavCollapse"
+                    :title="isNavCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'"
+                >
+                    <i :class="isNavCollapsed ? 'ti ti-layout-sidebar-right' : 'ti ti-layout-sidebar-left-collapse'" style="font-size: 20px;"></i>
+                </v-btn>
+            </div>
+
+            <v-divider></v-divider>
+
+            <!-- Navigation Items -->
+            <ul class="nav-items" style="overflow-y: auto; flex: 1;">
+                <component
+                    v-for="item in filteredNavItems"
+                    :key="item.title || item.heading"
+                    :is="resolveNavComponent(item)"
+                    :item="item"
+                />
+            </ul>
         </v-navigation-drawer>
 
-
+        <!-- Main Content -->
         <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
             {% block content %}
             {% endblock %}
         </v-main>
-        
+
         <!-- Flash messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -116,7 +145,7 @@
                     </v-alert>
                 {% endfor %}
             </div>
-            
+
             <script>
                 // Auto-hide flash messages after 5 seconds
                 setTimeout(function() {
@@ -130,10 +159,99 @@
         {% endwith %}
     </v-layout>
 </v-app>
+
+<!-- Core Scripts -->
 <script src="/static/js/vue.min.js"></script>
 <script src="/static/js/config.js"></script>
 <script src="/static/js/vuetify.min.js"></script>
 <script src="/static/js/axios.min.js"></script>
+
+<!-- Navigation Data -->
+<script src="/static/js/navigation.js"></script>
+
+<!-- Enferno Components -->
+<script src="/static/js/components/TransitionExpand.js"></script>
+<script src="/static/js/components/VerticalNavLink.js"></script>
+<script src="/static/js/components/VerticalNavGroup.js"></script>
+<script src="/static/js/components/VerticalNavSectionTitle.js"></script>
+<script src="/static/js/components/NotificationDropdown.js"></script>
+<script src="/static/js/components/ThemeSwitcher.js"></script>
+<script src="/static/js/components/index.js"></script>
+
+<!-- Layout Base Script -->
+<script>
+    // User roles passed from server
+    const userRoles = {{ current_user.roles | map(attribute='name') | list | tojson if current_user.is_authenticated else '[]' | safe }};
+
+    // Base app data and methods for layout
+    const layoutMixin = {
+        data() {
+            return {
+                drawer: true,
+                isNavCollapsed: false,
+                isMobile: window.innerWidth < 960,
+                navItems: typeof enfernoNavigation !== 'undefined' ? enfernoNavigation : [],
+                notifications: [
+                    // Example notifications - replace with real data
+                    // { id: 1, title: 'New Message', subtitle: 'You have a new message', time: '5 min ago', isSeen: false },
+                ]
+            };
+        },
+        computed: {
+            filteredNavItems() {
+                return filterNavByRole(this.navItems, userRoles);
+            }
+        },
+        methods: {
+            resolveNavComponent,
+            toggleNavCollapse() {
+                this.isNavCollapsed = !this.isNavCollapsed;
+                localStorage.setItem('enferno-nav-collapsed', this.isNavCollapsed);
+            },
+            handleResize() {
+                this.isMobile = window.innerWidth < 960;
+                if (this.isMobile) {
+                    this.isNavCollapsed = false;
+                }
+            },
+            // Notification methods
+            handleNotificationClick(notification) {
+                if (notification.to) {
+                    window.location.href = notification.to;
+                }
+            },
+            markNotificationRead(id) {
+                const notification = this.notifications.find(n => n.id === id);
+                if (notification) {
+                    notification.isSeen = true;
+                }
+            },
+            markAllNotificationsRead() {
+                this.notifications.forEach(n => n.isSeen = true);
+            },
+            removeNotification(id) {
+                const index = this.notifications.findIndex(n => n.id === id);
+                if (index > -1) {
+                    this.notifications.splice(index, 1);
+                }
+            }
+        },
+        mounted() {
+            // Restore nav collapsed state
+            const savedCollapsed = localStorage.getItem('enferno-nav-collapsed');
+            if (savedCollapsed !== null && !this.isMobile) {
+                this.isNavCollapsed = savedCollapsed === 'true';
+            }
+
+            // Handle resize
+            window.addEventListener('resize', this.handleResize);
+        },
+        beforeUnmount() {
+            window.removeEventListener('resize', this.handleResize);
+        }
+    };
+</script>
+
 {% block js %}{% endblock %}
 </body>
 </html>

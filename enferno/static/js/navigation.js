@@ -1,0 +1,41 @@
+/**
+ * Enferno Navigation Configuration
+ * Define your sidebar navigation structure here
+ */
+
+const enfernoNavigation = [
+  {
+    heading: 'Main'
+  },
+  {
+    title: 'Dashboard',
+    icon: 'ti ti-home',
+    to: '/dashboard'
+  },
+  {
+    heading: 'Administration'
+  },
+  {
+    title: 'User Management',
+    icon: 'ti ti-users-group',
+    role: 'admin',
+    children: [
+      {
+        title: 'Users',
+        icon: 'ti ti-users',
+        to: '/users'
+      },
+      {
+        title: 'Roles',
+        icon: 'ti ti-shield',
+        to: '/roles'
+      }
+    ]
+  },
+  {
+    title: 'Activity Logs',
+    icon: 'ti ti-history',
+    to: '/activities',
+    role: 'admin'
+  }
+];
