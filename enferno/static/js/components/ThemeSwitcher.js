@@ -27,6 +27,9 @@ const ThemeSwitcher = {
         this.$vuetify.theme.global.name = this.isDark ? 'dark' : 'light';
       }
 
+      // Toggle body class for CSS targeting
+      document.body.classList.toggle('dark-mode', this.isDark);
+
       // Save preference
       localStorage.setItem('enferno-theme', this.isDark ? 'dark' : 'light');
 
@@ -53,6 +56,9 @@ const ThemeSwitcher = {
       if (this.$vuetify) {
         this.$vuetify.theme.global.name = this.isDark ? 'dark' : 'light';
       }
+
+      // Apply body class for CSS targeting
+      document.body.classList.toggle('dark-mode', this.isDark);
     }
   },
 

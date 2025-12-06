@@ -280,6 +280,6 @@
   transition: filter 0.2s ease;
 }
 
-.v-theme--dark .logo-adaptive {
+body.dark-mode .logo-adaptive {
   filter: invert(1) brightness(2);
 }
