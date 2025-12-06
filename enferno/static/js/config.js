@@ -27,7 +27,11 @@ const config = {
                 size: 'small'
             },
             VCard: {
-                elevation: 0
+                elevation: 0,
+                rounded: 'lg'
+            },
+            VMenu: {
+                offset: 10
             },
             VBtn: {
                 variant: 'elevated',
@@ -72,9 +76,6 @@ const config = {
                     }
                 }
             }
-        },
-        icons: {
-            defaultSet: 'mdi'
         }
     }
 };
