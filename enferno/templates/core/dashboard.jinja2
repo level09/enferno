@@ -17,7 +17,6 @@
         class="my-2"
         v-model="q"
         label="Search"
-        variant="outlined"
         hide-details
         single-line
       >
@@ -91,14 +90,9 @@
             <v-card-text>
                 <!-- Dynamic fields go here -->
 
-                    <v-text-field variant="underlined" label="Id"
-                                  v-model="eitem.id" ></v-text-field>
-
-                    <v-text-field variant="underlined" label="Url"
-                                  v-model="eitem.url" ></v-text-field>
-
-                    <v-text-field variant="underlined" label="Description"
-                                  v-model="eitem.description" ></v-text-field>
+                    <v-text-field label="Id" v-model="eitem.id"></v-text-field>
+                    <v-text-field label="Url" v-model="eitem.url"></v-text-field>
+                    <v-text-field label="Description" v-model="eitem.description"></v-text-field>
 
             </v-card-text>
 

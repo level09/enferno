@@ -67,8 +67,8 @@
 
             <v-card-text>
                 <!-- fields go here -->
-                <v-text-field variant="underlined" label="Name" v-model="eitem.name"></v-text-field>
-                <v-text-field variant="underlined" label="Description" v-model="eitem.description" multiline></v-text-field>
+                <v-text-field label="Name" v-model="eitem.name"></v-text-field>
+                <v-textarea label="Description" v-model="eitem.description" rows="3"></v-textarea>
             </v-card-text>
 
             <v-card-actions>
