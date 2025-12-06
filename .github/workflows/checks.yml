@@ -28,7 +28,9 @@ jobs:
           SECRET_KEY: test-secret-key-for-ci
           SECURITY_PASSWORD_SALT: test-salt-for-ci
           SECURITY_TOTP_SECRETS: test-totp-secret
-        run: uv run flask create-db
+        run: |
+          mkdir -p instance
+          uv run flask create-db
 
       - name: Run checks
         env:
