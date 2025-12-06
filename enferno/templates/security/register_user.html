@@ -124,22 +124,24 @@
                             >
                                 {{ register_user_form.hidden_tag() }}
                                 
-                                <v-row>
-                                    <v-col cols="6" class="pb-0">
+                                <v-row class="mb-3">
+                                    <v-col cols="6" class="py-0">
                                         <v-text-field
                                             label="First Name"
                                             name="first_name"
                                             type="text"
                                             variant="outlined"
+                                            hide-details
                                             required
                                         ></v-text-field>
                                     </v-col>
-                                    <v-col cols="6" class="pb-0">
+                                    <v-col cols="6" class="py-0">
                                         <v-text-field
                                             label="Last Name"
                                             name="last_name"
                                             type="text"
                                             variant="outlined"
+                                            hide-details
                                             required
                                         ></v-text-field>
                                     </v-col>
