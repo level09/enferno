@@ -108,7 +108,7 @@
                                     v-if="!showEmailForm"
                                 >
                                     <template v-slot:prepend>
-                                        <v-icon class="mr-2">mdi-email</v-icon>
+                                        <i class="ti ti-mail mr-2" style="font-size: 20px;"></i>
                                     </template>
                                     Continue with Email
                                 </v-btn>
@@ -128,59 +128,59 @@
                                     density="compact"
                                     label="First Name"
                                     name="first_name"
-                                    prepend-inner-icon="mdi-account"
                                     type="text"
                                     variant="outlined"
-                                    
                                     required
-                                ></v-text-field>
+                                >
+                                    <template v-slot:prepend-inner><i class="ti ti-user mr-2"></i></template>
+                                </v-text-field>
 
                                 <v-text-field
                                     density="compact"
                                     label="Last Name"
                                     name="last_name"
-                                    prepend-inner-icon="mdi-account"
                                     type="text"
                                     variant="outlined"
-                                    
                                     required
-                                ></v-text-field>
+                                >
+                                    <template v-slot:prepend-inner><i class="ti ti-user mr-2"></i></template>
+                                </v-text-field>
 
                                 <v-text-field
                                     density="compact"
                                     label="Email"
                                     name="email"
-                                    prepend-inner-icon="mdi-email"
                                     type="email"
                                     variant="outlined"
-                                    
                                     required
-                                ></v-text-field>
+                                >
+                                    <template v-slot:prepend-inner><i class="ti ti-mail mr-2"></i></template>
+                                </v-text-field>
 
                                 <v-text-field
                                     density="compact"
                                     id="password"
                                     label="Password"
                                     name="password"
-                                    prepend-inner-icon="mdi-lock"
                                     type="password"
                                     variant="outlined"
-                                    
                                     required
-                                ></v-text-field>
-                                
+                                >
+                                    <template v-slot:prepend-inner><i class="ti ti-lock mr-2"></i></template>
+                                </v-text-field>
+
                                 {% if register_user_form.password_confirm %}
                                 <v-text-field
                                     density="compact"
                                     id="confirm-password"
                                     label="Confirm Password"
                                     name="password_confirm"
-                                    prepend-inner-icon="mdi-lock-check"
                                     type="password"
                                     variant="outlined"
-                                    
                                     required
-                                ></v-text-field>
+                                >
+                                    <template v-slot:prepend-inner><i class="ti ti-lock-check mr-2"></i></template>
+                                </v-text-field>
                                 {% endif %}
                                 
                                 {% if register_user_form.email.errors or register_user_form.password.errors %}
