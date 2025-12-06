@@ -22,9 +22,11 @@
     <v-layout class="rounded rounded-md">
         <!-- App Bar -->
         <v-app-bar color="primary" density="comfortable">
+            {% if current_user.is_authenticated %}
             <v-app-bar-nav-icon @click="drawer = !drawer" class="d-md-none"></v-app-bar-nav-icon>
+            {% endif %}
 
-            <v-app-bar-title class="d-none d-md-flex">
+            <v-app-bar-title>
                 <a href="/" class="d-flex align-center text-decoration-none">
                     <img style="height: 40px; filter:invert()" src="/static/img/enferno.svg">
                 </a>
@@ -32,7 +34,11 @@
 
             <v-spacer></v-spacer>
 
-            {% if current_user.is_authenticated %}
+            {% if not current_user.is_authenticated %}
+            <!-- Anonymous: Login/Register buttons -->
+            <v-btn href="/login" variant="text" class="text-white">Login</v-btn>
+            <v-btn href="/register" variant="outlined" class="ml-2">Register</v-btn>
+            {% else %}
             <!-- Theme Switcher -->
             <theme-switcher></theme-switcher>
 
@@ -91,7 +97,8 @@
             {% endif %}
         </v-app-bar>
 
-        <!-- Navigation Drawer -->
+        {% if current_user.is_authenticated %}
+        <!-- Navigation Drawer (authenticated users only) -->
         <v-navigation-drawer v-model="drawer" :rail="isNavCollapsed" :rail-width="68" width="260">
             <!-- Nav Header -->
             <div class="nav-header">
@@ -121,6 +128,7 @@
                 />
             </ul>
         </v-navigation-drawer>
+        {% endif %}
 
         <!-- Main Content -->
         <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
