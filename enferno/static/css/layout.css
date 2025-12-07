@@ -283,3 +283,8 @@
 body.dark-mode .logo-adaptive {
   filter: invert(1) brightness(2);
 }
+
+/* ===== QR Code (inverts in dark mode) ===== */
+body.dark-mode .qr-adaptive {
+  filter: invert(1);
+}

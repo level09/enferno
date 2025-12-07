@@ -76,7 +76,7 @@
                         Open your authenticator app (Google Authenticator, Authy, 1Password, etc.) and scan this code:
                     </p>
                     <div class="text-center mb-4">
-                        <img width="200" alt="QR code" src="{{ authr_qrcode }}">
+                        <img width="200" alt="QR code" src="{{ authr_qrcode }}" class="qr-adaptive">
                     </div>
                     <v-text-field
                         readonly
@@ -167,11 +167,8 @@
         methods: {
             disable2FA() {
                 const form = document.getElementById('setup-form');
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'setup';
-                input.value = 'disable';
-                form.appendChild(input);
+                // Change the existing setup value to 'disable' instead of 'authenticator'
+                form.querySelector('input[name="setup"]').value = 'disable';
                 form.submit();
             },
             copyKey() {
