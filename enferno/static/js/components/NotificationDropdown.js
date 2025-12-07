@@ -16,7 +16,7 @@ const NotificationDropdown = {
   emits: ['click', 'mark-read', 'mark-all-read', 'remove'],
 
   template: `
-    <v-menu offset="14" :close-on-content-click="false" max-width="380">
+    <v-menu offset="14" :close-on-content-click="false" max-width="380" transition="fade-transition">
       <template v-slot:activator="{ props }">
         <v-btn v-bind="props" icon variant="text" size="small">
           <v-badge
