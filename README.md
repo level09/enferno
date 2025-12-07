@@ -29,7 +29,11 @@ Why Enferno?
 What's Included
 ---------------
 - **Frontend**: Vue 3, Vuetify 3, Axios - no build tools needed
-- **Auth**: Login, registration, 2FA, WebAuthn, OAuth (Google/GitHub)
+- **Auth**: Login, registration, password recovery, session management
+- **2FA**: TOTP authenticator apps (Google Authenticator, Authy, 1Password)
+- **WebAuthn**: Passkeys and hardware security keys (YubiKey, Touch ID)
+- **Recovery codes**: Backup codes for account recovery
+- **OAuth**: Google and GitHub login
 - **Database**: SQLAlchemy ORM, migrations ready
 - **Patterns**: Data tables, dialogs, notifications - ready to use
 
