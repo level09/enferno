@@ -14,7 +14,10 @@ uv run flask install          # Create admin user
 uv run flask run              # → http://localhost:5000
 ```
 
-[![Enferno Demo](https://img.youtube.com/vi/Jb1oh7Bepl4/maxresdefault.jpg)](https://youtu.be/Jb1oh7Bepl4)
+
+https://github.com/user-attachments/assets/a87bfad2-45dc-4d94-bdf1-0448dfea8084
+
+
 
 Why Enferno?
 ===========
