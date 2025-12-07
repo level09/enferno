@@ -1,0 +1,187 @@
+{% extends 'layout.html' %}
+{% from "security/_macros.html" import render_form_errors %}
+
+{% block content %}
+<v-container fluid class="pa-4">
+    <v-card max-width="600" class="mx-auto">
+        <v-card-title class="text-h5">
+            <i class="ti ti-shield-lock mr-2"></i>
+            Two-Factor Authentication
+        </v-card-title>
+        <v-card-subtitle>
+            Add an extra layer of security to your account
+        </v-card-subtitle>
+
+        <v-card-text>
+            {% include "security/_messages.html" %}
+
+            {% if two_factor_required and primary_method == 'none' %}
+            <v-alert type="warning" variant="tonal" class="mb-4">
+                Two-factor authentication is required. You won't be able to proceed without setting it up.
+            </v-alert>
+            {% endif %}
+
+            {% if primary_method != 'none' %}
+            <!-- Current 2FA Status -->
+            <v-card color="primary" variant="tonal" class="mb-6">
+                <v-card-text class="d-flex align-center">
+                    <v-avatar color="primary" class="mr-4">
+                        <i class="ti ti-check" style="font-size: 24px;"></i>
+                    </v-avatar>
+                    <div class="flex-grow-1">
+                        <div class="text-h6 text-uppercase">{{ primary_method }}</div>
+                        <div class="text-caption">Currently enabled</div>
+                    </div>
+                    <v-btn color="error" variant="outlined" @click="disable2FA">
+                        <i class="ti ti-x mr-1"></i>
+                        Disable
+                    </v-btn>
+                </v-card-text>
+            </v-card>
+            {% endif %}
+
+            <form id="setup-form" action="{{ url_for_security('two_factor_setup') }}" method="post">
+                {{ two_factor_setup_form.hidden_tag() }}
+                {{ render_form_errors(two_factor_setup_form) }}
+                <input type="hidden" name="setup" value="authenticator">
+            </form>
+
+            {% if not chosen_method == "authenticator" and primary_method == 'none' %}
+            <!-- Authenticator App Option -->
+            <v-card variant="outlined" class="mb-3">
+                <v-card-text class="d-flex align-center">
+                    <v-avatar color="primary" variant="tonal" class="mr-4">
+                        <i class="ti ti-device-mobile" style="font-size: 24px;"></i>
+                    </v-avatar>
+                    <div class="flex-grow-1">
+                        <div class="font-weight-medium">Authenticator App</div>
+                        <div class="text-caption text-medium-emphasis">Use Google Authenticator, Authy, or similar</div>
+                    </div>
+                    <v-btn variant="outlined" color="primary" onclick="document.getElementById('setup-form').submit()">
+                        Setup
+                    </v-btn>
+                </v-card-text>
+            </v-card>
+            {% endif %}
+
+            {% if chosen_method == "authenticator" %}
+            <!-- QR Code Setup -->
+            <v-card variant="outlined" class="mb-4">
+                <v-card-title class="text-subtitle-1">
+                    <i class="ti ti-qrcode mr-2"></i>
+                    Scan QR Code
+                </v-card-title>
+                <v-card-text>
+                    <p class="mb-4">
+                        Open your authenticator app (Google Authenticator, Authy, 1Password, etc.) and scan this code:
+                    </p>
+                    <div class="text-center mb-4">
+                        <img width="200" alt="QR code" src="{{ authr_qrcode }}">
+                    </div>
+                    <v-text-field
+                        readonly
+                        label="Manual entry key"
+                        :model-value="'{{ authr_key }}'"
+                        append-inner-icon="mdi-content-copy"
+                        @click:append-inner="copyKey"
+                        hint="Can't scan? Enter this key manually"
+                        persistent-hint
+                    ></v-text-field>
+                </v-card-text>
+            </v-card>
+            {% endif %}
+
+            {% if chosen_method %}
+            <!-- Verify Code -->
+            <v-card variant="outlined">
+                <v-card-title class="text-subtitle-1">
+                    <i class="ti ti-numbers mr-2"></i>
+                    Enter Verification Code
+                </v-card-title>
+                <v-card-text>
+                    <form action="{{ url_for_security('two_factor_token_validation') }}" method="post">
+                        {{ two_factor_verify_code_form.hidden_tag() }}
+                        <v-text-field
+                            name="code"
+                            label="6-digit code"
+                            placeholder="000000"
+                            maxlength="6"
+                            autocomplete="one-time-code"
+                            inputmode="numeric"
+                            autofocus
+                        ></v-text-field>
+                        <v-btn color="primary" type="submit" class="mt-2">
+                            Verify & Enable
+                        </v-btn>
+                    </form>
+                </v-card-text>
+            </v-card>
+            {% endif %}
+
+            {% if security.webauthn and current_user.is_authenticated and not chosen_method %}
+            <v-card variant="outlined" class="mb-3">
+                <v-card-text class="d-flex align-center">
+                    <v-avatar color="primary" variant="tonal" class="mr-4">
+                        <i class="ti ti-fingerprint" style="font-size: 24px;"></i>
+                    </v-avatar>
+                    <div class="flex-grow-1">
+                        <div class="font-weight-medium">Security Keys & Passkeys</div>
+                        <div class="text-caption text-medium-emphasis">Hardware keys or device passkeys</div>
+                    </div>
+                    <v-btn variant="outlined" color="primary" href="{{ url_for_security('wan_register') }}">
+                        Manage
+                    </v-btn>
+                </v-card-text>
+            </v-card>
+            {% endif %}
+
+            {% if security.support_mfa and security.multi_factor_recovery_codes and not chosen_method %}
+            <v-card variant="outlined">
+                <v-card-text class="d-flex align-center">
+                    <v-avatar color="warning" variant="tonal" class="mr-4">
+                        <i class="ti ti-lifebuoy" style="font-size: 24px;"></i>
+                    </v-avatar>
+                    <div class="flex-grow-1">
+                        <div class="font-weight-medium">Recovery Codes</div>
+                        <div class="text-caption text-medium-emphasis">Backup codes for account recovery</div>
+                    </div>
+                    <v-btn variant="outlined" color="primary" href="{{ url_for_security('mf_recovery_codes') }}">
+                        Manage
+                    </v-btn>
+                </v-card-text>
+            </v-card>
+            {% endif %}
+        </v-card-text>
+    </v-card>
+</v-container>
+{% endblock %}
+
+{% block js %}
+<script>
+    const { createApp } = Vue;
+    const { createVuetify } = Vuetify;
+    const vuetify = createVuetify(config.vuetifyConfig);
+
+    const app = createApp({
+        mixins: [layoutMixin],
+        methods: {
+            disable2FA() {
+                const form = document.getElementById('setup-form');
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'setup';
+                input.value = 'disable';
+                form.appendChild(input);
+                form.submit();
+            },
+            copyKey() {
+                navigator.clipboard.writeText('{{ authr_key | default("") }}');
+            }
+        },
+        delimiters: ['${', '}']
+    });
+
+    registerEnfernoComponents(app);
+    app.use(vuetify).mount('#app');
+</script>
+{% endblock %}

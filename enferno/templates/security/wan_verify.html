@@ -1,0 +1,78 @@
+{% extends 'login-layout.html' %}
+{% from "security/_macros.html" import prop_next %}
+
+{% block head_js %}
+{{ super() }}
+<script src="{{ url_for('.static', filename='js/webauthn.js') }}"></script>
+<script src="{{ url_for('.static', filename='js/base64.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<v-main class="d-flex flex-column align-center justify-center" style="min-height: 100vh; background: rgb(var(--v-theme-background));">
+    <v-card class="mx-auto pa-8 w-100" rounded="lg" style="max-width: 424px;">
+        <div class="text-center mb-6">
+            <img src="/static/img/enferno.svg" alt="Logo" height="40" class="mb-4">
+            <div class="text-h5 font-weight-bold">Verify Your Identity</div>
+            <div class="text-body-2 text-medium-emphasis">Re-authenticate using your security key</div>
+        </div>
+
+        {% include "security/_messages.html" %}
+
+        {% if not credential_options %}
+        <form action="{{ url_for_security('wan_verify') }}{{ prop_next() }}" method="post">
+            {{ wan_verify_form.hidden_tag() }}
+            <v-btn color="primary" type="submit" size="large" block>
+                <template v-slot:prepend>
+                    <i class="ti ti-fingerprint" style="font-size: 20px;"></i>
+                </template>
+                Verify with Security Key
+            </v-btn>
+        </form>
+        {% else %}
+        <div class="text-center pa-6">
+            <v-progress-circular indeterminate color="primary" size="48" class="mb-4"></v-progress-circular>
+            <div class="text-body-1">Waiting for your security key...</div>
+            <div class="text-caption text-medium-emphasis">Follow the prompts on your device</div>
+        </div>
+
+        <form action="{{ url_for_security('wan_verify_response', token=wan_state) }}{{ prop_next() }}" method="post" id="wan-verify-form">
+            {{ wan_signin_response_form.hidden_tag() }}
+            <input type="hidden" id="credential" name="credential" value="">
+        </form>
+
+        <div id="wan-errors"></div>
+        {% endif %}
+    </v-card>
+
+    <div class="mt-6 w-100" style="max-width: 424px;">
+        <v-btn onclick="history.back()" variant="text" color="primary">
+            <i class="ti ti-chevron-left mr-1"></i>
+            Back
+        </v-btn>
+    </div>
+</v-main>
+{% endblock %}
+
+{% block js %}
+<script>
+    const { createApp } = Vue;
+    const { createVuetify } = Vuetify;
+    const vuetify = createVuetify(vuetifyConfig);
+
+    const app = createApp({ delimiters: delimiters });
+    app.use(vuetify).mount('#app');
+
+    {% if credential_options %}
+    handleSignin('{{ credential_options|safe }}')
+        .then((result) => {
+            if (result.credential) {
+                document.getElementById("credential").value = result.credential;
+                document.getElementById("wan-verify-form").submit();
+            } else {
+                document.getElementById("wan-errors").innerHTML =
+                    '<div class="v-alert v-alert--density-default v-alert--variant-tonal bg-error pa-4 rounded mb-4">' + result.error_msg + '</div>';
+            }
+        });
+    {% endif %}
+</script>
+{% endblock %}

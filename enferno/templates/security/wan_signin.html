@@ -1,0 +1,107 @@
+{% extends 'login-layout.html' %}
+{% from "security/_macros.html" import render_field_with_errors, render_field, render_field_errors, prop_next %}
+
+{% block head_js %}
+{{ super() }}
+<script src="{{ url_for('.static', filename='js/webauthn.js') }}"></script>
+<script src="{{ url_for('.static', filename='js/base64.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<v-main class="d-flex flex-column align-center justify-center" style="min-height: 100vh; background: rgb(var(--v-theme-background));">
+    <v-card class="mx-auto pa-8 w-100" rounded="lg" style="max-width: 424px;">
+        <div class="text-center mb-6">
+            <img src="/static/img/enferno.svg" alt="Logo" height="40" class="mb-4">
+            <div class="text-h5 font-weight-bold">Sign in with Passkey</div>
+            <div class="text-body-2 text-medium-emphasis">Use your security key or passkey</div>
+        </div>
+
+        {% if not credential_options %}
+        <form action="{{ url_for_security('wan_signin') }}{{ prop_next() }}" method="post" id="wan-signin-form">
+            {{ wan_signin_form.hidden_tag() }}
+
+            {% if not is_secondary %}
+            <v-text-field
+                name="identity"
+                label="Username or Email"
+                class="mb-4"
+            ></v-text-field>
+
+            <v-checkbox
+                name="remember"
+                label="Remember me"
+                density="compact"
+                class="mb-4"
+            ></v-checkbox>
+            {% endif %}
+
+            {{ render_field_errors(wan_signin_form.credential) }}
+
+            <v-btn color="primary" type="submit" size="large" block>
+                <template v-slot:prepend>
+                    <i class="ti ti-fingerprint" style="font-size: 20px;"></i>
+                </template>
+                Authenticate
+            </v-btn>
+        </form>
+        {% else %}
+        <div class="text-center pa-6">
+            <v-progress-circular indeterminate color="primary" size="48" class="mb-4"></v-progress-circular>
+            <div class="text-body-1">Waiting for your security key...</div>
+            <div class="text-caption text-medium-emphasis mb-4">Follow the prompts on your device</div>
+        </div>
+
+        <form action="{{ url_for_security('wan_signin_response', token=wan_state) }}{{ prop_next() }}" method="post" id="wan-signin-response-form">
+            {{ wan_signin_response_form.hidden_tag() }}
+            {{ render_field(wan_signin_response_form.credential) }}
+        </form>
+
+        <div id="wan-errors"></div>
+
+        <v-btn variant="outlined" block href="{{ url_for_security('mf_recovery') }}">
+            <template v-slot:prepend>
+                <i class="ti ti-lifebuoy"></i>
+            </template>
+            Use Recovery Code
+        </v-btn>
+        {% endif %}
+
+        {% include "security/_messages.html" %}
+    </v-card>
+
+    <div class="mt-6 w-100 d-flex justify-space-between" style="max-width: 424px;">
+        <v-btn href="{{ url_for_security('tf_select') }}{{ prop_next() }}" variant="text" color="primary">
+            <i class="ti ti-chevron-left mr-1"></i>
+            Back
+        </v-btn>
+        <v-btn href="{{ url_for_security('login') }}" variant="text" color="error">
+            Cancel
+        </v-btn>
+    </div>
+</v-main>
+{% endblock %}
+
+{% block js %}
+<script>
+    const { createApp } = Vue;
+    const { createVuetify } = Vuetify;
+    const vuetify = createVuetify(vuetifyConfig);
+
+    const app = createApp({ delimiters: delimiters });
+    app.use(vuetify).mount('#app');
+
+    {% if credential_options %}
+    handleSignin('{{ credential_options|safe }}')
+        .then((result) => {
+            if (result.credential) {
+                document.getElementById("credential").value = result.credential;
+                document.getElementById("wan-signin-response-form").submit();
+            } else {
+                document.getElementById("wan-errors").innerHTML =
+                    '<div class="v-alert v-alert--density-default v-alert--variant-tonal bg-error pa-4 rounded mb-4">' +
+                    result.error_msg + '</div>';
+            }
+        });
+    {% endif %}
+</script>
+{% endblock %}

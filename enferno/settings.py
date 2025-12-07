@@ -107,6 +107,11 @@ class Config:
     )
     SESSION_COOKIE_SAMESITE = os.environ.get("SESSION_COOKIE_SAMESITE", "Lax")
 
+    # Session management
+    DISABLE_MULTIPLE_SESSIONS = (
+        os.environ.get("DISABLE_MULTIPLE_SESSIONS", "False").lower() == "true"
+    )
+
     # flask mail settings
     MAIL_SERVER = os.environ.get("MAIL_SERVER")
     MAIL_PORT = 465

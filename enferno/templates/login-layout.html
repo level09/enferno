@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Enferno - Security</title>
+    <meta name="description" content="A framework for the next decade">
+    <meta name="author" content="Enferno">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href="/static/css/vuetify.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.x/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link rel="stylesheet" href="/static/css/app.css">
+
+    <style>
+        html, body { height: 100%; margin: 0; padding: 0; }
+        #app, .v-application, .v-application__wrap { min-height: 100vh; }
+    </style>
+    {% block css %}{% endblock %}
+    {% block head_js %}{% endblock %}
+</head>
+<body>
+<div id="app">
+    <v-app v-cloak>
+        {% block content %}{% endblock %}
+    </v-app>
+</div>
+
+<script src="/static/js/vue.min.js"></script>
+<script src="/static/js/vuetify.min.js"></script>
+<script src="/static/js/axios.min.js"></script>
+<script src="/static/js/config.js"></script>
+
+<script>
+    // Make config available globally for templates
+    const delimiters = config.delimiters;
+    const vuetifyConfig = config.vuetifyConfig;
+
+    // Helper for handling API request errors
+    function handleRequestError(error) {
+        if (error.response && error.response.data) {
+            const data = error.response.data;
+            if (data.response && data.response.errors) {
+                return Object.values(data.response.errors).flat().join(', ');
+            }
+            if (data.message) return data.message;
+        }
+        return error.message || 'An error occurred';
+    }
+</script>
+
+{% block js %}{% endblock %}
+</body>
+</html>

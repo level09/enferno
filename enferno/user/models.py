@@ -128,6 +128,31 @@ class User(UserMixin, db.Model, BaseMixin):
         password = "".join(secrets.choice(alphabet) for i in range(length))
         return hash_password(password)
 
+    def logout_other_sessions(self, current_session_token=None):
+        """Logout all other sessions for this user."""
+        from enferno.user.models import Session
+
+        Session.deactivate_user_sessions(self.id, exclude_token=current_session_token)
+
+    def get_active_sessions(self):
+        """Get all active sessions for this user."""
+        return [s for s in self.sessions if s.is_active]
+
+    @property
+    def two_factor_devices(self):
+        """Get a unified list of all 2FA methods/devices."""
+        devices = []
+        if self.tf_primary_method:
+            devices.append(
+                {"type": self.tf_primary_method, "name": "Authenticator App"}
+            )
+        if self.webauthn:
+            for wan in self.webauthn:
+                devices.append(
+                    {"type": "webauthn", "name": wan.name, "usage": wan.usage}
+                )
+        return devices
+
 
 class WebAuthn(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -154,9 +179,10 @@ class WebAuthn(db.Model):
 
     def get_user_mapping(self):
         """
-        Return the mapping from webauthn back to User
+        Return the mapping from webauthn back to User.
+        Since user_id is fs_webauthn_user_handle, we need to map it correctly.
         """
-        return {"id": self.user_id}
+        return {"fs_webauthn_user_handle": self.user_id}
 
 
 class OAuth(OAuthConsumerMixin, db.Model):
@@ -190,3 +216,63 @@ class Activity(db.Model, BaseMixin):
             print(f"Error registering activity: {e}")
             db.session.rollback()
             return None
+
+
+class Session(db.Model, BaseMixin):
+    """Track active user sessions for session management."""
+
+    __tablename__ = "user_sessions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    user = db.relationship("User", backref=db.backref("sessions", lazy=True))
+
+    session_token = db.Column(db.String(255), unique=True, nullable=False)
+    last_active = db.Column(db.DateTime, default=datetime.now)
+    expires_at = db.Column(db.DateTime, nullable=True)
+    ip_address = db.Column(db.String(255), nullable=True)
+
+    # Browser, OS, device metadata
+    meta = db.Column(db.JSON, nullable=True)
+
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "last_active": self.last_active.isoformat() if self.last_active else None,
+            "expires_at": self.expires_at.isoformat() if self.expires_at else None,
+            "ip_address": self.ip_address,
+            "meta": self.meta,
+            "is_active": self.is_active,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+    @classmethod
+    def create_session(cls, user_id, session_token, ip_address=None, meta=None):
+        """Create a new session for a user."""
+        session = cls(
+            user_id=user_id,
+            session_token=session_token,
+            ip_address=ip_address,
+            meta=meta,
+            is_active=True,
+        )
+        db.session.add(session)
+        try:
+            db.session.commit()
+            return session
+        except Exception:
+            db.session.rollback()
+            return None
+
+    @classmethod
+    def deactivate_user_sessions(cls, user_id, exclude_token=None):
+        """Deactivate all sessions for a user, optionally excluding current."""
+        query = cls.query.filter_by(user_id=user_id, is_active=True)
+        if exclude_token:
+            query = query.filter(cls.session_token != exclude_token)
+        query.update({"is_active": False})
+        db.session.commit()

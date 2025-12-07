@@ -1,0 +1,71 @@
+{% extends 'login-layout.html' %}
+{% from "security/_macros.html" import prop_next %}
+
+{% block content %}
+<v-main class="d-flex flex-column align-center justify-center" style="min-height: 100vh; background: rgb(var(--v-theme-background));">
+    <v-card class="mx-auto pa-8 w-100" rounded="lg" style="max-width: 424px;">
+        <div class="text-center mb-6">
+            <img src="/static/img/enferno.svg" alt="Logo" height="40" class="mb-4">
+            <div class="text-h5 font-weight-bold">Authentication Code</div>
+            <div class="text-body-2 text-medium-emphasis">Enter the 6-digit code from your authenticator app</div>
+        </div>
+
+        <form action="{{ url_for_security('two_factor_token_validation') }}{{ prop_next() }}" method="post" id="tf-verify-form">
+            {{ two_factor_verify_code_form.hidden_tag() }}
+
+            <v-otp-input
+                v-model="code"
+                length="6"
+                type="number"
+                autofocus
+                class="mb-4"
+                @finish="submitForm"
+            ></v-otp-input>
+            <input type="hidden" name="code" id="code-input">
+
+            {% include "security/_messages.html" %}
+
+            <v-divider class="my-4"></v-divider>
+
+            <v-btn variant="outlined" block href="{{ url_for_security('mf_recovery') }}">
+                <template v-slot:prepend>
+                    <i class="ti ti-lifebuoy" style="font-size: 18px;"></i>
+                </template>
+                Use Recovery Code
+            </v-btn>
+        </form>
+    </v-card>
+
+    <div class="mt-6 w-100 d-flex justify-space-between" style="max-width: 424px;">
+        <v-btn href="{{ url_for_security('tf_select') }}{{ prop_next() }}" variant="text" color="primary">
+            <i class="ti ti-chevron-left mr-1"></i>
+            Back
+        </v-btn>
+        <v-btn href="{{ url_for_security('login') }}" variant="text" color="error">
+            Cancel
+        </v-btn>
+    </div>
+</v-main>
+{% endblock %}
+
+{% block js %}
+<script>
+    const { createApp } = Vue;
+    const { createVuetify } = Vuetify;
+    const vuetify = createVuetify(vuetifyConfig);
+
+    const app = createApp({
+        delimiters: delimiters,
+        data() {
+            return { code: '' };
+        },
+        methods: {
+            submitForm() {
+                document.getElementById('code-input').value = this.code;
+                this.$nextTick(() => document.getElementById('tf-verify-form').submit());
+            }
+        }
+    });
+    app.use(vuetify).mount('#app');
+</script>
+{% endblock %}

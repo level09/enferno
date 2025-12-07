@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="/static/css/app.css">
 
     {% block css %}{% endblock %}
+    {% block head_js %}{% endblock %}
 </head>
 
 <body class="{% block body_class %} {% endblock %}">
@@ -80,6 +81,10 @@
                             <template v-slot:prepend><i class="ti ti-key mr-3" style="font-size: 18px;"></i></template>
                             <v-list-item-title>Change Password</v-list-item-title>
                         </v-list-item>
+                        <v-list-item href="/tf-setup">
+                            <template v-slot:prepend><i class="ti ti-shield-lock mr-3" style="font-size: 18px;"></i></template>
+                            <v-list-item-title>Two-Factor Auth</v-list-item-title>
+                        </v-list-item>
                     </v-list>
 
                     <v-divider></v-divider>
@@ -135,7 +140,7 @@
         </v-main>
 
         <!-- Flash messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% set messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             <div id="flash-messages" style="position: fixed; bottom: 20px; right: 20px; z-index: 2000;">
                 {% for category, message in messages %}
@@ -151,20 +156,22 @@
                     </v-alert>
                 {% endfor %}
             </div>
-
-            <script>
-                // Auto-hide flash messages after 5 seconds
-                setTimeout(function() {
-                    const flashMessages = document.getElementById('flash-messages');
-                    if (flashMessages) {
-                        flashMessages.style.display = 'none';
-                    }
-                }, 5000);
-            </script>
         {% endif %}
-        {% endwith %}
     </v-layout>
 </v-app>
+
+<!-- Flash message auto-hide (outside Vue template) -->
+{% if messages %}
+<script>
+    // Auto-hide flash messages after 5 seconds
+    setTimeout(function() {
+        const flashMessages = document.getElementById('flash-messages');
+        if (flashMessages) {
+            flashMessages.style.display = 'none';
+        }
+    }, 5000);
+</script>
+{% endif %}
 
 <!-- Core Scripts -->
 <script src="/static/js/vue.min.js"></script>

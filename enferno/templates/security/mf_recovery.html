@@ -1,0 +1,67 @@
+{% extends 'login-layout.html' %}
+{% from "security/_macros.html" import render_field_with_errors, render_field %}
+
+{% block content %}
+<v-main class="d-flex flex-column align-center justify-center" style="min-height: 100vh; background: rgb(var(--v-theme-background));">
+    <v-card class="mx-auto pa-8 w-100" rounded="lg" style="max-width: 424px;">
+        <div class="text-center mb-6">
+            <img src="/static/img/enferno.svg" alt="Logo" height="40" class="mb-4">
+            <div class="text-h5 font-weight-bold">Recovery Code</div>
+            <div class="text-body-2 text-medium-emphasis">Enter one of your recovery codes to sign in</div>
+        </div>
+
+        <form action="{{ url_for_security('mf_recovery') }}" method="POST" name="mf_recovery_form">
+            {{ mf_recovery_form.hidden_tag() }}
+
+            <v-text-field
+                name="code"
+                label="Recovery Code"
+                placeholder="XXXX-XXXX-XXXX"
+                hint="Enter your 12-character recovery code including dashes"
+                persistent-hint
+                class="mb-4"
+            >
+                <template v-slot:prepend-inner>
+                    <i class="ti ti-key" style="font-size: 18px;"></i>
+                </template>
+            </v-text-field>
+
+            {% include "security/_messages.html" %}
+
+            {% if mf_recovery_form.errors and mf_recovery_form.errors.code %}
+            <v-alert type="error" variant="tonal" class="mb-4">
+                {{ mf_recovery_form.errors.code[0] }}
+            </v-alert>
+            {% endif %}
+
+            <v-btn
+                type="submit"
+                color="primary"
+                size="large"
+                block
+                class="mb-4"
+            >
+                Continue
+            </v-btn>
+        </form>
+    </v-card>
+
+    <div class="mt-6 w-100" style="max-width: 424px;">
+        <v-btn onclick="history.back()" variant="text" color="primary">
+            <i class="ti ti-chevron-left mr-1"></i>
+            Back
+        </v-btn>
+    </div>
+</v-main>
+{% endblock %}
+
+{% block js %}
+<script>
+    const { createApp } = Vue;
+    const { createVuetify } = Vuetify;
+    const vuetify = createVuetify(vuetifyConfig);
+
+    const app = createApp({ delimiters: delimiters });
+    app.use(vuetify).mount('#app');
+</script>
+{% endblock %}

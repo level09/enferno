@@ -13,6 +13,19 @@ const enfernoNavigation = [
     to: '/dashboard'
   },
   {
+    heading: 'Account'
+  },
+  {
+    title: 'Change Password',
+    icon: 'ti ti-key',
+    to: '/change'
+  },
+  {
+    title: 'Two-Factor Auth',
+    icon: 'ti ti-shield-lock',
+    to: '/tf-setup'
+  },
+  {
     heading: 'Administration'
   },
   {

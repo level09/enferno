@@ -1,0 +1,78 @@
+{% extends 'login-layout.html' %}
+{% from "security/_macros.html" import prop_next %}
+
+{% block content %}
+<v-main class="d-flex flex-column align-center justify-center" style="min-height: 100vh; background: rgb(var(--v-theme-background));">
+    <v-card class="mx-auto pa-8 w-100" rounded="lg" style="max-width: 424px;">
+        <div class="text-center mb-6">
+            <img src="/static/img/enferno.svg" alt="Logo" height="40" class="mb-4">
+            <div class="text-h5 font-weight-bold">Verify Your Identity</div>
+            <div class="text-body-2 text-medium-emphasis">Choose a verification method</div>
+        </div>
+
+        <form action="{{ url_for_security('tf_select') }}{{ prop_next() }}" method="post" id="tf-select-form">
+            {{ two_factor_select_form.hidden_tag() }}
+
+            <div class="d-flex flex-column ga-3 mb-4">
+                {% for value, label in two_factor_select_form.which.choices %}
+                <v-btn
+                    :variant="selected === '{{ value }}' ? 'flat' : 'outlined'"
+                    :color="selected === '{{ value }}' ? 'primary' : undefined"
+                    size="large"
+                    block
+                    @click.prevent="select('{{ value }}')"
+                >
+                    <template v-slot:prepend>
+                        <i class="{{ 'ti ti-device-mobile' if value == 'authenticator' else 'ti ti-fingerprint' }}" style="font-size: 20px;"></i>
+                    </template>
+                    {{ 'Authenticator App' if value == 'authenticator' else 'Security Key / Passkey' }}
+                </v-btn>
+                {% endfor %}
+            </div>
+
+            <input type="hidden" name="{{ two_factor_select_form.which.name }}" :value="selected">
+
+            {% include "security/_messages.html" %}
+
+            <v-divider class="my-4"></v-divider>
+
+            <v-btn variant="outlined" block href="{{ url_for_security('mf_recovery') }}">
+                <template v-slot:prepend>
+                    <i class="ti ti-lifebuoy" style="font-size: 18px;"></i>
+                </template>
+                Use Recovery Code
+            </v-btn>
+        </form>
+    </v-card>
+
+    <div class="mt-6 w-100" style="max-width: 424px;">
+        <v-btn href="{{ url_for_security('login') }}" variant="text" color="primary">
+            <i class="ti ti-chevron-left mr-1"></i>
+            Back to Login
+        </v-btn>
+    </div>
+</v-main>
+{% endblock %}
+
+{% block js %}
+<script>
+    const { createApp } = Vue;
+    const { createVuetify } = Vuetify;
+    const vuetify = createVuetify(vuetifyConfig);
+
+    const app = createApp({
+        delimiters: delimiters,
+        data() {
+            return { selected: '{{ two_factor_select_form.which.data or "" }}' };
+        },
+        methods: {
+            select(value) {
+                this.selected = value;
+                this.$nextTick(() => document.getElementById('tf-select-form').submit());
+            }
+        }
+    });
+
+    app.use(vuetify).mount('#app');
+</script>
+{% endblock %}
