@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Stop configuring. Start shipping.**
+**[Live Demo](https://demo.enferno.io/)** · **Stop configuring. Start shipping.**
 
 ~~Webpack~~ ~~Vite~~ ~~node_modules~~ ~~npm install~~ — Just Python.
 
