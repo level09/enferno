@@ -26,6 +26,11 @@ const enfernoNavigation = [
     to: '/tf-setup'
   },
   {
+    title: 'Recovery Codes',
+    icon: 'ti ti-lifebuoy',
+    to: '/mf-recovery-codes'
+  },
+  {
     heading: 'Administration'
   },
   {
