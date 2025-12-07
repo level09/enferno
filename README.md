@@ -14,7 +14,7 @@ uv run flask install          # Create admin user
 uv run flask run              # → http://localhost:5000
 ```
 
-![Enferno Demo](docs/enferno-demo.gif)
+[![Enferno Demo](https://img.youtube.com/vi/Jb1oh7Bepl4/maxresdefault.jpg)](https://youtu.be/Jb1oh7Bepl4)
 
 Why Enferno?
 ===========
