@@ -53,6 +53,7 @@ class User(UserMixin, db.Model, BaseMixin):
     created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
+    password_set = db.Column(db.Boolean, default=True, nullable=False)
     active = db.Column(db.Boolean, default=False, nullable=True)
 
     roles = relationship("Role", secondary=roles_users, backref="users")
@@ -79,6 +80,15 @@ class User(UserMixin, db.Model, BaseMixin):
     def display_name(self):
         """Return best available display name for UI."""
         return self.name or self.email
+
+    @property
+    def has_usable_password(self):
+        """Check if user has a password they actually know.
+
+        OAuth users are created with password_set=False. Once they set
+        a password via the change password form, password_set becomes True.
+        """
+        return self.password_set
 
     def to_dict(self):
         return {

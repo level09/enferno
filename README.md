@@ -75,6 +75,16 @@ Full production stack with one command:
 docker compose up --build   # Redis, PostgreSQL, Nginx, Celery
 ```
 
+### VPS Deploy
+
+One command to deploy on any Ubuntu VPS (Hetzner, DigitalOcean, etc.):
+
+```bash
+curl -sSL https://raw.githubusercontent.com/level09/ignite/main/ignite.sh | sudo DOMAIN=your-domain.com bash
+```
+
+Handles Caddy (auto SSL), Python 3.13, Redis, systemd services. See [Ignite](https://github.com/level09/ignite).
+
 Configuration
 ------------
 

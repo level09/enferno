@@ -63,6 +63,7 @@ def create_oauth_user(provider_data, oauth_token, ip_address):
         username=provider_data.get("email"),
         name=provider_data.get("name", ""),
         password=User.random_password(),
+        password_set=False,  # OAuth users don't know their random password
         active=True,
         confirmed_at=now,
         current_login_at=now,
