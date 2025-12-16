@@ -24,10 +24,10 @@ def create_db():
 
 
 @click.command()
-@click.option("-u", "--username", default=None, help="Admin username")
+@click.option("-e", "--email", default=None, help="Admin email")
 @click.option("-p", "--password", default=None, help="Admin password")
 @with_appcontext
-def install(username, password):
+def install(email, password):
     """Install a default admin user and add an admin role to it."""
     from enferno.user.models import Role
 
@@ -40,13 +40,13 @@ def install(username, password):
     admin_user = User.query.filter(User.roles.any(Role.name == "admin")).first()
     if admin_user:
         console.print(
-            f"[yellow]An admin user already exists:[/] [blue]{admin_user.username}[/]"
+            f"[yellow]An admin user already exists:[/] [blue]{admin_user.email}[/]"
         )
         return
 
     # Interactive mode if no args provided
-    if not username:
-        username = click.prompt("Admin username", default="admin")
+    if not email:
+        email = click.prompt("Admin email", default="admin@example.com")
 
     # Generate password if not provided
     generated = False
@@ -58,16 +58,16 @@ def install(username, password):
         generated = True
 
     user = User(
-        username=username,
+        email=email,
         name="Super Admin",
         password=hash_password(password),
-        active=1,
+        active=True,
     )
     user.roles.append(admin_role)
     user.save()
 
     console.print("\n[green]✓[/] Admin user created successfully!")
-    console.print(f"[blue]Username:[/] {username}")
+    console.print(f"[blue]Email:[/] {email}")
     if generated:
         console.print(f"[blue]Password:[/] [red]{password}[/]")
         console.print(
@@ -119,17 +119,16 @@ def add_role(email, role):
 
 
 @click.command()
-@click.option("-e", "--email", prompt="Email or username", default=None)
+@click.option("-e", "--email", prompt="Email", default=None)
 @click.option("-p", "--password", hide_input=True, prompt=True, default=None)
 @with_appcontext
 def reset(email, password):
-    """Reset a user password using email or username"""
+    """Reset a user password using email"""
     try:
         pwd = hash_password(password)
-        # Check if user exists with provided email or username
-        u = User.query.filter((User.email == email) | (User.username == email)).first()
+        u = User.query.filter(User.email == email).first()
         if not u:
-            print(f'User with email or username "{email}" not found.')
+            print(f'User with email "{email}" not found.')
             return
 
         u.password = pwd

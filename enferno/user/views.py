@@ -193,12 +193,11 @@ def api_activities():
     for activity in pagination.items:
         # Get user info if available
         user = db.session.get(User, activity.user_id)
-        username = user.username if user else f"User ID: {activity.user_id}"
 
         items.append(
             {
                 "id": activity.id,
-                "user": username,
+                "user": user.display_name if user else f"User ID: {activity.user_id}",
                 "action": activity.action,
                 "data": activity.data,
                 "created_at": activity.created_at.strftime("%Y-%m-%d %H:%M:%S"),
@@ -252,7 +251,7 @@ def user_authenticated_handler(app, user, authn_via, **extra_args):
 @password_changed.connect
 def after_password_change(sender, user, **extra_args):
     """Log password change activity."""
-    Activity.register(user.id, "Password Changed", {"username": user.username})
+    Activity.register(user.id, "Password Changed", {"email": user.email})
 
 
 @tf_profile_changed.connect
@@ -261,7 +260,7 @@ def after_tf_profile_change(sender, user, **extra_args):
     Activity.register(
         user.id,
         "Two-Factor Profile Changed",
-        {"username": user.username, "method": user.tf_primary_method},
+        {"email": user.email, "method": user.tf_primary_method},
     )
 
 

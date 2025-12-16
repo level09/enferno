@@ -139,21 +139,15 @@
             {% endblock %}
         </v-main>
 
-        <!-- Flash messages -->
+        <!-- Flash messages (plain HTML - renders before Vue mounts) -->
         {% set messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <div id="flash-messages" style="position: fixed; bottom: 20px; right: 20px; z-index: 2000;">
+            <div id="flash-messages" class="flash-container">
                 {% for category, message in messages %}
-                    <v-alert
-                        dismissible
-                        closable
-                        variant="tonal"
-                        color="{{ category if category in ['success', 'warning', 'error', 'info'] else 'primary' }}"
-                        class="mb-2"
-                        style="min-width: 250px;"
-                    >
-                        {{ message }}
-                    </v-alert>
+                    <div class="flash-message {{ category if category in ['success', 'warning', 'error', 'info'] else 'primary' }}">
+                        <span>{{ message }}</span>
+                        <button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
+                    </div>
                 {% endfor %}
             </div>
         {% endif %}

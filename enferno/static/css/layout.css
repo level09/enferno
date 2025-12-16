@@ -288,3 +288,43 @@ body.dark-mode .logo-adaptive {
 body.dark-mode .qr-adaptive {
   filter: invert(1);
 }
+
+/* ===== Flash Messages ===== */
+.flash-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2000;
+}
+
+.flash-message {
+  color: white;
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  min-width: 250px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flash-message.success { background: #16A34A; }
+.flash-message.error { background: #DC2626; }
+.flash-message.warning { background: #EAB308; }
+.flash-message.info { background: #0EA5E9; }
+.flash-message.primary { background: #EA580C; }
+
+.flash-close {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 18px;
+  margin-left: 12px;
+  opacity: 0.8;
+}
+
+.flash-close:hover {
+  opacity: 1;
+}

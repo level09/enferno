@@ -79,8 +79,7 @@
             <v-card-text>
                 <!-- fields go here -->
                 <v-text-field label="Name" v-model="eitem.name"></v-text-field>
-                <v-text-field type="email" v-model="eitem.email" label="Email"></v-text-field>
-                <v-text-field v-model="eitem.username" label="Username"></v-text-field>
+                <v-text-field type="email" v-model="eitem.email" label="Email" required></v-text-field>
 
                 <v-text-field placeholder="Password" type="password" v-model="eitem.password"></v-text-field>
 
@@ -146,7 +145,6 @@
                     headers: [
                         {title: 'ID', value: 'id'},
                         {title: 'Name', value: 'name'},
-                        {title: 'Username', value: 'username'},
                         {title: 'Email', value: 'email'},
                         {title: 'Roles', value: 'roles', sortable: false},
                         {title: 'Active', value: 'active', sortable: false},

@@ -23,9 +23,9 @@ else:
     _SESSION_REDIS = None
 
 
-def uia_username_mapper(identity):
-    # we allow pretty much anything - but we bleach it.
-    return bleach.clean(identity, strip=True)
+def uia_email_mapper(identity):
+    # Sanitize and strip whitespace from email input
+    return bleach.clean(identity, strip=True).strip() if identity else identity
 
 
 class Config:
@@ -60,9 +60,9 @@ class Config:
     if not SECURITY_PASSWORD_SALT:
         raise ValueError("SECURITY_PASSWORD_SALT environment variable is required")
     SECURITY_USER_IDENTITY_ATTRIBUTES = [
-        {"username": {"mapper": uia_username_mapper, "case_insensitive": True}},
+        {"email": {"mapper": uia_email_mapper, "case_insensitive": True}},
     ]
-    SECURITY_USERNAME_ENABLE = True
+    SECURITY_USERNAME_ENABLE = False
 
     SECURITY_POST_LOGIN_VIEW = "/dashboard"
     SECURITY_POST_CONFIRM_VIEW = "/dashboard"

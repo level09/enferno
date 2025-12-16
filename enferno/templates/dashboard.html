@@ -48,7 +48,7 @@
                                 <span class="text-h5">{{ current_user.name[:2]|upper if current_user.name else 'U' }}</span>
                             </v-avatar>
                             <div>
-                                <div class="text-h5 font-weight-medium">{{ current_user.name or current_user.username }}</div>
+                                <div class="text-h5 font-weight-medium">{{ current_user.display_name }}</div>
                                 <div class="text-medium-emphasis">{{ current_user.email }}</div>
                             </div>
                         </div>

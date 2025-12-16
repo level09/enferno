@@ -51,6 +51,8 @@
                         </v-card-title>
                         
                         <v-card-text>
+                            {% include "security/_messages.html" %}
+
                             <!-- Email/Password Form -->
                             <v-form 
                                 action="{{ url_for_security('login') }}" 
@@ -61,9 +63,9 @@
                                 {{ login_user_form.hidden_tag() }}
                                 
                                 <v-text-field
-                                    label="Email or username"
-                                    name="username"
-                                    type="text"
+                                    label="Email"
+                                    name="email"
+                                    type="email"
                                     required
                                 ></v-text-field>
 
@@ -75,8 +77,8 @@
                                     required
                                 ></v-text-field>
                                 
-                                {% if login_user_form.username.errors or login_user_form.password.errors %}
-                                    <v-alert type="error" density="compact" class="mb-4">Invalid username or password!</v-alert>
+                                {% if login_user_form.email.errors or login_user_form.password.errors %}
+                                    <v-alert type="error" density="compact" class="mb-4">Invalid email or password!</v-alert>
                                 {% endif %}
                                 
                                 {% if security.recoverable %}
