@@ -185,14 +185,21 @@ if [ "$DOCKER_CONFIG" = true ]; then
 fi
 # Create instance directory for SQLite database
 mkdir -p instance
+
+# Create .quartenv for Quart CLI auto-loading
+cat > .quartenv << 'EOF'
+QUART_APP=run:app
+QUART_DEBUG=1
+EOF
+echo -e "${GREEN}Created .quartenv for Quart CLI${NC}"
 echo -e "${GREEN}SQLite database will be created at: instance/enferno.db${NC}"
 echo
 echo -e "${GREEN}Next steps:${NC}"
 echo -e "1. Update the remaining values in your .env file (mail settings, etc.)"
 echo -e "2. Modern uv workflow - use these commands:"
-echo -e "   ${GREEN}uv run flask create-db${NC}   # Initialize database"
-echo -e "   ${GREEN}uv run flask install${NC}     # Create admin user"
-echo -e "   ${GREEN}uv run flask run${NC}         # Start development server"
+echo -e "   ${GREEN}uv run quart create-db${NC}   # Initialize database"
+echo -e "   ${GREEN}uv run quart install${NC}     # Create admin user"
+echo -e "   ${GREEN}uv run quart run${NC}         # Start development server"
 echo -e "   ${GREEN}uv run ruff check --fix .${NC} # Lint and auto-fix code"
 echo -e "   ${GREEN}uv run ruff format .${NC}      # Format code"
 echo -e "   ${GREEN}uv run pre-commit install${NC} # Install pre-commit hooks"

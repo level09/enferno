@@ -18,3 +18,4 @@ instance/
 # Claude Code
 .claude/settings.local.json
 *.skill
+.quartenv
