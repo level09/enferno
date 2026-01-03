@@ -9,9 +9,9 @@
 ```bash
 git clone git@github.com:level09/enferno.git && cd enferno
 ./setup.sh                    # Installs deps + generates secure .env
-uv run flask create-db        # Setup database
-uv run flask install          # Create admin user
-uv run flask run              # → http://localhost:5000
+uv run quart create-db        # Setup database
+uv run quart install          # Create admin user
+uv run quart run              # → http://localhost:5000
 ```
 
 
