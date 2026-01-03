@@ -48,7 +48,9 @@ What's Included
 - **Ember color palette** - Fire-inspired theme matching the Enferno brand
 - **Polish included** - Card hover effects, smooth scrollbars, styled data tables
 
-Requirements: Python 3.11+ and [uv](https://docs.astral.sh/uv/)
+Requirements: Python 3.11-3.13 and [uv](https://docs.astral.sh/uv/)
+
+> **Note**: The Quart migration branch requires Python 3.13 or earlier due to [asyncio timeout changes in Python 3.14](https://github.com/pytest-dev/pytest-asyncio/issues/762) that affect quart-flask-patch.
 
 ### Background Tasks
 
