@@ -4,7 +4,6 @@ import string
 from datetime import datetime
 from uuid import uuid4
 
-from flask_dance.consumer.storage.sqla import OAuthConsumerMixin
 from flask_security import AsaList
 from flask_security.core import RoleMixin, UserMixin
 from flask_security.utils import hash_password
@@ -199,14 +198,26 @@ class WebAuthn(db.Model):
         return {"fs_webauthn_user_handle": self.user_id}
 
 
-class OAuth(OAuthConsumerMixin, db.Model):
+class OAuth(db.Model):
+    """OAuth account model - stores OAuth provider tokens for users."""
+
     __tablename__ = "oauth"
-    provider_user_id = db.Column(db.String(256), unique=True, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    provider = db.Column(db.String(50), nullable=False)
+    provider_user_id = db.Column(db.String(256), nullable=False)
+    token = db.Column(db.JSON, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
     user = db.relationship(
         User,
         backref=db.backref(
             "oauth_accounts", cascade="all, delete-orphan", lazy="dynamic"
+        ),
+    )
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "provider", "provider_user_id", name="uq_oauth_provider_user"
         ),
     )
 

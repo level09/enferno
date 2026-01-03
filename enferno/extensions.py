@@ -6,9 +6,10 @@ from flask_babel import Babel
 from flask_caching import Cache
 from flask_debugtoolbar import DebugToolbarExtension
 from flask_mail import Mail
-from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
+
+from flask_session import Session
 
 
 class BaseModel(DeclarativeBase):
@@ -21,3 +22,5 @@ mail = Mail()
 debug_toolbar = DebugToolbarExtension()
 session = Session()
 babel = Babel()
+
+# OAuth configuration is stored in app.config and used directly in routes

@@ -19,7 +19,8 @@ if REDIS_AVAILABLE and _redis_url:
     _SESSION_TYPE = "redis"
     _SESSION_REDIS = redis.from_url(_redis_url)
 else:
-    _SESSION_TYPE = "sqlalchemy"
+    # Use filesystem sessions (SQLAlchemy sessions have compatibility issues with Quart/async)
+    _SESSION_TYPE = "filesystem"
     _SESSION_REDIS = None
 
 

@@ -1,7 +1,6 @@
 import datetime
 
 import orjson as json
-from flask import Blueprint, Response, current_app, render_template, request, session
 from flask_login import user_logged_out
 from flask_security import auth_required, current_user, roles_required
 from flask_security.signals import (
@@ -9,6 +8,7 @@ from flask_security.signals import (
     tf_profile_changed,
     user_authenticated,
 )
+from quart import Blueprint, Response, current_app, render_template, request, session
 
 from enferno.extensions import db
 from enferno.user.models import Activity, Role, Session, User
@@ -21,19 +21,19 @@ PER_PAGE = 25
 @bp_user.before_request
 @auth_required("session")
 @roles_required("admin")
-def before_request():
+async def before_request():
     pass
 
 
 @bp_user.route("/users/")
-def users():
+async def users():
     roles = Role.query.all()
     roles = [r.to_dict() for r in roles]
-    return render_template("cms/users.html", roles=roles)
+    return await render_template("cms/users.html", roles=roles)
 
 
 @bp_user.route("/api/users")
-def api_user():
+async def api_user():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", PER_PAGE, type=int)
 
@@ -57,10 +57,11 @@ def api_user():
 
 
 @bp_user.post("/api/user/")
-def api_user_create():
-    user_data = request.json.get("item", {})
+async def api_user_create():
+    json_data = await request.json
+    user_data = json_data.get("item", {})
     user = User()
-    user.from_dict(user_data)  # Assuming from_dict is correctly implemented
+    user.from_dict(user_data)
     user.confirmed_at = datetime.datetime.now()
     db.session.add(user)
     try:
@@ -74,9 +75,10 @@ def api_user_create():
 
 
 @bp_user.post("/api/user/<int:id>")
-def api_user_update(id):
+async def api_user_update(id):
     user = db.get_or_404(User, id)
-    user_data = request.json.get("item", {})
+    json_data = await request.json
+    user_data = json_data.get("item", {})
     # Store old user data for activity log
     old_user_data = user.to_dict()
     user.from_dict(user_data)
@@ -89,7 +91,7 @@ def api_user_update(id):
 
 
 @bp_user.route("/api/user/<int:id>", methods=["DELETE"])
-def api_user_delete(id):
+async def api_user_delete(id):
     user = db.get_or_404(User, id)
     # Store user data for activity log before deletion
     user_data = user.to_dict()
@@ -101,12 +103,12 @@ def api_user_delete(id):
 
 
 @bp_user.route("/roles/")
-def roles():
-    return render_template("cms/roles.html")
+async def roles():
+    return await render_template("cms/roles.html")
 
 
 @bp_user.route("/api/roles", methods=["GET"])
-def api_roles():
+async def api_roles():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", PER_PAGE, type=int)
 
@@ -130,8 +132,9 @@ def api_roles():
 
 
 @bp_user.route("/api/role/", methods=["POST"])
-def api_role_create():
-    role_data = request.json.get("item", {})
+async def api_role_create():
+    json_data = await request.json
+    role_data = json_data.get("item", {})
     role = Role()
     role.from_dict(role_data)
     db.session.add(role)
@@ -146,11 +149,12 @@ def api_role_create():
 
 
 @bp_user.post("/api/role/<int:id>")
-def api_role_update(id):
+async def api_role_update(id):
     role = db.get_or_404(Role, id)
     # Store old role data for activity log
     old_role_data = role.to_dict()
-    role_data = request.json.get("item", {})
+    json_data = await request.json
+    role_data = json_data.get("item", {})
     role.from_dict(role_data)
     db.session.commit()
     # Register activity
@@ -161,7 +165,7 @@ def api_role_update(id):
 
 
 @bp_user.route("/api/role/<int:id>", methods=["DELETE"])
-def api_role_delete(id):
+async def api_role_delete(id):
     role = db.get_or_404(Role, id)
     # Store role data for activity log before deletion
     role_data = role.to_dict()
@@ -173,12 +177,12 @@ def api_role_delete(id):
 
 
 @bp_user.route("/activities/")
-def activities():
-    return render_template("cms/activities.html")
+async def activities():
+    return await render_template("cms/activities.html")
 
 
 @bp_user.route("/api/activities")
-def api_activities():
+async def api_activities():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", PER_PAGE, type=int)
 

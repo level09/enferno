@@ -1,19 +1,19 @@
 import datetime
 
-from flask import (
+import httpx
+from authlib.integrations.httpx_client import AsyncOAuth2Client
+from flask_security import current_user, login_user, logout_user
+from quart import (
     Blueprint,
     current_app,
     flash,
     redirect,
+    render_template,
     request,
     send_from_directory,
+    session,
     url_for,
 )
-from flask.templating import render_template
-from flask_dance.consumer import oauth_authorized, oauth_error
-from flask_security import current_user, login_user, logout_user
-from oauthlib.oauth2.rfc6749.errors import OAuth2Error
-from sqlalchemy.orm.exc import NoResultFound
 
 from enferno.extensions import db
 from enferno.user.models import OAuth, User
@@ -55,7 +55,7 @@ def update_user_login_info(user, ip_address):
     db.session.commit()
 
 
-def create_oauth_user(provider_data, oauth_token, ip_address):
+def create_oauth_user(provider_data, ip_address):
     """Create a new user from OAuth data."""
     now = datetime.datetime.now()
     user = User(
@@ -73,135 +73,291 @@ def create_oauth_user(provider_data, oauth_token, ip_address):
     return user
 
 
-def get_oauth_user_data(blueprint):
-    """Get user data from OAuth provider."""
-    if not blueprint:
-        return None
-
-    if blueprint.name == "google":
-        resp = blueprint.session.get("/oauth2/v2/userinfo")
-        if not resp.ok:
-            current_app.logger.error(f"Failed to fetch user info: {resp.text}")
-            return None
-        return resp.json()
-    elif blueprint.name == "github":
-        # Get user profile
-        resp = blueprint.session.get("/user")
-        if not resp.ok:
-            current_app.logger.error(f"Failed to fetch GitHub user info: {resp.text}")
-            return None
-        data = resp.json()
-
-        # GitHub doesn't return email in basic profile if private, need separate call
-        if not data.get("email"):
-            email_resp = blueprint.session.get("/user/emails")
-            if email_resp.ok:
-                emails = email_resp.json()
-                primary_email = next(
-                    (email["email"] for email in emails if email["primary"]), None
-                )
-                if primary_email:
-                    data["email"] = primary_email
-
-        # Normalize the data structure to match our needs
-        return {
-            "id": str(data["id"]),  # Convert to string to match Google's ID format
-            "email": data.get("email"),
-            "name": data.get("name")
-            or data.get("login"),  # Fallback to username if name not set
-        }
-    return None
-
-
 @public.route("/")
-def index():
-    return render_template("index.html")
+async def index():
+    return await render_template("index.html")
 
 
 @public.route("/robots.txt")
-def static_from_root():
-    return send_from_directory(public.static_folder, request.path[1:])
+async def static_from_root():
+    return await send_from_directory(public.static_folder, request.path[1:])
 
 
-# Handle pre-OAuth login check
-def before_oauth_login():
-    if (
-        request.endpoint in ["google.login", "github.login"]
-        and current_user.is_authenticated
-    ):
-        flash("Please sign out before proceeding.", category="warning")
-        return redirect(url_for("portal.dashboard"))
+# --- OAuth Routes (Authlib) ---
 
 
-# Register the check for all OAuth routes
-public.before_app_request(before_oauth_login)
-
-
-@oauth_authorized.connect
-def oauth_logged_in(blueprint, token):
+async def handle_oauth_callback(provider_name, token, user_info):
+    """Common handler for OAuth callbacks from any provider."""
     if not token:
         current_app.logger.error(
-            f"OAuth login failed: No token received for {blueprint.name}"
+            f"OAuth login failed: No token received for {provider_name}"
         )
-        flash("Authentication failed.", category="error")
-        return False
+        await flash("Authentication failed.", category="error")
+        return redirect(url_for("security.login"))
 
-    try:
-        # Get user info from provider
-        provider_data = get_oauth_user_data(blueprint)
-        if not provider_data:
-            return False
+    # Extract provider user ID and email based on provider
+    if provider_name == "google":
+        provider_user_id = user_info.get("sub")
+        email = user_info.get("email")
+        name = user_info.get("name", "")
+    elif provider_name == "github":
+        provider_user_id = str(user_info.get("id"))
+        email = user_info.get("email")
+        name = user_info.get("name") or user_info.get("login", "")
+    else:
+        current_app.logger.error(f"Unknown OAuth provider: {provider_name}")
+        await flash("Authentication failed.", category="error")
+        return redirect(url_for("security.login"))
 
-        user_id = provider_data["id"]
-        real_ip = get_real_ip()
+    if not email:
+        current_app.logger.error(f"OAuth login failed: No email from {provider_name}")
+        await flash("Could not retrieve email from provider.", category="error")
+        return redirect(url_for("security.login"))
 
-        # First check if we already have OAuth entry
-        query = OAuth.query.filter_by(provider=blueprint.name, provider_user_id=user_id)
-        try:
-            oauth = query.one()
-        except NoResultFound:
-            oauth = OAuth(
-                provider=blueprint.name, provider_user_id=user_id, token=token
-            )
+    real_ip = get_real_ip()
 
-        if oauth.user:
-            if current_user.is_authenticated and current_user.id != oauth.user.id:
-                logout_user()
-            update_user_login_info(oauth.user, real_ip)
-            login_user(oauth.user)
-        else:
-            # Check if user exists with this email
-            existing_user = User.query.filter_by(
-                email=provider_data.get("email")
-            ).first()
-            if existing_user:
-                # Link OAuth to existing user
-                oauth.user = existing_user
-                db.session.add(oauth)
-                db.session.commit()
-                update_user_login_info(existing_user, real_ip)
-                login_user(existing_user)
-                flash("Account linked successfully.", category="success")
-            else:
-                # Create new user
-                user = create_oauth_user(provider_data, token, real_ip)
-                oauth.user = user
-                db.session.add_all([user, oauth])
-                db.session.commit()
-                login_user(user)
-                flash("Successfully signed in.")
+    # Check if OAuth account already exists
+    oauth_account = OAuth.query.filter_by(
+        provider=provider_name, provider_user_id=provider_user_id
+    ).first()
 
+    if oauth_account and oauth_account.user:
+        # Existing OAuth user - log them in
+        if current_user.is_authenticated and current_user.id != oauth_account.user.id:
+            logout_user()
+        update_user_login_info(oauth_account.user, real_ip)
+        login_user(oauth_account.user)
         return redirect(url_for("portal.dashboard"))
 
-    except OAuth2Error as e:
-        current_app.logger.error(f"OAuth2Error during {blueprint.name} login: {str(e)}")
-        flash("Authentication failed.", category="error")
-        return False
+    # Check if user with this email exists
+    existing_user = User.query.filter_by(email=email).first()
 
+    if existing_user:
+        # Link OAuth to existing user
+        if not oauth_account:
+            oauth_account = OAuth(
+                provider=provider_name,
+                provider_user_id=provider_user_id,
+                token=dict(token),
+                user=existing_user,
+            )
+            db.session.add(oauth_account)
+            db.session.commit()
+        update_user_login_info(existing_user, real_ip)
+        login_user(existing_user)
+        await flash("Account linked successfully.", category="success")
+        return redirect(url_for("portal.dashboard"))
 
-@oauth_error.connect
-def oauth_error(blueprint, message, response):
-    current_app.logger.error(
-        f"OAuth error from {blueprint.name}: {message}, Response: {response}"
+    # Create new user
+    provider_data = {"email": email, "name": name}
+    new_user = create_oauth_user(provider_data, real_ip)
+    oauth_account = OAuth(
+        provider=provider_name,
+        provider_user_id=provider_user_id,
+        token=dict(token),
+        user=new_user,
     )
-    flash("Authentication failed.", category="error")
+    db.session.add_all([new_user, oauth_account])
+    db.session.commit()
+    login_user(new_user)
+    await flash("Successfully signed in.", category="success")
+    return redirect(url_for("portal.dashboard"))
+
+
+# --- Google OAuth ---
+
+GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
+
+
+def get_google_client():
+    """Create Google OAuth client from app config."""
+    return AsyncOAuth2Client(
+        client_id=current_app.config.get("GOOGLE_OAUTH_CLIENT_ID"),
+        client_secret=current_app.config.get("GOOGLE_OAUTH_CLIENT_SECRET"),
+    )
+
+
+@public.route("/login/google")
+async def google_login():
+    """Initiate Google OAuth login."""
+    if current_user.is_authenticated:
+        await flash("Please sign out before proceeding.", category="warning")
+        return redirect(url_for("portal.dashboard"))
+
+    if not current_app.config.get("GOOGLE_AUTH_ENABLED"):
+        await flash("Google login is not configured.", category="error")
+        return redirect(url_for("security.login"))
+
+    # Get Google's OAuth endpoints from discovery document
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(GOOGLE_DISCOVERY_URL)
+        google_config = resp.json()
+
+    # Store state in session for CSRF protection
+    from secrets import token_urlsafe
+
+    state = token_urlsafe(32)
+    session["oauth_state"] = state
+
+    redirect_uri = url_for("public.google_callback", _external=True)
+    authorization_url = google_config["authorization_endpoint"]
+
+    # Build authorization URL
+    params = {
+        "client_id": current_app.config.get("GOOGLE_OAUTH_CLIENT_ID"),
+        "redirect_uri": redirect_uri,
+        "scope": "openid profile email",
+        "response_type": "code",
+        "state": state,
+    }
+    from urllib.parse import urlencode
+
+    auth_url = f"{authorization_url}?{urlencode(params)}"
+    return redirect(auth_url)
+
+
+@public.route("/login/google/callback")
+async def google_callback():
+    """Handle Google OAuth callback."""
+    try:
+        # Verify state
+        state = request.args.get("state")
+        if state != session.get("oauth_state"):
+            await flash("Invalid state parameter.", category="error")
+            return redirect(url_for("security.login"))
+        session.pop("oauth_state", None)
+
+        code = request.args.get("code")
+        if not code:
+            await flash("No authorization code received.", category="error")
+            return redirect(url_for("security.login"))
+
+        # Get Google's OAuth endpoints
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(GOOGLE_DISCOVERY_URL)
+            google_config = resp.json()
+
+        redirect_uri = url_for("public.google_callback", _external=True)
+
+        # Exchange code for token
+        oauth_client = get_google_client()
+        token = await oauth_client.fetch_token(
+            google_config["token_endpoint"],
+            grant_type="authorization_code",
+            code=code,
+            redirect_uri=redirect_uri,
+        )
+
+        # Get user info
+        async with httpx.AsyncClient() as client:
+            headers = {"Authorization": f"Bearer {token['access_token']}"}
+            resp = await client.get(google_config["userinfo_endpoint"], headers=headers)
+            user_info = resp.json()
+
+        return await handle_oauth_callback("google", token, user_info)
+    except Exception as e:
+        current_app.logger.error(f"Google OAuth error: {str(e)}")
+        await flash("Authentication failed.", category="error")
+        return redirect(url_for("security.login"))
+
+
+# --- GitHub OAuth ---
+
+GITHUB_AUTHORIZE_URL = "https://github.com/login/oauth/authorize"
+GITHUB_TOKEN_URL = "https://github.com/login/oauth/access_token"
+GITHUB_API_URL = "https://api.github.com"
+
+
+def get_github_client():
+    """Create GitHub OAuth client from app config."""
+    return AsyncOAuth2Client(
+        client_id=current_app.config.get("GITHUB_OAUTH_CLIENT_ID"),
+        client_secret=current_app.config.get("GITHUB_OAUTH_CLIENT_SECRET"),
+    )
+
+
+@public.route("/login/github")
+async def github_login():
+    """Initiate GitHub OAuth login."""
+    if current_user.is_authenticated:
+        await flash("Please sign out before proceeding.", category="warning")
+        return redirect(url_for("portal.dashboard"))
+
+    if not current_app.config.get("GITHUB_AUTH_ENABLED"):
+        await flash("GitHub login is not configured.", category="error")
+        return redirect(url_for("security.login"))
+
+    # Store state in session for CSRF protection
+    from secrets import token_urlsafe
+
+    state = token_urlsafe(32)
+    session["oauth_state"] = state
+
+    redirect_uri = url_for("public.github_callback", _external=True)
+
+    # Build authorization URL
+    from urllib.parse import urlencode
+
+    params = {
+        "client_id": current_app.config.get("GITHUB_OAUTH_CLIENT_ID"),
+        "redirect_uri": redirect_uri,
+        "scope": "read:user user:email",
+        "state": state,
+    }
+    auth_url = f"{GITHUB_AUTHORIZE_URL}?{urlencode(params)}"
+    return redirect(auth_url)
+
+
+@public.route("/login/github/callback")
+async def github_callback():
+    """Handle GitHub OAuth callback."""
+    try:
+        # Verify state
+        state = request.args.get("state")
+        if state != session.get("oauth_state"):
+            await flash("Invalid state parameter.", category="error")
+            return redirect(url_for("security.login"))
+        session.pop("oauth_state", None)
+
+        code = request.args.get("code")
+        if not code:
+            await flash("No authorization code received.", category="error")
+            return redirect(url_for("security.login"))
+
+        redirect_uri = url_for("public.github_callback", _external=True)
+
+        # Exchange code for token
+        oauth_client = get_github_client()
+        token = await oauth_client.fetch_token(
+            GITHUB_TOKEN_URL,
+            grant_type="authorization_code",
+            code=code,
+            redirect_uri=redirect_uri,
+        )
+
+        # Get user profile
+        async with httpx.AsyncClient() as client:
+            headers = {
+                "Authorization": f"Bearer {token['access_token']}",
+                "Accept": "application/json",
+            }
+            resp = await client.get(f"{GITHUB_API_URL}/user", headers=headers)
+            user_info = resp.json()
+
+            # GitHub may not include email in profile, fetch separately
+            if not user_info.get("email"):
+                email_resp = await client.get(
+                    f"{GITHUB_API_URL}/user/emails", headers=headers
+                )
+                emails = email_resp.json()
+                primary_email = next(
+                    (e["email"] for e in emails if e.get("primary")), None
+                )
+                if primary_email:
+                    user_info["email"] = primary_email
+
+        return await handle_oauth_callback("github", token, user_info)
+    except Exception as e:
+        current_app.logger.error(f"GitHub OAuth error: {str(e)}")
+        await flash("Authentication failed.", category="error")
+        return redirect(url_for("security.login"))

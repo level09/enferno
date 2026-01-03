@@ -1,11 +1,9 @@
 import inspect
 
 import click
-from flask import Flask, render_template
-from flask_dance.consumer.storage.sqla import SQLAlchemyStorage
-from flask_dance.contrib.github import make_github_blueprint
-from flask_dance.contrib.google import make_google_blueprint
-from flask_security import Security, SQLAlchemyUserDatastore, current_user
+import quart_flask_patch  # noqa: F401 - Must be first import for Flask extension compatibility
+from flask_security import Security, SQLAlchemyUserDatastore
+from quart import Quart, render_template
 
 import enferno.commands as commands
 from enferno.extensions import babel, cache, db, debug_toolbar, mail, session
@@ -13,12 +11,12 @@ from enferno.portal.views import portal
 from enferno.public.views import public
 from enferno.settings import Config
 from enferno.user.forms import ExtendedRegisterForm, OAuthAwareChangePasswordForm
-from enferno.user.models import OAuth, Role, User, WebAuthn
+from enferno.user.models import Role, User, WebAuthn
 from enferno.user.views import bp_user
 
 
 def create_app(config_object=Config):
-    app = Flask(__name__)
+    app = Quart(__name__)
     app.config.from_object(config_object)
 
     register_blueprints(app)
@@ -65,42 +63,14 @@ def register_blueprints(app):
     app.register_blueprint(bp_user)
     app.register_blueprint(public)
     app.register_blueprint(portal)
-
-    # Setup OAuth if enabled
-    if app.config.get("GOOGLE_AUTH_ENABLED") and app.config.get(
-        "GOOGLE_OAUTH_CLIENT_ID"
-    ):
-        google_bp = make_google_blueprint(
-            client_id=app.config.get("GOOGLE_OAUTH_CLIENT_ID"),
-            client_secret=app.config.get("GOOGLE_OAUTH_CLIENT_SECRET"),
-            scope=[
-                "https://www.googleapis.com/auth/userinfo.profile",
-                "https://www.googleapis.com/auth/userinfo.email",
-                "openid",
-            ],
-            reprompt_select_account=False,
-        )
-        google_bp.storage = SQLAlchemyStorage(OAuth, db.session, user=current_user)
-        app.register_blueprint(google_bp, url_prefix="/login")
-
-    if app.config.get("GITHUB_AUTH_ENABLED") and app.config.get(
-        "GITHUB_OAUTH_CLIENT_ID"
-    ):
-        github_bp = make_github_blueprint(
-            client_id=app.config.get("GITHUB_OAUTH_CLIENT_ID"),
-            client_secret=app.config.get("GITHUB_OAUTH_CLIENT_SECRET"),
-            scope=["user:email"],
-        )
-        github_bp.storage = SQLAlchemyStorage(OAuth, db.session, user=current_user)
-        app.register_blueprint(github_bp, url_prefix="/login")
-
+    # OAuth blueprints registered via Authlib in register_extensions()
     return None
 
 
 def register_errorhandlers(app):
-    def render_error(error):
+    async def render_error(error):
         error_code = getattr(error, "code", 500)
-        return render_template(f"{error_code}.html"), error_code
+        return await render_template(f"{error_code}.html"), error_code
 
     for errcode in [401, 404, 500]:
         app.errorhandler(errcode)(render_error)
@@ -117,7 +87,7 @@ def register_shellcontext(app):
     app.shell_context_processor(shell_context)
 
 
-def register_commands(app: Flask, commands_module):
+def register_commands(app: Quart, commands_module):
     """
     Automatically register all Click commands and command groups in the given module.
 
