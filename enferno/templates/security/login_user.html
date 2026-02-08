@@ -98,15 +98,28 @@
                                 </v-btn>
                             </v-form>
                             
-                            {% if config.GOOGLE_AUTH_ENABLED or config.GITHUB_AUTH_ENABLED %}
+                            {% if security.webauthn and security.wan_allow_as_first_factor or config.GOOGLE_AUTH_ENABLED or config.GITHUB_AUTH_ENABLED %}
                             <div class="d-flex align-center my-4">
                                 <v-divider></v-divider>
                                 <span class="mx-3 text-medium-emphasis text-caption">or</span>
                                 <v-divider></v-divider>
                             </div>
 
-                            <!-- Social Login Buttons -->
                             <div class="d-flex flex-column gap-3 mb-4">
+                                {% if security.webauthn and security.wan_allow_as_first_factor %}
+                                <v-btn
+                                    variant="outlined"
+                                    block
+                                    href="{{ url_for_security('wan_signin') }}"
+                                    height="48"
+                                >
+                                    <template v-slot:prepend>
+                                        <i class="ti ti-fingerprint" style="font-size: 20px;"></i>
+                                    </template>
+                                    Sign in with Passkey
+                                </v-btn>
+                                {% endif %}
+
                                 {% if config.GOOGLE_AUTH_ENABLED %}
                                 <v-btn
                                     variant="outlined"

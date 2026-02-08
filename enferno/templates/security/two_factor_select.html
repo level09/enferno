@@ -25,7 +25,7 @@
                     <template v-slot:prepend>
                         <i class="{{ 'ti ti-device-mobile' if value == 'authenticator' else 'ti ti-fingerprint' }}" style="font-size: 20px;"></i>
                     </template>
-                    {{ 'Authenticator App' if value == 'authenticator' else 'Security Key / Passkey' }}
+                    {{ 'Authenticator App' if value == 'authenticator' else 'Passkey' }}
                 </v-btn>
                 {% endfor %}
             </div>

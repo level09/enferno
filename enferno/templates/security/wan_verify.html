@@ -1,12 +1,6 @@
 {% extends 'login-layout.html' %}
 {% from "security/_macros.html" import prop_next %}
 
-{% block head_js %}
-{{ super() }}
-<script src="{{ url_for('.static', filename='js/webauthn.js') }}"></script>
-<script src="{{ url_for('.static', filename='js/base64.js') }}"></script>
-{% endblock %}
-
 {% block content %}
 <v-main class="d-flex flex-column align-center justify-center" style="min-height: 100vh; background: rgb(var(--v-theme-background));">
     <v-card class="mx-auto pa-8 w-100" rounded="lg" style="max-width: 424px;">
@@ -35,8 +29,8 @@
             <div class="text-caption text-medium-emphasis">Follow the prompts on your device</div>
         </div>
 
-        <form action="{{ url_for_security('wan_verify_response', token=wan_state) }}{{ prop_next() }}" method="post" id="wan-verify-form">
-            {{ wan_signin_response_form.hidden_tag() }}
+        <form action="{{ url_for_security('wan_verify_response') }}{{ prop_next() }}" method="post" id="wan-verify-response-form">
+            {{ wan_verify_response_form.hidden_tag() }}
             <input type="hidden" id="credential" name="credential" value="">
         </form>
 
@@ -63,16 +57,53 @@
     app.use(vuetify).mount('#app');
 
     {% if credential_options %}
-    handleSignin('{{ credential_options|safe }}')
-        .then((result) => {
-            if (result.credential) {
-                document.getElementById("credential").value = result.credential;
-                document.getElementById("wan-verify-form").submit();
-            } else {
-                document.getElementById("wan-errors").innerHTML =
-                    '<div class="v-alert v-alert--density-default v-alert--variant-tonal bg-error pa-4 rounded mb-4">' + result.error_msg + '</div>';
-            }
-        });
+    (function() {
+        function b64urlToArrayBuffer(base64url) {
+            const padding = '='.repeat((4 - (base64url.length % 4)) % 4);
+            const base64 = (base64url + padding).replace(/-/g, '+').replace(/_/g, '/');
+            const raw = atob(base64);
+            const bytes = new Uint8Array(raw.length);
+            for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+            return bytes.buffer;
+        }
+
+        function arrayBufferToB64url(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let binary = '';
+            for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+            return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+        }
+
+        const options = {{ credential_options | tojson }};
+        options.challenge = b64urlToArrayBuffer(options.challenge);
+        if (Array.isArray(options.allowCredentials)) {
+            options.allowCredentials = options.allowCredentials.map(c => ({...c, id: b64urlToArrayBuffer(c.id)}));
+        }
+
+        navigator.credentials.get({ publicKey: options })
+            .then(credential => {
+                if (!credential) throw new Error('No credential returned');
+                const encoded = {
+                    id: credential.id,
+                    rawId: arrayBufferToB64url(credential.rawId),
+                    type: credential.type,
+                    response: {
+                        clientDataJSON: arrayBufferToB64url(credential.response.clientDataJSON),
+                        authenticatorData: arrayBufferToB64url(credential.response.authenticatorData),
+                        signature: arrayBufferToB64url(credential.response.signature),
+                        userHandle: credential.response.userHandle
+                            ? arrayBufferToB64url(credential.response.userHandle) : null,
+                    },
+                };
+                document.getElementById('credential').value = JSON.stringify(encoded);
+                document.getElementById('wan-verify-response-form').submit();
+            })
+            .catch(error => {
+                document.getElementById('wan-errors').innerHTML =
+                    '<div class="v-alert v-alert--density-default v-alert--variant-tonal bg-error pa-4 rounded mb-4">' +
+                    (error.message || 'Passkey verification failed.') + '</div>';
+            });
+    })();
     {% endif %}
 </script>
 {% endblock %}
