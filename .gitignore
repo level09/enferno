@@ -15,7 +15,6 @@ node_modules/
 enferno.sqlite3
 instance/
 
-flask_session/
 
 # Claude Code
 .claude/settings.local.json
