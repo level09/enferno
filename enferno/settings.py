@@ -67,11 +67,7 @@ class Config:
     SECURITY_TOTP_SECRETS = {"1": os.environ.get("SECURITY_TOTP_SECRETS")}
     SECURITY_TOTP_ISSUER = "Enferno"
 
-    SECURITY_WEBAUTHN = True
-    SECURITY_WAN_ALLOW_AS_FIRST_FACTOR = True
-    SECURITY_WAN_ALLOW_AS_MULTI_FACTOR = True
-    SECURITY_WAN_ALLOW_AS_VERIFY = ["first", "secondary"]
-    SECURITY_WAN_ALLOW_USER_HINTS = True
+    SECURITY_WEBAUTHN = False
 
     # Session configuration (quart-session for Redis, Quart cookie sessions otherwise)
     SESSION_TYPE = _SESSION_TYPE
