@@ -24,7 +24,9 @@
         <!-- App Bar -->
         <v-app-bar color="surface" density="comfortable" elevation="1">
             {% if current_user.is_authenticated %}
-            <v-app-bar-nav-icon @click="drawer = !drawer" class="d-md-none"></v-app-bar-nav-icon>
+            <v-btn icon variant="text" @click="drawer = !drawer" class="d-md-none">
+                <i class="ti ti-menu-2" style="font-size: 24px;"></i>
+            </v-btn>
             {% endif %}
 
             <v-app-bar-title>
