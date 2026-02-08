@@ -1,7 +1,5 @@
-from flask_security import current_user
-from flask_security.forms import ChangePasswordForm, RegisterForm, get_message
-from flask_security.proxies import _security
-from flask_security.utils import verify_password
+from quart_security import current_user, verify_password
+from quart_security.forms import ChangePasswordForm, RegisterForm
 from wtforms import StringField
 
 
@@ -17,35 +15,20 @@ class OAuthAwareChangePasswordForm(ChangePasswordForm):
     """
 
     def validate(self, **kwargs):
-        if not super(ChangePasswordForm, self).validate(**kwargs):
+        if not super().validate(**kwargs):
             return False
 
-        # Check if user has a usable password (not OAuth-only)
         has_usable = getattr(current_user, "has_usable_password", True)
 
         if has_usable and current_user.password:
-            # User has a password they know - require current password
             if not self.password.data or not self.password.data.strip():
-                self.password.errors.append(get_message("PASSWORD_NOT_PROVIDED")[0])
+                self.password.errors.append("Current password is required")
                 return False
-
-            self.password.data = _security.password_util.normalize(self.password.data)
             if not verify_password(self.password.data, current_user.password):
-                self.password.errors.append(get_message("INVALID_PASSWORD")[0])
+                self.password.errors.append("Invalid current password")
                 return False
             if self.password.data == self.new_password.data:
-                self.password.errors.append(get_message("PASSWORD_IS_THE_SAME")[0])
+                self.password.errors.append("New password must be different")
                 return False
 
-        # Validate new password
-        pbad, self.new_password.data = _security.password_util.validate(
-            self.new_password.data, False, user=current_user
-        )
-        if pbad:
-            self.new_password.errors.extend(pbad)
-            return False
         return True
-
-
-class UserInfoForm:
-    pass

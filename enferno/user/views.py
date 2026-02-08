@@ -1,14 +1,17 @@
 import datetime
 
 import orjson as json
-from flask_login import user_logged_out
-from flask_security import auth_required, current_user, roles_required
-from flask_security.signals import (
+from quart import Blueprint, Response, current_app, render_template, request, session
+from quart_security import (
+    auth_required,
+    current_user,
     password_changed,
+    roles_required,
     tf_profile_changed,
     user_authenticated,
+    user_logged_out,
 )
-from quart import Blueprint, Response, current_app, render_template, request, session
+from sqlalchemy import select
 
 from enferno.extensions import db
 from enferno.user.models import Activity, Role, Session, User
@@ -27,7 +30,7 @@ async def before_request():
 
 @bp_user.route("/users/")
 async def users():
-    roles = Role.query.all()
+    roles = db.session.execute(select(Role)).scalars().all()
     roles = [r.to_dict() for r in roles]
     return await render_template("cms/users.html", roles=roles)
 
@@ -37,16 +40,10 @@ async def api_user():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", PER_PAGE, type=int)
 
-    # Start with base query - this pattern makes it easy to add filters later
     query = db.select(User)
-
-    # Paginate results
     pagination = db.paginate(query, page=page, per_page=per_page)
-
-    # Convert users to dictionaries
     items = [user.to_dict() for user in pagination.items]
 
-    # Create consistent response structure with metadata
     response_data = {
         "items": items,
         "total": pagination.total,
@@ -66,7 +63,6 @@ async def api_user_create():
     db.session.add(user)
     try:
         db.session.commit()
-        # Register activity
         Activity.register(current_user.id, "User Create", user.to_dict())
         return {"message": "User successfully created!"}
     except Exception as e:
@@ -79,11 +75,9 @@ async def api_user_update(id):
     user = db.get_or_404(User, id)
     json_data = await request.json
     user_data = json_data.get("item", {})
-    # Store old user data for activity log
     old_user_data = user.to_dict()
     user.from_dict(user_data)
     db.session.commit()
-    # Register activity
     Activity.register(
         current_user.id, "User Update", {"old": old_user_data, "new": user.to_dict()}
     )
@@ -93,11 +87,9 @@ async def api_user_update(id):
 @bp_user.route("/api/user/<int:id>", methods=["DELETE"])
 async def api_user_delete(id):
     user = db.get_or_404(User, id)
-    # Store user data for activity log before deletion
     user_data = user.to_dict()
     db.session.delete(user)
     db.session.commit()
-    # Register activity
     Activity.register(current_user.id, "User Delete", user_data)
     return {"message": "User successfully deleted!"}
 
@@ -112,16 +104,10 @@ async def api_roles():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", PER_PAGE, type=int)
 
-    # Start with base query
     query = db.select(Role)
-
-    # Paginate results
     pagination = db.paginate(query, page=page, per_page=per_page)
-
-    # Convert roles to dictionaries
     items = [role.to_dict() for role in pagination.items]
 
-    # Create consistent response structure
     response_data = {
         "items": items,
         "total": pagination.total,
@@ -140,7 +126,6 @@ async def api_role_create():
     db.session.add(role)
     try:
         db.session.commit()
-        # Register activity
         Activity.register(current_user.id, "Role Create", role.to_dict())
         return {"message": "Role successfully created!"}
     except Exception as e:
@@ -151,13 +136,11 @@ async def api_role_create():
 @bp_user.post("/api/role/<int:id>")
 async def api_role_update(id):
     role = db.get_or_404(Role, id)
-    # Store old role data for activity log
     old_role_data = role.to_dict()
     json_data = await request.json
     role_data = json_data.get("item", {})
     role.from_dict(role_data)
     db.session.commit()
-    # Register activity
     Activity.register(
         current_user.id, "Role Update", {"old": old_role_data, "new": role.to_dict()}
     )
@@ -167,11 +150,9 @@ async def api_role_update(id):
 @bp_user.route("/api/role/<int:id>", methods=["DELETE"])
 async def api_role_delete(id):
     role = db.get_or_404(Role, id)
-    # Store role data for activity log before deletion
     role_data = role.to_dict()
     db.session.delete(role)
     db.session.commit()
-    # Register activity
     Activity.register(current_user.id, "Role Delete", role_data)
     return {"message": "Role successfully deleted!"}
 
@@ -186,16 +167,11 @@ async def api_activities():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", PER_PAGE, type=int)
 
-    # Start with base query - newest activities first
     query = db.select(Activity).order_by(Activity.created_at.desc())
-
-    # Paginate results
     pagination = db.paginate(query, page=page, per_page=per_page)
 
-    # Convert activities to dictionaries
     items = []
     for activity in pagination.items:
-        # Get user info if available
         user = db.session.get(User, activity.user_id)
 
         items.append(
@@ -208,7 +184,6 @@ async def api_activities():
             }
         )
 
-    # Create consistent response structure with metadata
     response_data = {
         "items": items,
         "total": pagination.total,
@@ -218,7 +193,7 @@ async def api_activities():
     return Response(json.dumps(response_data), content_type="application/json")
 
 
-# --- Flask-Security Signal Handlers ---
+# --- Signal Handlers ---
 
 
 @user_authenticated.connect
@@ -236,10 +211,8 @@ def user_authenticated_handler(app, user, authn_via, **extra_args):
         },
     }
 
-    # Create session record
     Session.create_session(**session_data)
 
-    # Log if logged in from a different IP
     if user.last_login_ip and user.current_login_ip != user.last_login_ip:
         Activity.register(
             user.id,
@@ -247,7 +220,6 @@ def user_authenticated_handler(app, user, authn_via, **extra_args):
             {"old_ip": user.last_login_ip, "new_ip": user.current_login_ip},
         )
 
-    # Enforce single session if configured
     if current_app.config.get("DISABLE_MULTIPLE_SESSIONS", False):
         user.logout_other_sessions(session_data["session_token"])
 
@@ -274,9 +246,12 @@ def after_tf_profile_change(sender, user, **extra_args):
 def user_logged_out_handler(app, user, **extra_args):
     """Clear session on logout."""
     if hasattr(session, "sid"):
-        # Deactivate the session record
-        Session.query.filter_by(session_token=session.sid, is_active=True).update(
-            {"is_active": False}
+        stmt = (
+            Session.__table__.update()
+            .where(Session.session_token == session.sid)
+            .where(Session.is_active == True)  # noqa: E712
+            .values(is_active=False)
         )
+        db.session.execute(stmt)
         db.session.commit()
     session.clear()

@@ -8,11 +8,8 @@ Usage:
     uv run python checks.py -v  # verbose
 """
 
+import asyncio
 import sys
-import warnings
-
-# Suppress passlib pkg_resources deprecation warning
-warnings.filterwarnings("ignore", message="pkg_resources is deprecated")
 
 VERBOSE = "-v" in sys.argv
 PASSED = 0
@@ -23,10 +20,12 @@ def check(name):
     """Decorator to register a check"""
 
     def decorator(f):
-        def wrapper(app):
+        async def wrapper(app):
             global PASSED, FAILED
             try:
-                f(app)
+                result = f(app)
+                if asyncio.iscoroutine(result):
+                    await result
                 PASSED += 1
                 print(f"  \033[32m✓\033[0m {name}")
                 return True
@@ -55,26 +54,26 @@ def check_app_boots(app):
 
 
 @check("Database connection works")
-def check_database(app):
+async def check_database(app):
     from enferno.extensions import db
 
-    with app.app_context():
+    async with app.app_context():
         db.session.execute(db.text("SELECT 1"))
 
 
 @check("User model loads")
-def check_user_model(app):
+async def check_user_model(app):
     from enferno.user.models import User
 
-    with app.app_context():
+    async with app.app_context():
         User.query.limit(1).all()
 
 
 @check("Role model loads")
-def check_role_model(app):
+async def check_role_model(app):
     from enferno.user.models import Role
 
-    with app.app_context():
+    async with app.app_context():
         Role.query.limit(1).all()
 
 
@@ -110,7 +109,7 @@ def check_security_config(app):
 # =============================================================================
 
 
-def run_checks():
+async def run_checks():
     from enferno.app import create_app
 
     print("\n\033[1mRunning checks...\033[0m\n")
@@ -119,7 +118,7 @@ def run_checks():
     checks = [v for v in globals().values() if hasattr(v, "_check_name")]
 
     for check_fn in checks:
-        check_fn(app)
+        await check_fn(app)
 
     print()
     if FAILED == 0:
@@ -131,4 +130,4 @@ def run_checks():
 
 
 if __name__ == "__main__":
-    sys.exit(run_checks())
+    sys.exit(asyncio.run(run_checks()))

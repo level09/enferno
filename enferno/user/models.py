@@ -4,16 +4,14 @@ import string
 from datetime import datetime
 from uuid import uuid4
 
-from flask_security import AsaList
-from flask_security.core import RoleMixin, UserMixin
-from flask_security.utils import hash_password
+from quart_security import RoleMixin, UserMixin, hash_password
 from sqlalchemy import (
     Column,
     ForeignKey,
     Integer,
     Table,
+    select,
 )
-from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import declared_attr, relationship
 
 from enferno.extensions import db
@@ -77,16 +75,10 @@ class User(UserMixin, db.Model, BaseMixin):
 
     @property
     def display_name(self):
-        """Return best available display name for UI."""
         return self.name or self.email
 
     @property
     def has_usable_password(self):
-        """Check if user has a password they actually know.
-
-        OAuth users are created with password_set=False. Once they set
-        a password via the change password form, password_set becomes True.
-        """
         return self.password_set
 
     def to_dict(self):
@@ -102,31 +94,23 @@ class User(UserMixin, db.Model, BaseMixin):
         self.name = json_dict.get("name", self.name)
         self.username = json_dict.get("username", self.username)
         self.email = json_dict.get("email", self.email)
-        if (
-            "password" in json_dict
-        ):  # Only hash password if provided, to avoid hashing None
+        if "password" in json_dict:
             self.password = hash_password(json_dict["password"])
-        # Update roles if specified, otherwise leave unchanged
         if "roles" in json_dict:
             role_ids = [r.get("id") for r in json_dict["roles"]]
-            self.roles = (
-                Role.query.filter(Role.id.in_(role_ids)).all()
-                if role_ids
-                else self.roles
-            )
+            if role_ids:
+                self.roles = (
+                    db.session.execute(select(Role).filter(Role.id.in_(role_ids)))
+                    .scalars()
+                    .all()
+                )
         self.active = json_dict.get("active", self.active)
         return self
 
     def __str__(self) -> str:
-        """
-        Return the string representation of the object, typically using its ID.
-        """
         return f"{self.id}"
 
     def __repr__(self) -> str:
-        """
-        Return an unambiguous string representation of the object.
-        """
         return f"<User {self.id}: {self.email}>"
 
     meta = {
@@ -142,18 +126,15 @@ class User(UserMixin, db.Model, BaseMixin):
         return hash_password(password)
 
     def logout_other_sessions(self, current_session_token=None):
-        """Logout all other sessions for this user."""
         from enferno.user.models import Session
 
         Session.deactivate_user_sessions(self.id, exclude_token=current_session_token)
 
     def get_active_sessions(self):
-        """Get all active sessions for this user."""
         return [s for s in self.sessions if s.is_active]
 
     @property
     def two_factor_devices(self):
-        """Get a unified list of all 2FA methods/devices."""
         devices = []
         if self.tf_primary_method:
             devices.append(
@@ -174,7 +155,7 @@ class WebAuthn(db.Model):
     )
     public_key = db.Column(db.LargeBinary(1024), nullable=False)
     sign_count = db.Column(db.Integer, default=0, nullable=False)
-    transports = db.Column(MutableList.as_mutable(AsaList()), nullable=True)
+    transports = db.Column(db.JSON, nullable=True)
     extensions = db.Column(db.String(255), nullable=True)
     lastuse_datetime = db.Column(db.DateTime, nullable=False)
     name = db.Column(db.String(64), nullable=False)
@@ -191,16 +172,10 @@ class WebAuthn(db.Model):
         )
 
     def get_user_mapping(self):
-        """
-        Return the mapping from webauthn back to User.
-        Since user_id is fs_webauthn_user_handle, we need to map it correctly.
-        """
         return {"fs_webauthn_user_handle": self.user_id}
 
 
 class OAuth(db.Model):
-    """OAuth account model - stores OAuth provider tokens for users."""
-
     __tablename__ = "oauth"
     id = db.Column(db.Integer, primary_key=True)
     provider = db.Column(db.String(50), nullable=False)
@@ -231,19 +206,12 @@ class Activity(db.Model, BaseMixin):
 
     @classmethod
     def register(cls, user_id, action, data=None):
-        """Register an activity for audit purposes.
-
-        Note: Does not commit - caller is responsible for transaction management.
-        This prevents activity logging from rolling back other pending changes.
-        """
         activity = cls(user_id=user_id, action=action, data=data)
         db.session.add(activity)
         return activity
 
 
 class Session(db.Model, BaseMixin):
-    """Track active user sessions for session management."""
-
     __tablename__ = "user_sessions"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -255,7 +223,6 @@ class Session(db.Model, BaseMixin):
     expires_at = db.Column(db.DateTime, nullable=True)
     ip_address = db.Column(db.String(255), nullable=True)
 
-    # Browser, OS, device metadata
     meta = db.Column(db.JSON, nullable=True)
 
     is_active = db.Column(db.Boolean, default=True)
@@ -275,15 +242,10 @@ class Session(db.Model, BaseMixin):
 
     @classmethod
     def create_session(cls, user_id, session_token, ip_address=None, meta=None):
-        """Create or update a session for a user.
-
-        Uses get-or-create pattern to avoid unique constraint violations
-        that would rollback other pending changes (like password updates).
-        """
-        # Try to find existing session first
-        existing = cls.query.filter_by(session_token=session_token).first()
+        existing = db.session.execute(
+            select(cls).filter_by(session_token=session_token)
+        ).scalar_one_or_none()
         if existing:
-            # Update existing session
             existing.user_id = user_id
             existing.ip_address = ip_address
             existing.meta = meta
@@ -292,7 +254,6 @@ class Session(db.Model, BaseMixin):
             db.session.add(existing)
             return existing
 
-        # Create new session
         session_record = cls(
             user_id=user_id,
             session_token=session_token,
@@ -305,9 +266,13 @@ class Session(db.Model, BaseMixin):
 
     @classmethod
     def deactivate_user_sessions(cls, user_id, exclude_token=None):
-        """Deactivate all sessions for a user, optionally excluding current."""
-        query = cls.query.filter_by(user_id=user_id, is_active=True)
+        stmt = (
+            cls.__table__.update()
+            .where(cls.user_id == user_id)
+            .where(cls.is_active == True)  # noqa: E712
+        )
         if exclude_token:
-            query = query.filter(cls.session_token != exclude_token)
-        query.update({"is_active": False})
+            stmt = stmt.where(cls.session_token != exclude_token)
+        stmt = stmt.values(is_active=False)
+        db.session.execute(stmt)
         db.session.commit()

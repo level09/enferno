@@ -2,7 +2,6 @@ import importlib.util
 import os
 from datetime import timedelta
 
-import bleach
 from dotenv import load_dotenv
 
 # Detect optional dependencies (installed via --extra full)
@@ -14,19 +13,10 @@ load_dotenv()
 # Session configuration - computed at module level
 _redis_url = os.environ.get("REDIS_URL") or os.environ.get("REDIS_SESSION")
 if REDIS_AVAILABLE and _redis_url:
-    import redis  # type: ignore[import-not-found]
-
     _SESSION_TYPE = "redis"
-    _SESSION_REDIS = redis.from_url(_redis_url)
 else:
-    # Use filesystem sessions (SQLAlchemy sessions have compatibility issues with Quart/async)
-    _SESSION_TYPE = "filesystem"
-    _SESSION_REDIS = None
-
-
-def uia_email_mapper(identity):
-    # Sanitize and strip whitespace from email input
-    return bleach.clean(identity, strip=True).strip() if identity else identity
+    # No server-side sessions — Quart's built-in cookie sessions will be used
+    _SESSION_TYPE = None
 
 
 class Config:
@@ -35,9 +25,6 @@ class Config:
         raise ValueError("SECRET_KEY environment variable is required")
     APP_DIR = os.path.abspath(os.path.dirname(__file__))  # This directory
     PROJECT_ROOT = os.path.abspath(os.path.join(APP_DIR, os.pardir))
-    DEBUG_TB_ENABLED = os.environ.get("DEBUG_TB_ENABLED")
-    DEBUG_TB_INTERCEPT_REDIRECTS = False
-    CACHE_TYPE = "simple"  # Can be "memcached", "redis", etc.
 
     # Database - default to SQLite in instance folder (absolute path)
     _default_db = f"sqlite:///{os.path.join(PROJECT_ROOT, 'instance', 'enferno.db')}"
@@ -60,10 +47,7 @@ class Config:
     SECURITY_PASSWORD_SALT = os.environ.get("SECURITY_PASSWORD_SALT")
     if not SECURITY_PASSWORD_SALT:
         raise ValueError("SECURITY_PASSWORD_SALT environment variable is required")
-    SECURITY_USER_IDENTITY_ATTRIBUTES = [
-        {"email": {"mapper": uia_email_mapper, "case_insensitive": True}},
-    ]
-    SECURITY_USERNAME_ENABLE = False
+    # quart-security handles email normalization internally
 
     SECURITY_POST_LOGIN_VIEW = "/dashboard"
     SECURITY_POST_CONFIRM_VIEW = "/dashboard"
@@ -71,8 +55,6 @@ class Config:
 
     SECURITY_MULTI_FACTOR_RECOVERY_CODES = True
     SECURITY_MULTI_FACTOR_RECOVERY_CODES_N = 3
-    SECURITY_MULTI_FACTOR_RECOVERY_CODES_KEYS = None
-    SECURITY_MULTI_FACTOR_RECOVERY_CODE_TTL = None
 
     SECURITY_TWO_FACTOR_ENABLED_METHODS = ["authenticator"]
     SECURITY_TWO_FACTOR = True
@@ -91,13 +73,9 @@ class Config:
     SECURITY_WAN_ALLOW_AS_VERIFY = ["first", "secondary"]
     SECURITY_WAN_ALLOW_USER_HINTS = True
 
-    SESSION_PROTECTION = "strong"
-
-    # Session configuration - uses module-level computed values
+    # Session configuration (quart-session for Redis, Quart cookie sessions otherwise)
     SESSION_TYPE = _SESSION_TYPE
-    SESSION_REDIS = _SESSION_REDIS
-    SESSION_SQLALCHEMY_TABLE = "sessions"
-
+    SESSION_URI = _redis_url  # quart-session auto-creates async redis from URI
     SESSION_KEY_PREFIX = "session:"
     SESSION_USE_SIGNER = True
     PERMANENT_SESSION_LIFETIME = 3600
@@ -114,7 +92,7 @@ class Config:
         os.environ.get("DISABLE_MULTIPLE_SESSIONS", "False").lower() == "true"
     )
 
-    # flask mail settings
+    # Email settings (used by aiosmtplib via AsyncMailUtil)
     MAIL_SERVER = os.environ.get("MAIL_SERVER")
     MAIL_PORT = 465
     MAIL_USE_SSL = True

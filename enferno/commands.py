@@ -6,8 +6,9 @@ import string
 
 import click
 from flask.cli import AppGroup, with_appcontext
-from flask_security.utils import hash_password
+from quart_security import hash_password
 from rich.console import Console
+from sqlalchemy import select
 
 from enferno.extensions import db
 from enferno.user.models import User
@@ -31,24 +32,24 @@ def install(email, password):
     """Install a default admin user and add an admin role to it."""
     from enferno.user.models import Role
 
-    # create admin role if it doesn't exist
-    admin_role = Role.query.filter(Role.name == "admin").first()
+    admin_role = db.session.execute(
+        select(Role).filter(Role.name == "admin")
+    ).scalar_one_or_none()
     if not admin_role:
         admin_role = Role(name="admin").save()
 
-    # check if admin users already installed
-    admin_user = User.query.filter(User.roles.any(Role.name == "admin")).first()
+    admin_user = db.session.execute(
+        select(User).filter(User.roles.any(Role.name == "admin"))
+    ).scalar_one_or_none()
     if admin_user:
         console.print(
             f"[yellow]An admin user already exists:[/] [blue]{admin_user.email}[/]"
         )
         return
 
-    # Interactive mode if no args provided
     if not email:
         email = click.prompt("Admin email", default="admin@example.com")
 
-    # Generate password if not provided
     generated = False
     if not password:
         password = "".join(
@@ -81,8 +82,10 @@ def install(email, password):
 @with_appcontext
 def create(email, password):
     """Creates a user using an email."""
-    a = User.query.filter(User.email == email).first()
-    if a is not None:
+    existing = db.session.execute(
+        select(User).filter(User.email == email)
+    ).scalar_one_or_none()
+    if existing is not None:
         print("User already exists!")
     else:
         user = User(email=email, password=hash_password(password), active=True)
@@ -97,16 +100,18 @@ def add_role(email, role):
     """Adds a role to the specified user."""
     from enferno.user.models import Role
 
-    u = User.query.filter(User.email == email).first()
+    u = db.session.execute(
+        select(User).filter(User.email == email)
+    ).scalar_one_or_none()
 
     if u is None:
         print("Sorry, this user does not exist!")
     else:
-        r = db.session.execute(db.select(Role).filter_by(name=role)).scalar_one()
+        r = db.session.execute(select(Role).filter_by(name=role)).scalar_one_or_none()
         if r is None:
             print("Sorry, this role does not exist!")
-            u = click.prompt("Would you like to create one? Y/N", default="N")
-            if u.lower() == "y":
+            answer = click.prompt("Would you like to create one? Y/N", default="N")
+            if answer.lower() == "y":
                 r = Role(name=role)
                 try:
                     db.session.add(r)
@@ -114,7 +119,6 @@ def add_role(email, role):
                     print("Role created successfully, you may add it now to the user")
                 except Exception:
                     db.session.rollback()
-        # add role to user
         u.roles.append(r)
 
 
@@ -126,7 +130,9 @@ def reset(email, password):
     """Reset a user password using email"""
     try:
         pwd = hash_password(password)
-        u = User.query.filter(User.email == email).first()
+        u = db.session.execute(
+            select(User).filter(User.email == email)
+        ).scalar_one_or_none()
         if not u:
             print(f'User with email "{email}" not found.')
             return
