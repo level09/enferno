@@ -39,7 +39,7 @@
                     </v-btn>
                 </v-card-actions>
             </v-card>
-            {% else %}
+            {% elif has_codes %}
             <v-card variant="outlined" class="mb-4">
                 <v-card-text class="text-center pa-6">
                     <i class="ti ti-eye-off mb-3" style="font-size: 48px; opacity: 0.5;"></i>
@@ -53,6 +53,14 @@
                     </form>
                 </v-card-text>
             </v-card>
+            {% else %}
+            <v-card variant="outlined" class="mb-4">
+                <v-card-text class="text-center pa-6">
+                    <i class="ti ti-shield-off mb-3" style="font-size: 48px; opacity: 0.5;"></i>
+                    <div class="text-body-1">No recovery codes generated yet</div>
+                    <div class="text-caption text-medium-emphasis mb-4">Generate codes below to use as backup when you can't access your authenticator</div>
+                </v-card-text>
+            </v-card>
             {% endif %}
 
             <v-divider class="my-4"></v-divider>
@@ -60,13 +68,13 @@
             <v-card variant="outlined">
                 <v-card-text class="d-flex align-center">
                     <div class="flex-grow-1">
-                        <div class="font-weight-medium">Generate New Codes</div>
-                        <div class="text-caption text-medium-emphasis">This will invalidate existing codes</div>
+                        <div class="font-weight-medium">{{ 'Regenerate Codes' if has_codes else 'Generate Codes' }}</div>
+                        <div class="text-caption text-medium-emphasis">{{ 'This will invalidate existing codes' if has_codes else 'Create backup recovery codes' }}</div>
                     </div>
                     <form action="{{ url_for_security('mf_recovery_codes') }}" method="POST">
                         {{ mf_recovery_codes_form.hidden_tag() }}
                         {{ render_field_errors(mf_recovery_codes_form.csrf_token) }}
-                        <v-btn color="warning" variant="tonal" type="submit">
+                        <v-btn color="{{ 'warning' if has_codes else 'primary' }}" variant="tonal" type="submit">
                             <i class="ti ti-refresh mr-1"></i>
                             Generate
                         </v-btn>

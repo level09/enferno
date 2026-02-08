@@ -99,10 +99,10 @@
                     Enter Verification Code
                 </v-card-title>
                 <v-card-text>
-                    <form action="{{ url_for_security('two_factor_token_validation') }}" method="post">
+                    <form action="{{ url_for_security('two_factor_setup') }}" method="post">
                         {{ two_factor_verify_code_form.hidden_tag() }}
                         <v-text-field
-                            name="code"
+                            name="token"
                             label="6-digit code"
                             placeholder="000000"
                             maxlength="6"
