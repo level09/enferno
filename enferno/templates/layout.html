@@ -52,6 +52,13 @@
                 @remove="removeNotification"
             ></notification-dropdown>
 
+            <!-- Connection Status -->
+            <v-tooltip :text="wsConnected ? 'Real-time connected' : 'Reconnecting...'" location="bottom">
+                <template v-slot:activator="{ props }">
+                    <div v-bind="props" :style="{width: '8px', height: '8px', borderRadius: '50%', backgroundColor: wsConnected ? '#4caf50' : '#9e9e9e', transition: 'background-color 0.3s'}" class="mr-1"></div>
+                </template>
+            </v-tooltip>
+
             <!-- User Menu -->
             <v-menu :close-on-content-click="false" location="bottom end" transition="fade-transition">
                 <template v-slot:activator="{ props }">
@@ -200,10 +207,10 @@
                 isNavCollapsed: false,
                 isMobile: window.innerWidth < 960,
                 navItems: typeof enfernoNavigation !== 'undefined' ? enfernoNavigation : [],
-                notifications: [
-                    // Example notifications - replace with real data
-                    // { id: 1, title: 'New Message', subtitle: 'You have a new message', time: '5 min ago', isSeen: false },
-                ]
+                notifications: [],
+                wsConnected: false,
+                _ws: null,
+                _wsRetry: 1000,
             };
         },
         computed: {
@@ -243,6 +250,23 @@
                 if (index > -1) {
                     this.notifications.splice(index, 1);
                 }
+            },
+            _connectWs() {
+                const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const ws = new WebSocket(`${proto}//${location.host}/ws`);
+                this._ws = ws;
+                ws.onopen = () => { this.wsConnected = true; this._wsRetry = 1000; };
+                ws.onclose = () => {
+                    this.wsConnected = false;
+                    setTimeout(() => this._connectWs(), Math.min(this._wsRetry *= 1.5, 30000));
+                };
+                ws.onmessage = (e) => { this._onWsMessage(JSON.parse(e.data)); };
+            },
+            _onWsMessage(msg) {
+                // Handle incoming messages — extend this for notifications, live updates, etc.
+                if (msg.type === 'notification') {
+                    this.notifications.unshift(msg);
+                }
             }
         },
         mounted() {
@@ -254,9 +278,15 @@
 
             // Handle resize
             window.addEventListener('resize', this.handleResize);
+
+            // WebSocket connection (authenticated users only)
+            {% if current_user.is_authenticated %}
+            this._connectWs();
+            {% endif %}
         },
         beforeUnmount() {
             window.removeEventListener('resize', this.handleResize);
+            if (this._ws) this._ws.close();
         }
     };
 </script>

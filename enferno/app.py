@@ -13,6 +13,7 @@ from enferno.settings import Config
 from enferno.user.forms import ExtendedRegisterForm, OAuthAwareChangePasswordForm
 from enferno.user.models import Role, User, WebAuthn
 from enferno.user.views import bp_user
+from enferno.websocket import ws_bp
 
 
 def create_app(config_object=Config):
@@ -60,6 +61,7 @@ def register_blueprints(app):
     app.register_blueprint(bp_user)
     app.register_blueprint(public)
     app.register_blueprint(portal)
+    app.register_blueprint(ws_bp)
     return None
 
 
