@@ -55,32 +55,40 @@ def check_app_boots(app):
 
 @check("Database connection works")
 async def check_database(app):
-    from enferno.extensions import db
+    import enferno.extensions as ext
 
-    async with app.app_context():
-        db.session.execute(db.text("SELECT 1"))
+    async with ext.engine.connect() as conn:
+        from sqlalchemy import text
+
+        await conn.execute(text("SELECT 1"))
 
 
-@check("User model loads")
+@check("User model queryable")
 async def check_user_model(app):
+    from sqlalchemy import select
+
+    import enferno.extensions as ext
     from enferno.user.models import User
 
-    async with app.app_context():
-        User.query.limit(1).all()
+    async with ext.async_session_factory() as session:
+        await session.execute(select(User).limit(1))
 
 
-@check("Role model loads")
+@check("Role model queryable")
 async def check_role_model(app):
+    from sqlalchemy import select
+
+    import enferno.extensions as ext
     from enferno.user.models import Role
 
-    async with app.app_context():
-        Role.query.limit(1).all()
+    async with ext.async_session_factory() as session:
+        await session.execute(select(Role).limit(1))
 
 
 @check("All blueprints register")
 def check_blueprints(app):
     blueprints = list(app.blueprints.keys())
-    required = ["users", "public", "portal"]
+    required = ["users", "public", "portal", "security", "ws"]
     for bp in required:
         assert bp in blueprints, f"Missing blueprint: {bp}"
 
@@ -93,6 +101,7 @@ def check_routes(app):
         "/",
         "/login",
         "/dashboard/",
+        "/ws",
     ]
     for route in critical_routes:
         assert route in rules, f"Missing route: {route}"
@@ -102,6 +111,14 @@ def check_routes(app):
 def check_security_config(app):
     assert app.config["SECURITY_PASSWORD_LENGTH_MIN"] >= 8
     assert app.config["SESSION_USE_SIGNER"] is True
+
+
+@check("Async session factory initialized")
+def check_session_factory(app):
+    import enferno.extensions as ext
+
+    assert ext.engine is not None, "Engine not initialized"
+    assert ext.async_session_factory is not None, "Session factory not initialized"
 
 
 # =============================================================================

@@ -218,7 +218,7 @@ async def user_authenticated_handler(app, user, authn_via, **extra_args):
     """Handle user authentication - create session record and check for new IP."""
     session_data = {
         "user_id": user.id,
-        "session_token": session.sid if hasattr(session, "sid") else str(id(session)),
+        "session_token": getattr(session, "sid", None) or session.get("_id", ""),
         "ip_address": request.remote_addr,
         "meta": {
             "browser": request.user_agent.browser,
@@ -262,10 +262,11 @@ async def after_tf_profile_change(sender, user, **extra_args):
 @user_logged_out.connect
 async def user_logged_out_handler(app, user, **extra_args):
     """Clear session on logout."""
-    if hasattr(session, "sid"):
+    token = getattr(session, "sid", None) or session.get("_id")
+    if token:
         stmt = (
             Session.__table__.update()
-            .where(Session.session_token == session.sid)
+            .where(Session.session_token == token)
             .where(Session.is_active == True)  # noqa: E712
             .values(is_active=False)
         )
