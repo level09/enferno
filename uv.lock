@@ -588,7 +588,7 @@ requires-dist = [
     { name = "qrcode", specifier = ">=8.2" },
     { name = "quart", specifier = ">=0.20.0" },
     { name = "quart-flask-patch", specifier = ">=0.3.0" },
-    { name = "quart-security", editable = "../quart-security" },
+    { name = "quart-security", specifier = ">=1.0.0" },
     { name = "quart-session", specifier = ">=3.0.0" },
     { name = "redis", marker = "extra == 'full'", specifier = ">=7.1.0" },
     { name = "rich", specifier = ">=14.0.0" },
@@ -1410,8 +1410,8 @@ wheels = [
 
 [[package]]
 name = "quart-security"
-version = "0.1.0"
-source = { editable = "../quart-security" }
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiosmtplib" },
     { name = "blinker" },
@@ -1425,31 +1425,9 @@ dependencies = [
     { name = "webauthn" },
     { name = "wtforms" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "aiosmtplib", specifier = ">=3.0" },
-    { name = "blinker", specifier = ">=1.7" },
-    { name = "email-validator", specifier = ">=2.0" },
-    { name = "itsdangerous", specifier = ">=2.1" },
-    { name = "libpass", specifier = ">=1.9" },
-    { name = "pyotp", specifier = ">=2.9" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23" },
-    { name = "qrcode", specifier = ">=8.0" },
-    { name = "quart", specifier = ">=0.20.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.6" },
-    { name = "sqlalchemy", specifier = ">=2.0" },
-    { name = "webauthn", specifier = ">=2.0" },
-    { name = "wtforms", specifier = ">=3.1" },
-]
-provides-extras = ["dev"]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "pytest", specifier = ">=8.0" },
-    { name = "pytest-asyncio", specifier = ">=0.23" },
-    { name = "ruff", specifier = ">=0.6" },
+sdist = { url = "https://files.pythonhosted.org/packages/bd/80/43d1d13462fe7792883968d877642c9e91350157f1a3229834bcb017d7cc/quart_security-1.0.0.tar.gz", hash = "sha256:fd5ed416bb64ba16be3dfbfa7085726feb354b797e570f0ea8f50b34537602c7", size = 27987, upload-time = "2026-02-09T00:31:09.912Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e6/ae/dd1c02b00e440fdeada216ea5f3e061f03d49893aa4bf3deea884b733f8d/quart_security-1.0.0-py3-none-any.whl", hash = "sha256:4e327328cd621501fc2bec62bee30da8bcd6c59af7f6c486c2f30addc8ef97f9", size = 30647, upload-time = "2026-02-09T00:31:06.642Z" },
 ]
 
 [[package]]

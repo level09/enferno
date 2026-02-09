@@ -41,7 +41,7 @@ dependencies = [
     "qrcode>=8.2",
     "quart>=0.20.0",
     "quart-flask-patch>=0.3.0",
-    "quart-security",
+    "quart-security>=1.0.0",
     "rich>=14.0.0",
     "setuptools>=80.9.0",
     "six>=1.17.0",
@@ -54,7 +54,6 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-quart-security = { path = "../quart-security", editable = true }
 
 [project.optional-dependencies]
 full = [
