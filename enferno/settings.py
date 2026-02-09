@@ -26,10 +26,11 @@ class Config:
     APP_DIR = os.path.abspath(os.path.dirname(__file__))  # This directory
     PROJECT_ROOT = os.path.abspath(os.path.join(APP_DIR, os.pardir))
 
-    # Database - default to SQLite in instance folder (absolute path)
-    _default_db = f"sqlite:///{os.path.join(PROJECT_ROOT, 'instance', 'enferno.db')}"
+    # Database - default to async SQLite in instance folder
+    _default_db = (
+        f"sqlite+aiosqlite:///{os.path.join(PROJECT_ROOT, 'instance', 'enferno.db')}"
+    )
     SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI", _default_db)
-    SQLALCHEMY_TRACK_MODIFICATIONS = True
 
     # Celery configuration - only set if Redis available and configured
     CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL") if REDIS_AVAILABLE else None

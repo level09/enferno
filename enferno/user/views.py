@@ -1,7 +1,7 @@
 import datetime
 
 import orjson as json
-from quart import Blueprint, Response, current_app, render_template, request, session
+from quart import Blueprint, Response, current_app, g, render_template, request, session
 from quart_security import (
     auth_required,
     current_user,
@@ -11,9 +11,8 @@ from quart_security import (
     user_authenticated,
     user_logged_out,
 )
-from sqlalchemy import select
+from sqlalchemy import func, select
 
-from enferno.extensions import db
 from enferno.user.models import Activity, Role, Session, User
 
 bp_user = Blueprint("users", __name__, static_folder="../static")
@@ -30,8 +29,8 @@ async def before_request():
 
 @bp_user.route("/users/")
 async def users():
-    roles = db.session.execute(select(Role)).scalars().all()
-    roles = [r.to_dict() for r in roles]
+    result = await g.db_session.execute(select(Role))
+    roles = [r.to_dict() for r in result.scalars().all()]
     return await render_template("cms/users.html", roles=roles)
 
 
@@ -40,16 +39,16 @@ async def api_user():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", PER_PAGE, type=int)
 
-    query = db.select(User)
-    pagination = db.paginate(query, page=page, per_page=per_page)
-    items = [user.to_dict() for user in pagination.items]
+    query = select(User)
+    count_result = await g.db_session.execute(select(func.count()).select_from(User))
+    total = count_result.scalar()
 
-    response_data = {
-        "items": items,
-        "total": pagination.total,
-        "perPage": pagination.per_page,
-    }
+    result = await g.db_session.execute(
+        query.offset((page - 1) * per_page).limit(per_page)
+    )
+    items = [user.to_dict() for user in result.scalars().all()]
 
+    response_data = {"items": items, "total": total, "perPage": per_page}
     return Response(json.dumps(response_data), content_type="application/json")
 
 
@@ -58,39 +57,48 @@ async def api_user_create():
     json_data = await request.json
     user_data = json_data.get("item", {})
     user = User()
-    user.from_dict(user_data)
+    await user.from_dict(user_data)
     user.confirmed_at = datetime.datetime.now()
-    db.session.add(user)
+    g.db_session.add(user)
     try:
-        db.session.commit()
-        Activity.register(current_user.id, "User Create", user.to_dict())
+        await g.db_session.commit()
+        await g.db_session.refresh(user, ["roles"])
+        await Activity.register(current_user.id, "User Create", user.to_dict())
+        await g.db_session.commit()
         return {"message": "User successfully created!"}
     except Exception as e:
-        db.session.rollback()
+        await g.db_session.rollback()
         return {"message": "Error creating user", "error": str(e)}, 412
 
 
 @bp_user.post("/api/user/<int:id>")
 async def api_user_update(id):
-    user = db.get_or_404(User, id)
+    user = await g.db_session.get(User, id)
+    if user is None:
+        return {"message": "User not found"}, 404
     json_data = await request.json
     user_data = json_data.get("item", {})
     old_user_data = user.to_dict()
-    user.from_dict(user_data)
-    db.session.commit()
-    Activity.register(
+    await user.from_dict(user_data)
+    await g.db_session.commit()
+    await g.db_session.refresh(user, ["roles"])
+    await Activity.register(
         current_user.id, "User Update", {"old": old_user_data, "new": user.to_dict()}
     )
+    await g.db_session.commit()
     return {"message": "User successfully updated!"}
 
 
 @bp_user.route("/api/user/<int:id>", methods=["DELETE"])
 async def api_user_delete(id):
-    user = db.get_or_404(User, id)
+    user = await g.db_session.get(User, id)
+    if user is None:
+        return {"message": "User not found"}, 404
     user_data = user.to_dict()
-    db.session.delete(user)
-    db.session.commit()
-    Activity.register(current_user.id, "User Delete", user_data)
+    await g.db_session.delete(user)
+    await g.db_session.commit()
+    await Activity.register(current_user.id, "User Delete", user_data)
+    await g.db_session.commit()
     return {"message": "User successfully deleted!"}
 
 
@@ -104,16 +112,15 @@ async def api_roles():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", PER_PAGE, type=int)
 
-    query = db.select(Role)
-    pagination = db.paginate(query, page=page, per_page=per_page)
-    items = [role.to_dict() for role in pagination.items]
+    count_result = await g.db_session.execute(select(func.count()).select_from(Role))
+    total = count_result.scalar()
 
-    response_data = {
-        "items": items,
-        "total": pagination.total,
-        "perPage": pagination.per_page,
-    }
+    result = await g.db_session.execute(
+        select(Role).offset((page - 1) * per_page).limit(per_page)
+    )
+    items = [role.to_dict() for role in result.scalars().all()]
 
+    response_data = {"items": items, "total": total, "perPage": per_page}
     return Response(json.dumps(response_data), content_type="application/json")
 
 
@@ -123,37 +130,44 @@ async def api_role_create():
     role_data = json_data.get("item", {})
     role = Role()
     role.from_dict(role_data)
-    db.session.add(role)
+    g.db_session.add(role)
     try:
-        db.session.commit()
-        Activity.register(current_user.id, "Role Create", role.to_dict())
+        await g.db_session.commit()
+        await Activity.register(current_user.id, "Role Create", role.to_dict())
+        await g.db_session.commit()
         return {"message": "Role successfully created!"}
     except Exception as e:
-        db.session.rollback()
+        await g.db_session.rollback()
         return {"message": "Error creating role", "error": str(e)}, 412
 
 
 @bp_user.post("/api/role/<int:id>")
 async def api_role_update(id):
-    role = db.get_or_404(Role, id)
+    role = await g.db_session.get(Role, id)
+    if role is None:
+        return {"message": "Role not found"}, 404
     old_role_data = role.to_dict()
     json_data = await request.json
     role_data = json_data.get("item", {})
     role.from_dict(role_data)
-    db.session.commit()
-    Activity.register(
+    await g.db_session.commit()
+    await Activity.register(
         current_user.id, "Role Update", {"old": old_role_data, "new": role.to_dict()}
     )
+    await g.db_session.commit()
     return {"message": "Role successfully updated!"}
 
 
 @bp_user.route("/api/role/<int:id>", methods=["DELETE"])
 async def api_role_delete(id):
-    role = db.get_or_404(Role, id)
+    role = await g.db_session.get(Role, id)
+    if role is None:
+        return {"message": "Role not found"}, 404
     role_data = role.to_dict()
-    db.session.delete(role)
-    db.session.commit()
-    Activity.register(current_user.id, "Role Delete", role_data)
+    await g.db_session.delete(role)
+    await g.db_session.commit()
+    await Activity.register(current_user.id, "Role Delete", role_data)
+    await g.db_session.commit()
     return {"message": "Role successfully deleted!"}
 
 
@@ -167,13 +181,21 @@ async def api_activities():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", PER_PAGE, type=int)
 
-    query = db.select(Activity).order_by(Activity.created_at.desc())
-    pagination = db.paginate(query, page=page, per_page=per_page)
+    count_result = await g.db_session.execute(
+        select(func.count()).select_from(Activity)
+    )
+    total = count_result.scalar()
+
+    result = await g.db_session.execute(
+        select(Activity)
+        .order_by(Activity.created_at.desc())
+        .offset((page - 1) * per_page)
+        .limit(per_page)
+    )
 
     items = []
-    for activity in pagination.items:
-        user = db.session.get(User, activity.user_id)
-
+    for activity in result.scalars().all():
+        user = await g.db_session.get(User, activity.user_id)
         items.append(
             {
                 "id": activity.id,
@@ -184,12 +206,7 @@ async def api_activities():
             }
         )
 
-    response_data = {
-        "items": items,
-        "total": pagination.total,
-        "perPage": pagination.per_page,
-    }
-
+    response_data = {"items": items, "total": total, "perPage": per_page}
     return Response(json.dumps(response_data), content_type="application/json")
 
 
@@ -197,7 +214,7 @@ async def api_activities():
 
 
 @user_authenticated.connect
-def user_authenticated_handler(app, user, authn_via, **extra_args):
+async def user_authenticated_handler(app, user, authn_via, **extra_args):
     """Handle user authentication - create session record and check for new IP."""
     session_data = {
         "user_id": user.id,
@@ -211,31 +228,31 @@ def user_authenticated_handler(app, user, authn_via, **extra_args):
         },
     }
 
-    Session.create_session(**session_data)
+    await Session.create_session(**session_data)
 
     if user.last_login_ip and user.current_login_ip != user.last_login_ip:
-        Activity.register(
+        await Activity.register(
             user.id,
             "Login from new IP",
             {"old_ip": user.last_login_ip, "new_ip": user.current_login_ip},
         )
 
     if current_app.config.get("DISABLE_MULTIPLE_SESSIONS", False):
-        user.logout_other_sessions(session_data["session_token"])
+        await user.logout_other_sessions(session_data["session_token"])
 
 
 @password_changed.connect
-def after_password_change(sender, user, **extra_args):
+async def after_password_change(sender, user, **extra_args):
     """Log password change and mark password as user-set."""
     user.password_set = True
-    db.session.add(user)
-    Activity.register(user.id, "Password Changed", {"email": user.email})
+    g.db_session.add(user)
+    await Activity.register(user.id, "Password Changed", {"email": user.email})
 
 
 @tf_profile_changed.connect
-def after_tf_profile_change(sender, user, **extra_args):
+async def after_tf_profile_change(sender, user, **extra_args):
     """Log 2FA profile changes."""
-    Activity.register(
+    await Activity.register(
         user.id,
         "Two-Factor Profile Changed",
         {"email": user.email, "method": user.tf_primary_method},
@@ -243,7 +260,7 @@ def after_tf_profile_change(sender, user, **extra_args):
 
 
 @user_logged_out.connect
-def user_logged_out_handler(app, user, **extra_args):
+async def user_logged_out_handler(app, user, **extra_args):
     """Clear session on logout."""
     if hasattr(session, "sid"):
         stmt = (
@@ -252,6 +269,6 @@ def user_logged_out_handler(app, user, **extra_args):
             .where(Session.is_active == True)  # noqa: E712
             .values(is_active=False)
         )
-        db.session.execute(stmt)
-        db.session.commit()
+        await g.db_session.execute(stmt)
+        await g.db_session.commit()
     session.clear()

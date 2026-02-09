@@ -1,12 +1,13 @@
 import inspect
 
 import click
-import quart_flask_patch  # noqa: F401 - Required for flask-babel and flask-sqlalchemy
-from quart import Quart, render_template
+from quart import Quart, g, render_template
 from quart_security import Security, SQLAlchemyUserDatastore
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 import enferno.commands as commands
-from enferno.extensions import babel, db, session
+import enferno.extensions as ext
+from enferno.extensions import session
 from enferno.portal.views import portal
 from enferno.public.views import public
 from enferno.settings import Config
@@ -28,13 +29,25 @@ def create_app(config_object=Config):
     return app
 
 
-def locale_selector():
-    return "en"
-
-
 def register_extensions(app):
-    db.init_app(app)
-    user_datastore = SQLAlchemyUserDatastore(db, User, Role, webauthn_model=WebAuthn)
+    # Async SQLAlchemy engine + session factory
+    ext.engine = create_async_engine(app.config["SQLALCHEMY_DATABASE_URI"])
+    ext.async_session_factory = async_sessionmaker(ext.engine, expire_on_commit=False)
+
+    @app.before_request
+    async def _open_session():
+        g.db_session = ext.async_session_factory()
+
+    @app.after_request
+    async def _close_session(response):
+        db_session = g.pop("db_session", None)
+        if db_session is not None:
+            await db_session.close()
+        return response
+
+    user_datastore = SQLAlchemyUserDatastore(
+        lambda: g.db_session, User, Role, webauthn_model=WebAuthn
+    )
     Security(
         app,
         user_datastore,
@@ -46,13 +59,6 @@ def register_extensions(app):
     if app.config.get("SESSION_TYPE") == "redis":
         session.init_app(app)
     # For non-redis, fall back to Quart's built-in cookie sessions
-
-    babel.init_app(
-        app,
-        locale_selector=locale_selector,
-        default_domain="messages",
-        default_locale="en",
-    )
 
     return None
 
@@ -80,7 +86,7 @@ def register_shellcontext(app):
 
     def shell_context():
         """Shell context objects."""
-        return {"db": db, "User": User, "Role": Role}
+        return {"User": User, "Role": Role}
 
     app.shell_context_processor(shell_context)
 

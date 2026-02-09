@@ -6,6 +6,7 @@ from quart import (
     Blueprint,
     current_app,
     flash,
+    g,
     redirect,
     render_template,
     request,
@@ -17,7 +18,6 @@ from quart_security import current_user
 from quart_security.proxies import _security
 from sqlalchemy import select
 
-from enferno.extensions import db
 from enferno.user.models import OAuth, User
 
 public = Blueprint("public", __name__, static_folder="../static")
@@ -39,15 +39,15 @@ def get_real_ip():
     return request.remote_addr
 
 
-def update_user_login_info(user, ip_address):
+async def update_user_login_info(user, ip_address):
     now = datetime.datetime.now()
     user.last_login_at = user.current_login_at
     user.current_login_at = now
     user.last_login_ip = user.current_login_ip
     user.current_login_ip = ip_address
     user.login_count = (user.login_count or 0) + 1
-    db.session.add(user)
-    db.session.commit()
+    g.db_session.add(user)
+    await g.db_session.commit()
 
 
 def create_oauth_user(provider_data, ip_address):
@@ -108,22 +108,22 @@ async def handle_oauth_callback(provider_name, token, user_info):
 
     real_ip = get_real_ip()
 
-    oauth_account = db.session.execute(
+    result = await g.db_session.execute(
         select(OAuth).filter_by(
             provider=provider_name, provider_user_id=provider_user_id
         )
-    ).scalar_one_or_none()
+    )
+    oauth_account = result.scalar_one_or_none()
 
     if oauth_account and oauth_account.user:
         if current_user.is_authenticated and current_user.id != oauth_account.user.id:
             await _security.logout_user()
-        update_user_login_info(oauth_account.user, real_ip)
+        await update_user_login_info(oauth_account.user, real_ip)
         await _security.login_user(oauth_account.user)
         return redirect(url_for("portal.dashboard"))
 
-    existing_user = db.session.execute(
-        select(User).filter_by(email=email)
-    ).scalar_one_or_none()
+    result = await g.db_session.execute(select(User).filter_by(email=email))
+    existing_user = result.scalar_one_or_none()
 
     if existing_user:
         if not oauth_account:
@@ -133,9 +133,9 @@ async def handle_oauth_callback(provider_name, token, user_info):
                 token=dict(token),
                 user=existing_user,
             )
-            db.session.add(oauth_account)
-            db.session.commit()
-        update_user_login_info(existing_user, real_ip)
+            g.db_session.add(oauth_account)
+            await g.db_session.commit()
+        await update_user_login_info(existing_user, real_ip)
         await _security.login_user(existing_user)
         await flash("Account linked successfully.", category="success")
         return redirect(url_for("portal.dashboard"))
@@ -148,8 +148,8 @@ async def handle_oauth_callback(provider_name, token, user_info):
         token=dict(token),
         user=new_user,
     )
-    db.session.add_all([new_user, oauth_account])
-    db.session.commit()
+    g.db_session.add_all([new_user, oauth_account])
+    await g.db_session.commit()
     await _security.login_user(new_user)
     await flash("Successfully signed in.", category="success")
     return redirect(url_for("portal.dashboard"))

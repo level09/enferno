@@ -4,31 +4,40 @@ import string
 from datetime import datetime
 from uuid import uuid4
 
+from quart import g
 from quart_security import RoleMixin, UserMixin, hash_password
 from sqlalchemy import (
+    JSON,
+    Boolean,
     Column,
+    DateTime,
     ForeignKey,
     Integer,
+    LargeBinary,
+    String,
     Table,
+    UniqueConstraint,
     select,
 )
 from sqlalchemy.orm import declared_attr, relationship
 
-from enferno.extensions import db
-from enferno.utils.base import BaseMixin
+from enferno.extensions import Base
 
-roles_users: Table = db.Table(
+roles_users = Table(
     "roles_users",
+    Base.metadata,
     Column("user_id", Integer, ForeignKey("user.id"), primary_key=True),
     Column("role_id", Integer, ForeignKey("role.id"), primary_key=True),
 )
 
 
 @dataclasses.dataclass
-class Role(db.Model, RoleMixin, BaseMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=True, nullable=True)
-    description = db.Column(db.String(255), nullable=True)
+class Role(Base, RoleMixin):
+    __tablename__ = "role"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(80), unique=True, nullable=True)
+    description = Column(String(255), nullable=True)
 
     def to_dict(self) -> dict:
         return {"id": self.id, "name": self.name, "description": self.description}
@@ -40,38 +49,44 @@ class Role(db.Model, RoleMixin, BaseMixin):
 
 
 @dataclasses.dataclass
-class User(UserMixin, db.Model, BaseMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(255), unique=True, nullable=True)
-    fs_uniquifier = db.Column(
-        db.String(255), unique=True, nullable=False, default=(lambda _: uuid4().hex)
+class User(Base, UserMixin):
+    __tablename__ = "user"
+
+    id = Column(Integer, primary_key=True)
+    username = Column(String(255), unique=True, nullable=True)
+    fs_uniquifier = Column(
+        String(255), unique=True, nullable=False, default=lambda: uuid4().hex
     )
-    name = db.Column(db.String(255), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
-    email = db.Column(db.String(255), unique=True, nullable=False)
-    password = db.Column(db.String(255), nullable=False)
-    password_set = db.Column(db.Boolean, default=True, nullable=False)
-    active = db.Column(db.Boolean, default=False, nullable=True)
+    name = Column(String(255), nullable=True)
+    created_at = Column(DateTime, default=datetime.now, nullable=False)
+    email = Column(String(255), unique=True, nullable=False)
+    password = Column(String(255), nullable=False)
+    password_set = Column(Boolean, default=True, nullable=False)
+    active = Column(Boolean, default=False, nullable=True)
 
-    roles = relationship("Role", secondary=roles_users, backref="users")
+    roles = relationship(
+        "Role", secondary=roles_users, backref="users", lazy="selectin"
+    )
 
-    confirmed_at = db.Column(db.DateTime, nullable=True)
-    last_login_at = db.Column(db.DateTime, nullable=True)
-    current_login_at = db.Column(db.DateTime, nullable=True)
-    last_login_ip = db.Column(db.String(255), nullable=True)
-    current_login_ip = db.Column(db.String(255), nullable=True)
-    login_count = db.Column(db.Integer, nullable=True)
+    confirmed_at = Column(DateTime, nullable=True)
+    last_login_at = Column(DateTime, nullable=True)
+    current_login_at = Column(DateTime, nullable=True)
+    last_login_ip = Column(String(255), nullable=True)
+    current_login_ip = Column(String(255), nullable=True)
+    login_count = Column(Integer, nullable=True)
 
     # web authn
-    fs_webauthn_user_handle = db.Column(db.String(64), unique=True, nullable=True)
-    tf_phone_number = db.Column(db.String(64), nullable=True)
-    tf_primary_method = db.Column(db.String(140), nullable=True)
-    tf_totp_secret = db.Column(db.String(255), nullable=True)
-    mf_recovery_codes = db.Column(db.JSON, nullable=True)
+    fs_webauthn_user_handle = Column(String(64), unique=True, nullable=True)
+    tf_phone_number = Column(String(64), nullable=True)
+    tf_primary_method = Column(String(140), nullable=True)
+    tf_totp_secret = Column(String(255), nullable=True)
+    mf_recovery_codes = Column(JSON, nullable=True)
 
     @declared_attr
     def webauthn(cls):
-        return relationship("WebAuthn", backref="users", cascade="all, delete")
+        return relationship(
+            "WebAuthn", backref="users", cascade="all, delete", lazy="selectin"
+        )
 
     @property
     def display_name(self):
@@ -90,7 +105,7 @@ class User(UserMixin, db.Model, BaseMixin):
             "roles": [role.to_dict() for role in self.roles],
         }
 
-    def from_dict(self, json_dict):
+    async def from_dict(self, json_dict):
         self.name = json_dict.get("name", self.name)
         self.username = json_dict.get("username", self.username)
         self.email = json_dict.get("email", self.email)
@@ -99,11 +114,10 @@ class User(UserMixin, db.Model, BaseMixin):
         if "roles" in json_dict:
             role_ids = [r.get("id") for r in json_dict["roles"]]
             if role_ids:
-                self.roles = (
-                    db.session.execute(select(Role).filter(Role.id.in_(role_ids)))
-                    .scalars()
-                    .all()
+                result = await g.db_session.execute(
+                    select(Role).filter(Role.id.in_(role_ids))
                 )
+                self.roles = list(result.scalars().all())
         self.active = json_dict.get("active", self.active)
         return self
 
@@ -125,10 +139,10 @@ class User(UserMixin, db.Model, BaseMixin):
         password = "".join(secrets.choice(alphabet) for i in range(length))
         return hash_password(password)
 
-    def logout_other_sessions(self, current_session_token=None):
-        from enferno.user.models import Session
-
-        Session.deactivate_user_sessions(self.id, exclude_token=current_session_token)
+    async def logout_other_sessions(self, current_session_token=None):
+        await Session.deactivate_user_sessions(
+            self.id, exclude_token=current_session_token
+        )
 
     def get_active_sessions(self):
         return [s for s in self.sessions if s.is_active]
@@ -148,26 +162,26 @@ class User(UserMixin, db.Model, BaseMixin):
         return devices
 
 
-class WebAuthn(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    credential_id = db.Column(
-        db.LargeBinary(1024), index=True, nullable=False, unique=True
-    )
-    public_key = db.Column(db.LargeBinary(1024), nullable=False)
-    sign_count = db.Column(db.Integer, default=0, nullable=False)
-    transports = db.Column(db.JSON, nullable=True)
-    extensions = db.Column(db.String(255), nullable=True)
-    lastuse_datetime = db.Column(db.DateTime, nullable=False)
-    name = db.Column(db.String(64), nullable=False)
-    usage = db.Column(db.String(64), nullable=False)
-    backup_state = db.Column(db.Boolean, nullable=False)
-    device_type = db.Column(db.String(64), nullable=False)
+class WebAuthn(Base):
+    __tablename__ = "web_authn"
+
+    id = Column(Integer, primary_key=True)
+    credential_id = Column(LargeBinary(1024), index=True, nullable=False, unique=True)
+    public_key = Column(LargeBinary(1024), nullable=False)
+    sign_count = Column(Integer, default=0, nullable=False)
+    transports = Column(JSON, nullable=True)
+    extensions = Column(String(255), nullable=True)
+    lastuse_datetime = Column(DateTime, nullable=False)
+    name = Column(String(64), nullable=False)
+    usage = Column(String(64), nullable=False)
+    backup_state = Column(Boolean, nullable=False)
+    device_type = Column(String(64), nullable=False)
 
     @declared_attr
     def user_id(cls):
-        return db.Column(
-            db.String(64),
-            db.ForeignKey("user.fs_webauthn_user_handle", ondelete="CASCADE"),
+        return Column(
+            String(64),
+            ForeignKey("user.fs_webauthn_user_handle", ondelete="CASCADE"),
             nullable=False,
         )
 
@@ -175,58 +189,58 @@ class WebAuthn(db.Model):
         return {"fs_webauthn_user_handle": self.user_id}
 
 
-class OAuth(db.Model):
+class OAuth(Base):
     __tablename__ = "oauth"
-    id = db.Column(db.Integer, primary_key=True)
-    provider = db.Column(db.String(50), nullable=False)
-    provider_user_id = db.Column(db.String(256), nullable=False)
-    token = db.Column(db.JSON, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
-    user = db.relationship(
-        User,
-        backref=db.backref(
-            "oauth_accounts", cascade="all, delete-orphan", lazy="dynamic"
-        ),
+
+    id = Column(Integer, primary_key=True)
+    provider = Column(String(50), nullable=False)
+    provider_user_id = Column(String(256), nullable=False)
+    token = Column(JSON, nullable=True)
+    created_at = Column(DateTime, default=datetime.now, nullable=False)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    user = relationship(
+        "User",
+        backref="oauth_accounts",
+        lazy="selectin",
     )
 
     __table_args__ = (
-        db.UniqueConstraint(
-            "provider", "provider_user_id", name="uq_oauth_provider_user"
-        ),
+        UniqueConstraint("provider", "provider_user_id", name="uq_oauth_provider_user"),
     )
 
 
-class Activity(db.Model, BaseMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, nullable=False)
-    action = db.Column(db.String(255), nullable=False)
-    data = db.Column(db.JSON, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
+class Activity(Base):
+    __tablename__ = "activity"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, nullable=False)
+    action = Column(String(255), nullable=False)
+    data = Column(JSON, nullable=True)
+    created_at = Column(DateTime, default=datetime.now, nullable=False)
 
     @classmethod
-    def register(cls, user_id, action, data=None):
+    async def register(cls, user_id, action, data=None):
         activity = cls(user_id=user_id, action=action, data=data)
-        db.session.add(activity)
+        g.db_session.add(activity)
         return activity
 
 
-class Session(db.Model, BaseMixin):
+class Session(Base):
     __tablename__ = "user_sessions"
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    user = db.relationship("User", backref=db.backref("sessions", lazy=True))
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    user = relationship("User", backref="sessions", lazy="selectin")
 
-    session_token = db.Column(db.String(255), unique=True, nullable=False)
-    last_active = db.Column(db.DateTime, default=datetime.now)
-    expires_at = db.Column(db.DateTime, nullable=True)
-    ip_address = db.Column(db.String(255), nullable=True)
+    session_token = Column(String(255), unique=True, nullable=False)
+    last_active = Column(DateTime, default=datetime.now)
+    expires_at = Column(DateTime, nullable=True)
+    ip_address = Column(String(255), nullable=True)
 
-    meta = db.Column(db.JSON, nullable=True)
+    meta = Column(JSON, nullable=True)
 
-    is_active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.now, nullable=False)
 
     def to_dict(self):
         return {
@@ -241,17 +255,18 @@ class Session(db.Model, BaseMixin):
         }
 
     @classmethod
-    def create_session(cls, user_id, session_token, ip_address=None, meta=None):
-        existing = db.session.execute(
+    async def create_session(cls, user_id, session_token, ip_address=None, meta=None):
+        result = await g.db_session.execute(
             select(cls).filter_by(session_token=session_token)
-        ).scalar_one_or_none()
+        )
+        existing = result.scalar_one_or_none()
         if existing:
             existing.user_id = user_id
             existing.ip_address = ip_address
             existing.meta = meta
             existing.is_active = True
             existing.last_active = datetime.now()
-            db.session.add(existing)
+            g.db_session.add(existing)
             return existing
 
         session_record = cls(
@@ -261,11 +276,11 @@ class Session(db.Model, BaseMixin):
             meta=meta,
             is_active=True,
         )
-        db.session.add(session_record)
+        g.db_session.add(session_record)
         return session_record
 
     @classmethod
-    def deactivate_user_sessions(cls, user_id, exclude_token=None):
+    async def deactivate_user_sessions(cls, user_id, exclude_token=None):
         stmt = (
             cls.__table__.update()
             .where(cls.user_id == user_id)
@@ -274,5 +289,5 @@ class Session(db.Model, BaseMixin):
         if exclude_token:
             stmt = stmt.where(cls.session_token != exclude_token)
         stmt = stmt.values(is_active=False)
-        db.session.execute(stmt)
-        db.session.commit()
+        await g.db_session.execute(stmt)
+        await g.db_session.commit()
