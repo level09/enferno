@@ -157,6 +157,15 @@ def add_role(email, role):
     run_async(_run())
 
 
+@click.command("cleanup-sessions")
+def cleanup_sessions():
+    """Deactivate expired sessions and delete old rows."""
+    from enferno.tasks import cleanup_expired_sessions
+
+    run_async(cleanup_expired_sessions())
+    print("Session cleanup complete")
+
+
 @click.command()
 @click.option("-e", "--email", prompt="Email", default=None)
 @click.option("-p", "--password", hide_input=True, prompt=True, default=None)

@@ -61,7 +61,7 @@ async def api_user_create():
     user.confirmed_at = datetime.datetime.now()
     g.db_session.add(user)
     try:
-        await g.db_session.commit()
+        await g.db_session.flush()
         await g.db_session.refresh(user, ["roles"])
         await Activity.register(current_user.id, "User Create", user.to_dict())
         await g.db_session.commit()
@@ -79,14 +79,20 @@ async def api_user_update(id):
     json_data = await request.json
     user_data = json_data.get("item", {})
     old_user_data = user.to_dict()
-    await user.from_dict(user_data)
-    await g.db_session.commit()
-    await g.db_session.refresh(user, ["roles"])
-    await Activity.register(
-        current_user.id, "User Update", {"old": old_user_data, "new": user.to_dict()}
-    )
-    await g.db_session.commit()
-    return {"message": "User successfully updated!"}
+    try:
+        await user.from_dict(user_data)
+        await g.db_session.flush()
+        await g.db_session.refresh(user, ["roles"])
+        await Activity.register(
+            current_user.id,
+            "User Update",
+            {"old": old_user_data, "new": user.to_dict()},
+        )
+        await g.db_session.commit()
+        return {"message": "User successfully updated!"}
+    except Exception as e:
+        await g.db_session.rollback()
+        return {"message": "Error updating user", "error": str(e)}, 412
 
 
 @bp_user.route("/api/user/<int:id>", methods=["DELETE"])
@@ -95,11 +101,14 @@ async def api_user_delete(id):
     if user is None:
         return {"message": "User not found"}, 404
     user_data = user.to_dict()
-    await g.db_session.delete(user)
-    await g.db_session.commit()
-    await Activity.register(current_user.id, "User Delete", user_data)
-    await g.db_session.commit()
-    return {"message": "User successfully deleted!"}
+    try:
+        await g.db_session.delete(user)
+        await Activity.register(current_user.id, "User Delete", user_data)
+        await g.db_session.commit()
+        return {"message": "User successfully deleted!"}
+    except Exception as e:
+        await g.db_session.rollback()
+        return {"message": "Error deleting user", "error": str(e)}, 412
 
 
 @bp_user.route("/roles/")
@@ -132,7 +141,7 @@ async def api_role_create():
     role.from_dict(role_data)
     g.db_session.add(role)
     try:
-        await g.db_session.commit()
+        await g.db_session.flush()
         await Activity.register(current_user.id, "Role Create", role.to_dict())
         await g.db_session.commit()
         return {"message": "Role successfully created!"}
@@ -149,13 +158,18 @@ async def api_role_update(id):
     old_role_data = role.to_dict()
     json_data = await request.json
     role_data = json_data.get("item", {})
-    role.from_dict(role_data)
-    await g.db_session.commit()
-    await Activity.register(
-        current_user.id, "Role Update", {"old": old_role_data, "new": role.to_dict()}
-    )
-    await g.db_session.commit()
-    return {"message": "Role successfully updated!"}
+    try:
+        role.from_dict(role_data)
+        await Activity.register(
+            current_user.id,
+            "Role Update",
+            {"old": old_role_data, "new": role.to_dict()},
+        )
+        await g.db_session.commit()
+        return {"message": "Role successfully updated!"}
+    except Exception as e:
+        await g.db_session.rollback()
+        return {"message": "Error updating role", "error": str(e)}, 412
 
 
 @bp_user.route("/api/role/<int:id>", methods=["DELETE"])
@@ -164,11 +178,14 @@ async def api_role_delete(id):
     if role is None:
         return {"message": "Role not found"}, 404
     role_data = role.to_dict()
-    await g.db_session.delete(role)
-    await g.db_session.commit()
-    await Activity.register(current_user.id, "Role Delete", role_data)
-    await g.db_session.commit()
-    return {"message": "Role successfully deleted!"}
+    try:
+        await g.db_session.delete(role)
+        await Activity.register(current_user.id, "Role Delete", role_data)
+        await g.db_session.commit()
+        return {"message": "Role successfully deleted!"}
+    except Exception as e:
+        await g.db_session.rollback()
+        return {"message": "Error deleting role", "error": str(e)}, 412
 
 
 @bp_user.route("/activities/")
@@ -187,15 +204,15 @@ async def api_activities():
     total = count_result.scalar()
 
     result = await g.db_session.execute(
-        select(Activity)
+        select(Activity, User)
+        .outerjoin(User, Activity.user_id == User.id)
         .order_by(Activity.created_at.desc())
         .offset((page - 1) * per_page)
         .limit(per_page)
     )
 
     items = []
-    for activity in result.scalars().all():
-        user = await g.db_session.get(User, activity.user_id)
+    for activity, user in result.all():
         items.append(
             {
                 "id": activity.id,
@@ -229,6 +246,7 @@ async def user_authenticated_handler(app, user, authn_via, **extra_args):
     }
 
     await Session.create_session(**session_data)
+    await g.db_session.commit()
 
     if user.last_login_ip and user.current_login_ip != user.last_login_ip:
         await Activity.register(

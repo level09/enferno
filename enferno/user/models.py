@@ -127,12 +127,6 @@ class User(Base, UserMixin):
     def __repr__(self) -> str:
         return f"<User {self.id}: {self.email}>"
 
-    meta = {
-        "allow_inheritance": True,
-        "indexes": ["-created_at", "email", "username"],
-        "ordering": ["-created_at"],
-    }
-
     @staticmethod
     def random_password(length=32):
         alphabet = string.ascii_letters + string.digits + string.punctuation
@@ -222,6 +216,12 @@ class Activity(Base):
     async def register(cls, user_id, action, data=None):
         activity = cls(user_id=user_id, action=action, data=data)
         g.db_session.add(activity)
+        try:
+            from enferno.websocket import broadcast
+
+            await broadcast({"type": "activity", "action": action, "user_id": user_id})
+        except Exception:
+            pass  # don't fail DB ops if WS broadcast fails
         return activity
 
 

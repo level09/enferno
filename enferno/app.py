@@ -1,7 +1,7 @@
 import inspect
 
 import click
-from quart import Quart, g, render_template
+from quart import Quart, g, render_template, request
 from quart_security import Security, SQLAlchemyUserDatastore
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
@@ -60,6 +60,16 @@ def register_extensions(app):
         session.init_app(app)
     # For non-redis, fall back to Quart's built-in cookie sessions
 
+    # Rate limit auth endpoints
+    from enferno.utils.ratelimit import check_security_rate_limit
+
+    _auth_paths = frozenset({"/login", "/register", "/reset", "/confirm"})
+
+    @app.before_request
+    async def _rate_limit_auth():
+        if request.path in _auth_paths and request.method == "POST":
+            return await check_security_rate_limit()
+
     return None
 
 
@@ -72,8 +82,41 @@ def register_blueprints(app):
 
 
 def register_errorhandlers(app):
+    import logging
+
+    logger = logging.getLogger(__name__)
+
+    def _is_api_request():
+        return (
+            request.path.startswith("/api/")
+            or request.accept_mimetypes.best == "application/json"
+        )
+
+    @app.errorhandler(Exception)
+    async def handle_exception(error):
+        db_session = g.pop("db_session", None)
+        if db_session is not None:
+            try:
+                await db_session.rollback()
+            except Exception:
+                pass
+            finally:
+                await db_session.close()
+
+        code = getattr(error, "code", 500)
+        if code == 500:
+            logger.exception("Unhandled exception")
+
+        if _is_api_request():
+            return {"message": "Internal server error"}, code
+        return await render_template(f"{code}.html"), code
+
     async def render_error(error):
         error_code = getattr(error, "code", 500)
+        if _is_api_request():
+            return {
+                "message": error.name if hasattr(error, "name") else "Error"
+            }, error_code
         return await render_template(f"{error_code}.html"), error_code
 
     for errcode in [401, 404, 500]:
