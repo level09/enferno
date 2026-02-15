@@ -8,8 +8,8 @@ broadcast() here to add live features (notifications, status updates, etc).
 import asyncio
 import json
 
-from quart import Blueprint, g, session, websocket
-from sqlalchemy import select
+from quart import Blueprint, websocket
+from quart_security import current_user
 
 ws_bp = Blueprint("ws", __name__)
 
@@ -35,25 +35,11 @@ async def broadcast(message: dict, user_id: str | None = None):
 
 @ws_bp.websocket("/ws")
 async def ws_endpoint():
-    # quart-security only loads current_user in before_request, not before_websocket.
-    # Read the session cookie directly and verify the user exists.
-    fs_uniquifier = session.get("_user_id")
-    if not fs_uniquifier:
+    if not current_user or not current_user.is_authenticated:
         await websocket.close(4001, "Unauthorized")
         return
 
-    from enferno.user.models import User
-
-    user = (
-        await g.db_session.execute(
-            select(User).where(User.fs_uniquifier == fs_uniquifier)
-        )
-    ).scalar_one_or_none()
-    if not user or not user.active:
-        await websocket.close(4001, "Unauthorized")
-        return
-
-    user_id = str(user.id)
+    user_id = str(current_user.id)
     queue: asyncio.Queue = asyncio.Queue()
     _clients.setdefault(user_id, set()).add(queue)
 
