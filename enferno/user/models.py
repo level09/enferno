@@ -290,4 +290,3 @@ class Session(Base):
             stmt = stmt.where(cls.session_token != exclude_token)
         stmt = stmt.values(is_active=False)
         await g.db_session.execute(stmt)
-        await g.db_session.commit()
