@@ -58,12 +58,11 @@ async def ws_endpoint():
         sender = asyncio.create_task(_sender())
         receiver = asyncio.create_task(_receiver())
         try:
-            done, pending = await asyncio.wait(
-                [sender, receiver], return_when=asyncio.FIRST_COMPLETED
-            )
+            await asyncio.wait([sender, receiver], return_when=asyncio.FIRST_COMPLETED)
         finally:
-            for task in (sender, receiver):
-                task.cancel()
+            sender.cancel()
+            receiver.cancel()
+            await asyncio.gather(sender, receiver, return_exceptions=True)
     finally:
         _clients[user_id].discard(queue)
         if not _clients[user_id]:
