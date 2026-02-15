@@ -32,12 +32,6 @@ class Config:
     )
     SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI", _default_db)
 
-    # Celery configuration - only set if Redis available and configured
-    CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL") if REDIS_AVAILABLE else None
-    CELERY_RESULT_BACKEND = (
-        os.environ.get("CELERY_RESULT_BACKEND") if REDIS_AVAILABLE else None
-    )
-
     # security
     SECURITY_REGISTERABLE = True
     SECURITY_RECOVERABLE = False

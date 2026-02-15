@@ -1,7 +1,7 @@
 [project]
 name = "enferno"
 version = "13.1.0"
-description = "A modern Flask framework optimized for AI-assisted development workflows"
+description = "An async Quart framework optimized for AI-assisted development workflows"
 authors = [
     {name = "Level09", email = "hello@level09.com"}
 ]
@@ -42,17 +42,10 @@ quart-security = { path = "../quart-security", editable = true }
 [project.optional-dependencies]
 full = [
     "redis>=7.1.0",
-    "celery>=5.5.3",
-    "kombu>=5.5.4",
-    "amqp>=5.3.1",
-    "vine>=5.1.0",
 ]
 dev = [
     "ruff",
     "pre-commit",
-]
-wsgi = [
-    "uwsgi>=2.0.30",
 ]
 asgi = [
     "hypercorn>=0.17.0",

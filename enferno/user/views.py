@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 import orjson as json
 from quart import Blueprint, Response, current_app, g, render_template, request, session
@@ -14,6 +15,8 @@ from quart_security import (
 from sqlalchemy import func, select
 
 from enferno.user.models import Activity, Role, Session, User
+
+log = logging.getLogger(__name__)
 
 bp_user = Blueprint("users", __name__, static_folder="../static")
 
@@ -66,9 +69,10 @@ async def api_user_create():
         await Activity.register(current_user.id, "User Create", user.to_dict())
         await g.db_session.commit()
         return {"message": "User successfully created!"}
-    except Exception as e:
+    except Exception:
         await g.db_session.rollback()
-        return {"message": "Error creating user", "error": str(e)}, 412
+        log.exception("Error creating user")
+        return {"message": "Error creating user"}, 412
 
 
 @bp_user.post("/api/user/<int:id>")
@@ -90,9 +94,10 @@ async def api_user_update(id):
         )
         await g.db_session.commit()
         return {"message": "User successfully updated!"}
-    except Exception as e:
+    except Exception:
         await g.db_session.rollback()
-        return {"message": "Error updating user", "error": str(e)}, 412
+        log.exception("Error updating user")
+        return {"message": "Error updating user"}, 412
 
 
 @bp_user.route("/api/user/<int:id>", methods=["DELETE"])
@@ -106,9 +111,10 @@ async def api_user_delete(id):
         await Activity.register(current_user.id, "User Delete", user_data)
         await g.db_session.commit()
         return {"message": "User successfully deleted!"}
-    except Exception as e:
+    except Exception:
         await g.db_session.rollback()
-        return {"message": "Error deleting user", "error": str(e)}, 412
+        log.exception("Error deleting user")
+        return {"message": "Error deleting user"}, 412
 
 
 @bp_user.route("/roles/")
@@ -145,9 +151,10 @@ async def api_role_create():
         await Activity.register(current_user.id, "Role Create", role.to_dict())
         await g.db_session.commit()
         return {"message": "Role successfully created!"}
-    except Exception as e:
+    except Exception:
         await g.db_session.rollback()
-        return {"message": "Error creating role", "error": str(e)}, 412
+        log.exception("Error creating role")
+        return {"message": "Error creating role"}, 412
 
 
 @bp_user.post("/api/role/<int:id>")
@@ -167,9 +174,10 @@ async def api_role_update(id):
         )
         await g.db_session.commit()
         return {"message": "Role successfully updated!"}
-    except Exception as e:
+    except Exception:
         await g.db_session.rollback()
-        return {"message": "Error updating role", "error": str(e)}, 412
+        log.exception("Error updating role")
+        return {"message": "Error updating role"}, 412
 
 
 @bp_user.route("/api/role/<int:id>", methods=["DELETE"])
@@ -183,9 +191,10 @@ async def api_role_delete(id):
         await Activity.register(current_user.id, "Role Delete", role_data)
         await g.db_session.commit()
         return {"message": "Role successfully deleted!"}
-    except Exception as e:
+    except Exception:
         await g.db_session.rollback()
-        return {"message": "Error deleting role", "error": str(e)}, 412
+        log.exception("Error deleting role")
+        return {"message": "Error deleting role"}, 412
 
 
 @bp_user.route("/activities/")
@@ -254,6 +263,7 @@ async def user_authenticated_handler(app, user, authn_via, **extra_args):
             "Login from new IP",
             {"old_ip": user.last_login_ip, "new_ip": user.current_login_ip},
         )
+        await g.db_session.commit()
 
     if current_app.config.get("DISABLE_MULTIPLE_SESSIONS", False):
         await user.logout_other_sessions(session_data["session_token"])
@@ -265,6 +275,7 @@ async def after_password_change(sender, user, **extra_args):
     user.password_set = True
     g.db_session.add(user)
     await Activity.register(user.id, "Password Changed", {"email": user.email})
+    await g.db_session.commit()
 
 
 @tf_profile_changed.connect
@@ -275,6 +286,7 @@ async def after_tf_profile_change(sender, user, **extra_args):
         "Two-Factor Profile Changed",
         {"email": user.email, "method": user.tf_primary_method},
     )
+    await g.db_session.commit()
 
 
 @user_logged_out.connect

@@ -15,7 +15,7 @@ async def before_request():
 
 @portal.after_request
 async def add_header(response):
-    response.headers["Cache-Control"] = "public, max-age=10800"
+    response.headers["Cache-Control"] = "private, no-store"
     return response
 
 

@@ -4,13 +4,13 @@ This file provides comprehensive architectural patterns and coding standards for
 
 ## Framework Overview
 
-**Enferno** is a Flask-based web framework optimized for rapid development with modern tooling:
+**Enferno** is an async Quart-based web framework optimized for rapid development with modern tooling:
 
-- **Backend**: Flask 3.x with Blueprint organization
+- **Backend**: Quart (async) with Blueprint organization
 - **Frontend**: Vue 3 + Vuetify (no build step required)
-- **Database**: SQLAlchemy 2.x with modern statement-based queries
-- **Auth**: Flask-Security-Too with 2FA, WebAuthn, OAuth support
-- **Tasks**: Celery + Redis for background processing
+- **Database**: Async SQLAlchemy 2.x with `create_async_engine` + `async_sessionmaker`
+- **Auth**: quart-security with 2FA, WebAuthn, OAuth support
+- **Tasks**: Native async (`run_in_background` for fire-and-forget)
 - **Package Manager**: uv for fast dependency management
 
 ## Project Structure
@@ -20,8 +20,8 @@ enferno/
 ├── enferno/                # Main application package
 │   ├── app.py             # Application factory (create_app)
 │   ├── settings.py        # Environment-based configuration
-│   ├── extensions.py      # Flask extensions initialization
-│   ├── commands.py        # Custom Flask CLI commands
+│   ├── extensions.py      # Quart extensions initialization
+│   ├── commands.py        # Custom Quart CLI commands
 │   ├── public/            # Public routes (no auth)
 │   │   ├── views.py
 │   │   ├── models.py
@@ -35,7 +35,7 @@ enferno/
 │   │   ├── views.py
 │   │   └── templates/
 │   ├── services/          # Business logic layer
-│   ├── tasks/             # Celery task definitions
+│   ├── tasks.py           # Async background tasks
 │   ├── utils/             # Utility functions
 │   ├── static/            # CSS, JS, images
 │   │   ├── css/
@@ -61,21 +61,21 @@ enferno/
 ```bash
 ./setup.sh                    # Create virtual environment, install dependencies, generate .env
 uv sync --extra dev           # Install dependencies with dev tools
-uv sync --extra wsgi          # For Unix deployments that need uWSGI
+uv sync --extra asgi          # Add Hypercorn for production
 ```
 
 ### Database Management
 ```bash
-uv run flask create-db               # Initialize database tables
-uv run flask install                 # Create admin user with secure password
-uv run flask reset -e <email/username> -p <password>  # Reset user password
-uv run flask add-role -e <email> -r <role>  # Add role to user
+uv run quart create-db               # Initialize database tables
+uv run quart install                 # Create admin user with secure password
+uv run quart reset -e <email/username> -p <password>  # Reset user password
+uv run quart add-role -e <email> -r <role>  # Add role to user
 ```
 
 ### Development Server
 ```bash
-uv run flask run                     # Default http://localhost:5000
-uv run flask run --port 5001         # Use 5001 locally if 5000 is busy (macOS)
+uv run quart run                     # Default http://localhost:5000
+uv run quart run --port 5001         # Use 5001 locally if 5000 is busy (macOS)
 ```
 
 ### Code Quality
@@ -91,27 +91,18 @@ uv run pre-commit install            # Install pre-commit hooks
 docker compose up --build            # Full stack with Redis, PostgreSQL, Nginx
 ```
 
-### Internationalization
-```bash
-uv run flask i18n extract            # Extract translatable strings
-uv run flask i18n init <lang>        # Initialize new language
-uv run flask i18n update             # Update translations
-uv run flask i18n compile            # Compile translations
-```
-
-## Flask Architecture Patterns
+## Architecture Patterns
 
 ### Application Factory Pattern
 
 The app is created using the factory pattern in `enferno/app.py`:
 
 ```python
-from flask import Flask
+from quart import Quart
 from enferno.settings import Config
-from enferno.extensions import db, cache, mail, session
 
 def create_app(config_object=Config):
-    app = Flask(__name__)
+    app = Quart(__name__)
     app.config.from_object(config_object)
 
     register_blueprints(app)
@@ -127,20 +118,17 @@ def create_app(config_object=Config):
 Extensions are initialized in `enferno/extensions.py`:
 
 ```python
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 
-class BaseModel(DeclarativeBase):
+class Base(DeclarativeBase):
     pass
 
-db = SQLAlchemy(model_class=BaseModel)
-cache = Cache()
-mail = Mail()
-session = Session()
-
-# Import initialized extensions anywhere:
-from enferno.extensions import db, cache, mail
+# These are set by create_app at startup
+engine = None
+async_session_factory = None
 ```
+
+DB sessions are created per-request via `g.db_session` in `before_request`/`after_request` hooks.
 
 ### Blueprint Organization
 
@@ -150,7 +138,7 @@ Features are organized into blueprints by functional area:
 Routes accessible without authentication:
 
 ```python
-from flask import Blueprint, render_template
+from quart import Blueprint, render_template
 
 public = Blueprint('public', __name__)
 
@@ -163,8 +151,8 @@ def index():
 Authentication and user account management:
 
 ```python
-from flask import Blueprint
-from flask_security import auth_required
+from quart import Blueprint
+from quart_security import auth_required
 
 bp_user = Blueprint('user', __name__)
 
@@ -178,8 +166,8 @@ def profile():
 Protected routes requiring authentication. Uses `before_request` to protect all routes:
 
 ```python
-from flask import Blueprint
-from flask_security import auth_required
+from quart import Blueprint
+from quart_security import auth_required
 
 portal = Blueprint('portal', __name__)
 
@@ -324,7 +312,7 @@ db.session.commit()
 ### API Response Patterns
 
 ```python
-from flask import Blueprint, jsonify, request
+from quart import Blueprint, jsonify, request
 from enferno.extensions import db
 from enferno.user.models import User
 
@@ -388,10 +376,10 @@ def delete_user(user_id):
 
 ### Authentication & Authorization
 
-Flask-Security provides comprehensive auth with decorators:
+quart-security provides comprehensive auth with decorators:
 
 ```python
-from flask_security import auth_required, roles_required, current_user
+from quart_security import auth_required, roles_required, current_user
 
 # Require authentication
 @app.route('/protected')
@@ -417,10 +405,10 @@ def profile():
 ### Input Validation with WTForms
 
 ```python
-from flask_wtf import FlaskForm
+from wtforms import Form
 from wtforms import StringField, TextAreaField, validators
 
-class PostForm(FlaskForm):
+class PostForm(Form):
     title = StringField('Title', [
         validators.DataRequired(),
         validators.Length(min=3, max=255)
@@ -433,7 +421,7 @@ class PostForm(FlaskForm):
 
 ### CSRF Protection
 
-CSRF is automatically enabled via Flask-WTF. For AJAX requests include the token:
+CSRF is automatically enabled via WTForms. For AJAX requests include the token:
 
 ```javascript
 // Include CSRF token in AJAX requests
@@ -827,54 +815,19 @@ methods: {
 {% endif %}
 ```
 
-## Background Tasks (Celery)
+## Background Tasks
 
-### Task Definition
-
-Tasks are defined in `enferno/tasks/`:
+Use `enferno.tasks.run_in_background()` for fire-and-forget async tasks:
 
 ```python
-from enferno.tasks import celery
-from enferno.extensions import db, mail
+from enferno.tasks import run_in_background
 
-@celery.task
-def send_welcome_email(user_id):
-    from enferno.user.models import User
-    from flask_mail import Message
+async def send_welcome_email(user_id):
+    # async task logic here
+    pass
 
-    user = db.session.get(User, user_id)
-    if not user:
-        return False
-
-    msg = Message(
-        subject='Welcome!',
-        recipients=[user.email],
-        body=f'Welcome {user.name}!'
-    )
-    mail.send(msg)
-    return True
-```
-
-### Calling Tasks
-
-```python
-from enferno.tasks import send_welcome_email
-
-# Call asynchronously
-send_welcome_email.delay(user.id)
-
-# Call with ETA
-from datetime import datetime, timedelta
-send_welcome_email.apply_async(
-    args=[user.id],
-    eta=datetime.now() + timedelta(hours=1)
-)
-```
-
-### Running Celery Worker
-
-```bash
-celery -A enferno.tasks worker --loglevel=info
+# Fire and forget
+run_in_background(send_welcome_email(user.id))
 ```
 
 ## Docker Deployment
@@ -895,9 +848,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install uv
 RUN pip install --no-cache-dir uv
 
-# Install dependencies using uv (with optional wsgi extra)
+# Install dependencies using uv
 COPY pyproject.toml uv.lock ./
-RUN uv sync --extra wsgi --frozen
+RUN uv sync --frozen
 
 # Runtime stage
 FROM python:3.12-slim
@@ -928,7 +881,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:5000/ || exit 1
 
 EXPOSE 5000
-CMD ["uwsgi", "--ini", "uwsgi.ini"]
+CMD ["uvicorn", "run:app", "--host", "0.0.0.0", "--port", "5000"]
 ```
 
 ### Docker Compose
@@ -942,7 +895,7 @@ services:
     ports:
       - "8000:5000"
     environment:
-      - FLASK_ENV=production
+      - QUART_ENV=production
       - SQLALCHEMY_DATABASE_URI=postgresql://enferno:${DB_PASSWORD}@postgres/enferno
       - REDIS_SESSION=redis://:${REDIS_PASSWORD}@redis:6379/1
     depends_on:
@@ -983,7 +936,7 @@ volumes:
 ### Exception Management
 
 ```python
-from flask import jsonify
+from quart import jsonify
 from sqlalchemy.exc import IntegrityError
 
 try:
@@ -1000,9 +953,9 @@ except Exception as e:
 ### Logging
 
 ```python
-from flask import current_app
+from quart import current_app
 
-# Use Flask's logger
+# Use Quart's logger
 current_app.logger.info('User login successful')
 current_app.logger.error(f'Failed login attempt: {email}')
 current_app.logger.debug(f'Processing request: {request.url}')
@@ -1079,8 +1032,8 @@ import os
 from datetime import datetime
 
 # Third-party
-from flask import Blueprint, jsonify
-from flask_security import auth_required
+from quart import Blueprint, jsonify
+from quart_security import auth_required
 
 # Local application
 from enferno.extensions import db
@@ -1101,7 +1054,7 @@ Write code that's minimal, rock-solid, and production-ready. Focus on:
 
 Before committing:
 1. **Lint & Format**: `uv run ruff check --fix .` then `uv run ruff format .`
-2. **Test Locally**: `uv run flask create-db && uv run flask install && uv run flask run`
+2. **Test Locally**: `uv run quart create-db && uv run quart install && uv run quart run`
 3. **Smoke Test**: Visit `/`, `/login`, dashboard; verify no errors
 4. **Pre-commit**: Run `uv run pre-commit run -a`
 
@@ -1119,7 +1072,7 @@ Before committing:
 2. **Modern SQLAlchemy** - Statement-based queries (`db.select()`, not legacy `.query`)
 3. **Custom Vue Delimiters** - Always use `${}` for Vue expressions
 4. **No Build Step** - Direct JavaScript without compilation
-5. **Security First** - Use Flask-Security decorators, validate all inputs
+5. **Security First** - Use quart-security decorators, validate all inputs
 6. **Consistent API** - RESTful patterns with standard JSON responses
 7. **Environment Config** - Use `.env` files, never hardcode secrets
 8. **Modern Tooling** - Use `uv` for package management, Ruff for linting

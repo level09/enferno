@@ -1,9 +1,15 @@
-"""Authenticated WebSocket endpoint with connection tracking."""
+"""Authenticated WebSocket endpoint with connection tracking.
+
+Provides real-time push to connected clients. The frontend (layout.html)
+auto-connects and reconnects. Extend _onWsMessage() in layout.html and
+broadcast() here to add live features (notifications, status updates, etc).
+"""
 
 import asyncio
 import json
 
-from quart import Blueprint, session, websocket
+from quart import Blueprint, websocket
+from quart_security import current_user
 
 ws_bp = Blueprint("ws", __name__)
 
@@ -29,11 +35,12 @@ async def broadcast(message: dict, user_id: str | None = None):
 
 @ws_bp.websocket("/ws")
 async def ws_endpoint():
-    user_id = session.get("_user_id")
-    if not user_id:
+    # quart-security populates current_user from the session cookie
+    if not current_user or not current_user.is_authenticated:
         await websocket.close(4001, "Unauthorized")
         return
 
+    user_id = str(current_user.id)
     queue: asyncio.Queue = asyncio.Queue()
     _clients.setdefault(user_id, set()).add(queue)
 

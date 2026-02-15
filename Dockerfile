@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install dependencies
 COPY pyproject.toml uv.lock ./
-RUN uv sync --extra wsgi --frozen --no-install-project
+RUN uv sync --frozen --no-install-project
 
 # Runtime
 FROM python:3.12-slim
@@ -38,4 +38,4 @@ USER enferno
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:5000/ || exit 1
 
-CMD ["uwsgi", "--http", "0.0.0.0:5000", "--master", "--wsgi", "run:app", "--processes", "2", "--threads", "2"]
+CMD ["uvicorn", "run:app", "--host", "0.0.0.0", "--port", "5000"]

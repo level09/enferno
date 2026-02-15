@@ -45,6 +45,17 @@ def register_extensions(app):
             await db_session.close()
         return response
 
+    @app.before_websocket
+    async def _open_ws_session():
+        g.db_session = ext.async_session_factory()
+
+    @app.after_websocket
+    async def _close_ws_session(response):
+        db_session = g.pop("db_session", None)
+        if db_session is not None:
+            await db_session.close()
+        return response
+
     user_datastore = SQLAlchemyUserDatastore(
         lambda: g.db_session, User, Role, webauthn_model=WebAuthn
     )
