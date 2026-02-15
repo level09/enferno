@@ -56,6 +56,11 @@ def register_extensions(app):
             await db_session.close()
         return response
 
+    @app.while_serving
+    async def _lifespan():
+        yield
+        await ext.engine.dispose()
+
     user_datastore = SQLAlchemyUserDatastore(
         lambda: g.db_session, User, Role, webauthn_model=WebAuthn
     )

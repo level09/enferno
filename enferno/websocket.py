@@ -55,9 +55,15 @@ async def ws_endpoint():
             while True:
                 await websocket.receive()
 
-        async with asyncio.TaskGroup() as tg:
-            tg.create_task(_sender())
-            tg.create_task(_receiver())
+        sender = asyncio.create_task(_sender())
+        receiver = asyncio.create_task(_receiver())
+        try:
+            done, pending = await asyncio.wait(
+                [sender, receiver], return_when=asyncio.FIRST_COMPLETED
+            )
+        finally:
+            for task in (sender, receiver):
+                task.cancel()
     finally:
         _clients[user_id].discard(queue)
         if not _clients[user_id]:
