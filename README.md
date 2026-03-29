@@ -105,6 +105,10 @@ FLASK_DEBUG=1                    # 0 in production
 
 Documentation: [docs.enferno.io](https://docs.enferno.io)
 
+Looking for async?
+------------------
+Check out **[STK](https://stk.dev)** — same philosophy, built on Quart (async Flask) with native WebSockets.
+
 License
 -------
 MIT
