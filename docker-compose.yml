@@ -4,11 +4,9 @@ services:
     container_name: redis 
     image: 'redis:7-alpine'
     user: "${DOCKER_UID:-1000}"
-    command: redis-server --requirepass ${REDIS_PASSWORD:-verystrongpass}
+    command: redis-server --requirepass ${REDIS_PASSWORD:?run ./setup.sh or set REDIS_PASSWORD in .env}
     volumes:
       - 'redis-data:/data'
-    ports:
-      - '6379:6379'
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -20,11 +18,9 @@ services:
     image: 'postgres:15-alpine'
     volumes:
       - 'postgres-data:/var/lib/postgresql/data'
-    ports:
-      - '5432:5432'
     environment:
       - POSTGRES_USER=enferno
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-verystrongpass}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:?run ./setup.sh or set DB_PASSWORD in .env}
       - POSTGRES_DB=enferno
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "enferno"]
@@ -49,10 +45,10 @@ services:
     environment:
       - FLASK_APP=run.py
       - FLASK_DEBUG=0
-      - SQLALCHEMY_DATABASE_URI=postgresql://enferno:${DB_PASSWORD:-verystrongpass}@postgres/enferno
-      - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD:-verystrongpass}@redis:6379/2
-      - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD:-verystrongpass}@redis:6379/3
-      - REDIS_SESSION=redis://:${REDIS_PASSWORD:-verystrongpass}@redis:6379/1
+      - SQLALCHEMY_DATABASE_URI=postgresql://enferno:${DB_PASSWORD:?run ./setup.sh or set DB_PASSWORD in .env}@postgres/enferno
+      - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD:?run ./setup.sh or set REDIS_PASSWORD in .env}@redis:6379/2
+      - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD:?run ./setup.sh or set REDIS_PASSWORD in .env}@redis:6379/3
+      - REDIS_SESSION=redis://:${REDIS_PASSWORD:?run ./setup.sh or set REDIS_PASSWORD in .env}@redis:6379/1
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/"]
       interval: 30s
@@ -86,6 +82,12 @@ services:
     build: .
     user: "${DOCKER_UID:-1000}"
     command: celery -A enferno.tasks worker -l info
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A enferno.tasks inspect ping --destination celery@$$HOSTNAME --timeout 5"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
     volumes:
       - './enferno:/app/enferno'
       - './run.py:/app/run.py'
@@ -95,9 +97,9 @@ services:
       - .env
     environment:
       - FLASK_APP=run.py
-      - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD:-verystrongpass}@redis:6379/2
-      - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD:-verystrongpass}@redis:6379/3
-      - REDIS_SESSION=redis://:${REDIS_PASSWORD:-verystrongpass}@redis:6379/1
+      - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD:?run ./setup.sh or set REDIS_PASSWORD in .env}@redis:6379/2
+      - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD:?run ./setup.sh or set REDIS_PASSWORD in .env}@redis:6379/3
+      - REDIS_SESSION=redis://:${REDIS_PASSWORD:?run ./setup.sh or set REDIS_PASSWORD in .env}@redis:6379/1
 
 volumes:
   redis-data:

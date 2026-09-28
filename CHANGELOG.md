@@ -2,7 +2,21 @@
 
 ## Unreleased
 
+### Added
+- Offline configuration checks with `uv run python checks.py --config`.
+- Setup and configuration regression tests, plus PostgreSQL smoke checks on Python 3.11, 3.12, and 3.13 and a production container build in CI.
+
+### Security
+- Stop publishing PostgreSQL and Redis container ports and require explicit database and Redis passwords.
+- Update vendored Vue, Vuetify, and Axios assets to the versions tested in ReadyKit 1.5.1.
+
+Thanks to Ali Tanveer ([@alivirgo](https://github.com/alivirgo)) for privately reporting the shared Docker Compose port and default password issues in ReadyKit.
+
 ### Fixed
+- Require Python 3.11 or newer in setup and install dependencies with the selected interpreter.
+- Install and configure optional Redis sessions and Celery with `./setup.sh --full` or Docker setup.
+- Generate Docker Redis settings using `REDIS_URL`, preserve the SQLite default for local setup, and enable secure cookies for Docker.
+- Check each Celery container through Redis instead of inheriting the image's HTTP health check.
 - Install Celery and Redis in the production Docker image. The image synced only the `wsgi` extra while `docker-compose.yml` runs a Celery worker, so `enferno.tasks` always fell back to `CELERY_AVAILABLE = False`.
 
 ### Changed

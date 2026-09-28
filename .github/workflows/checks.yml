@@ -9,33 +9,69 @@ on:
 jobs:
   checks:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
-
-      - name: Set up Python
-        run: uv python install 3.11
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync
+        run: uv sync --frozen --extra dev --extra full
+
+      - name: Run lint
+        run: uv run ruff check .
+
+      - name: Run tests
+        run: uv run pytest
 
       - name: Create database tables
         env:
           FLASK_APP: run.py
+          SQLALCHEMY_DATABASE_URI: postgresql://test:test@localhost:5432/test
           SECRET_KEY: test-secret-key-for-ci
           SECURITY_PASSWORD_SALT: test-salt-for-ci
           SECURITY_TOTP_SECRETS: test-totp-secret
-        run: |
-          mkdir -p instance
-          uv run flask create-db
+        run: uv run flask create-db
 
       - name: Run checks
         env:
           FLASK_APP: run.py
+          SQLALCHEMY_DATABASE_URI: postgresql://test:test@localhost:5432/test
           SECRET_KEY: test-secret-key-for-ci
           SECURITY_PASSWORD_SALT: test-salt-for-ci
           SECURITY_TOTP_SECRETS: test-totp-secret
-        run: uv run python checks.py -v
+        run: |
+          uv run python checks.py --config
+          uv run python checks.py -v
+
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build production image
+        run: docker build --tag enferno-ci .
+
+      - name: Verify optional runtime dependencies
+        run: docker run --rm enferno-ci python -c "import celery, redis"

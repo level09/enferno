@@ -23,6 +23,7 @@ pip install uv  # or: curl -sSf https://astral.sh/uv/install.sh | bash
 git clone git@github.com:level09/enferno.git
 cd enferno
 ./setup.sh                # Installs deps + generates secure .env
+uv run python checks.py --config # Check settings offline
 uv run flask create-db    # Setup database
 uv run flask install      # Create admin user
 uv run flask run          # Start server
@@ -30,9 +31,17 @@ uv run flask run          # Start server
 
 Visit `http://localhost:5000` to see your application.
 
+Setup requires Python 3.11 or newer. Local setup uses SQLite for data and sessions,
+with Redis and Celery disabled. `checks.py --config` checks required secrets,
+database URL and driver, enabled OAuth settings, and optional dependencies without
+starting the app or contacting services. It returns exit code 1 on failure without
+printing secret values. Passing does not verify credentials, connectivity, or schema.
+After initializing the database, run `uv run python checks.py` for app smoke checks.
+
 ## Adding Background Tasks
 
-When you need Celery for async jobs:
+For a new installation, `./setup.sh --full` installs and configures Redis sessions
+and Celery at `localhost:6379`. For an existing installation, preserve `.env`:
 
 ```bash
 uv sync --extra full      # Adds Redis + Celery
@@ -41,13 +50,18 @@ uv sync --extra full      # Adds Redis + Celery
 
 ## Docker Setup
 
-Full production stack with one command:
+Configure a new installation, then start the full production stack:
 
 ```bash
+./setup.sh  # Select Docker for a new installation
 docker compose up --build
 ```
 
-Includes Redis, PostgreSQL, Nginx, and Celery.
+Includes Redis, PostgreSQL, Nginx, and Celery. Docker setup installs the full extras,
+generates required `DB_PASSWORD` and `REDIS_PASSWORD` values, and enables secure
+cookies for HTTPS. For an existing installation, keep the passwords used by its
+services. PostgreSQL and Redis do not publish host ports. The Celery health check
+targets the worker in its own container through Redis.
 
 ## Environment Configuration
 

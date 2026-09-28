@@ -9,6 +9,7 @@
 ```bash
 git clone git@github.com:level09/enferno.git && cd enferno
 ./setup.sh                    # Installs deps + generates secure .env
+uv run python checks.py --config # Check settings offline
 uv run flask create-db        # Setup database
 uv run flask install          # Create admin user
 uv run flask run              # → http://localhost:5000
@@ -52,7 +53,8 @@ Requirements: Python 3.11+ and [uv](https://docs.astral.sh/uv/)
 
 ### Background Tasks
 
-When you need Celery for async jobs:
+For a new installation with Redis sessions and Celery, run `./setup.sh --full`.
+For an existing installation, preserve `.env` and enable them manually:
 
 ```bash
 uv sync --extra full        # Adds Redis + Celery
@@ -76,19 +78,28 @@ automatically. Databases created before migrations existed: run
 
 ### Sanity Checks
 
-No pytest ceremony - just real code paths:
+Check settings without starting the app or contacting services, then run the
+application smoke checks after initializing the database:
 
 ```bash
-uv run python checks.py     # Run before deploying
+uv run python checks.py --config # Secrets, database URL/driver, OAuth, optional deps
+uv run python checks.py          # App and database smoke checks
+uv run pytest                   # Isolated setup and configuration regression tests
 ```
 
 ### Docker
 
-Full production stack with one command:
+Configure a new installation, then start the full production stack:
 
 ```bash
+./setup.sh                  # Select Docker for a new installation
 docker compose up --build   # Redis, PostgreSQL, Nginx, Celery
 ```
+
+Compose requires `DB_PASSWORD` and `REDIS_PASSWORD`. For an existing installation,
+use the credentials already configured in its database and Redis; do not regenerate
+them with setup. Database and Redis ports are internal to the Compose network.
+Docker setup enables secure cookies, so use HTTPS when signing in.
 
 ### VPS Deploy
 
