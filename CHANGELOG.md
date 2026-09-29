@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- Move the `enferno-dev` skill to `.agents/skills/`, the shared location for Codex, Cursor, Copilot, Gemini CLI and others. `.claude/skills` is a symlink to it, and `npx skills add level09/enferno` installs it elsewhere.
+- Cut `AGENTS.md` from 1,130 to about 90 lines of stack, layout, commands, routes and hard rules; code patterns live only in the skill. Fixed skill examples that missed the `auth_required` import and mounted pages without `layoutMixin`.
+
 ## v13.2.0 (2026-09-29)
 
 ### Upgrade notes for existing apps

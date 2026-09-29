@@ -41,7 +41,7 @@ class Product(db.Model, BaseMixin):
     price = db.Column(db.Numeric(10, 2), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey("categories.id"))
     category = db.relationship("Category", back_populates="products")
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
     active = db.Column(db.Boolean, default=True)
 
     def to_dict(self):
@@ -288,12 +288,14 @@ def list_products():
 
 ## Dialog Patterns
 
-Complete Vue setup with CRUD dialogs:
+Complete Vue setup with CRUD dialogs (Composition API works alongside `layoutMixin`):
 
 ```javascript
-const vuetify = createVuetify(config.vuetifyConfig);
+const { createApp, ref } = Vue;
+const vuetify = Vuetify.createVuetify(config.vuetifyConfig);
 
-createApp({
+const app = createApp({
+  mixins: [layoutMixin],
   delimiters: config.delimiters,
   setup() {
     const items = ref([]);
@@ -306,6 +308,14 @@ createApp({
     const deleting = ref(false);
     const selectedItem = ref(null);
     const form = ref({ name: '', price: 0, category_id: null });
+
+    async function loadItems({ page, itemsPerPage }) {
+      loading.value = true;
+      const res = await axios.get('/api/products', { params: { page, per_page: itemsPerPage } });
+      items.value = res.data.items;
+      total.value = res.data.total;
+      loading.value = false;
+    }
 
     function openCreate() {
       editMode.value = false;
@@ -342,9 +352,12 @@ createApp({
       loadItems({ page: 1, itemsPerPage: 25 });
     }
 
-    return { items, total, loading, dialog, confirmDialog, editMode, saving, deleting, form, openCreate, editItem, saveItem, deleteItem, confirmDelete };
+    return { items, total, loading, dialog, confirmDialog, editMode, saving, deleting, form, loadItems, openCreate, editItem, saveItem, deleteItem, confirmDelete };
   }
-}).use(vuetify).mount('#app');
+});
+
+registerEnfernoComponents(app);
+app.use(vuetify).mount('#app');
 ```
 
 ## Error Handling
@@ -366,7 +379,7 @@ def not_found(e):
 @bp.post("/api/product/")
 @roles_required("admin")
 def create_product():
-    data = request.json
+    data = request.json.get("item", {})
     if not data.get("name"):
         return {"error": "Name is required"}, 400
     # ... rest of logic
@@ -377,7 +390,7 @@ Vue error handling:
 async function saveItem() {
   try {
     saving.value = true;
-    await axios.post(url, form.value);
+    await axios.post(url, { item: form.value });
     dialog.value = false;
   } catch (error) {
     snackbar.value = { show: true, text: error.response?.data?.error || 'Save failed', color: 'error' };

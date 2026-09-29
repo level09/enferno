@@ -6,94 +6,31 @@ sidebarTitle: "AI Coding"
 
 ## Overview
 
-Enferno is built for AI-assisted development. It ships with `AGENTS.md` — a comprehensive guide that AI assistants (Claude Code, Cursor, GitHub Copilot) use to understand the codebase instantly.
+Enferno ships two pieces of context for coding agents:
 
-## How It Works
+- **`AGENTS.md`**: a short, always-loaded guide with the stack, layout, commands, routes and hard rules. Claude Code, Codex, Cursor, GitHub Copilot and most other agents read it automatically.
+- **The `enferno-dev` skill** in `.agents/skills/enferno-dev/`: full code patterns for models, APIs, Vue pages, dialogs and migrations. Agents load it only when a task needs it, so it costs nothing the rest of the time.
 
-When you open the project in an AI-powered IDE or use Claude Code, the AI reads `AGENTS.md` and immediately understands:
+`.agents/skills/` is the shared location for Codex, Cursor, Copilot, Gemini CLI, OpenCode and others. `.claude/skills` is a symlink to it, so Claude Code sees the same skill.
 
-- Project structure and conventions
-- Database patterns (SQLAlchemy 2.x)
-- Frontend patterns (Vue 3 + Vuetify 3 without build tools)
-- Authentication system (Flask-Security)
-- CLI commands available
-- How to create new features
+## Using It
 
-## Using Claude Code
+Open the project in your agent and ask for features in plain language:
+
+```
+> Add a Product model with name, price and category, plus an admin page to manage it
+> Add a status column to users and a migration for it
+> Create an API endpoint to export activities as CSV
+```
+
+## Using the Skill in Another Project
+
+Install the skill into any project with the [skills CLI](https://github.com/vercel-labs/skills):
 
 ```bash
-# Claude Code understands Enferno out of the box
-claude
-
-# Example prompts:
-> "Add a new Post model with title and content"
-> "Create an API endpoint to list all users"
-> "Add a new page to the dashboard"
+npx skills add level09/enferno
 ```
-
-## Using Cursor
-
-Open the project in Cursor. The AI will automatically read `AGENTS.md` and provide context-aware suggestions.
-
-Example prompts:
-- "Create a data table for products following our patterns"
-- "Add OAuth login with Microsoft"
-- "Generate a RESTful endpoint for orders"
-
-## What AGENTS.md Contains
-
-The file includes:
-
-### Development Commands
-```bash
-./setup.sh                    # Setup environment
-uv run flask create-db        # Initialize database
-uv run flask install          # Create admin user
-uv run flask run              # Start server
-```
-
-### Architecture Overview
-- Flask factory pattern in `enferno/app.py`
-- Blueprint organization (public, portal, user)
-- Extension initialization in `extensions.py`
-
-### Code Patterns
-```python
-# Query pattern (SQLAlchemy 2.x)
-query = db.select(User)
-pagination = db.paginate(query, page=page, per_page=per_page)
-
-# Response pattern
-return {
-    "items": [item.to_dict() for item in pagination.items],
-    "total": pagination.total
-}
-```
-
-### Frontend Patterns
-- Vue 3 with custom `${}` delimiters (avoids Jinja conflicts)
-- Vuetify 3 components
-- Per-page Vue instances
 
 ## Customizing for Your Project
 
-Add project-specific patterns to `AGENTS.md`:
-
-```markdown
-## Custom Patterns
-
-### Order Processing
-Orders follow this flow:
-1. Create order via POST /api/orders
-2. Process payment via Stripe
-3. Update status to 'paid'
-```
-
-The AI will incorporate your additions when generating code.
-
-## Benefits
-
-1. **Instant Context** — AI understands your codebase immediately
-2. **Consistent Code** — Generated code follows your patterns
-3. **Faster Development** — Less time explaining, more time building
-4. **Team Knowledge** — Document patterns once, AI applies everywhere
+Add project-specific rules to `AGENTS.md` and keep it short. Put longer patterns in a skill under `.agents/skills/<name>/SKILL.md` so they load only when relevant.
