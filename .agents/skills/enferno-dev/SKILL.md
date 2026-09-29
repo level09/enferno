@@ -186,7 +186,8 @@ app.use(vuetify).mount('#app');
 
 Rules:
 - Icons are Tabler only: `ti-*` names (`icon="ti-pencil"`, `<i class="ti ti-user">`). Never `mdi-*`; it renders blank.
-- Logout is POST-only: `<form method="post" action="/logout"><v-btn type="submit">Logout</v-btn></form>`, never `href="/logout"`.
+- Logout is POST-only: a form posting to `/logout`, never `href="/logout"`.
+- CSRF is enforced on every POST/PUT/DELETE. Axios on `layout.html` pages already sends the `X-CSRFToken` header; plain HTML forms need `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">`.
 - Pass server data through a `<script type="application/json">` tag and `|tojson`, never by interpolating into JS.
 - Never mutate reactive state inside a computed property. It loops forever on Vue 3.5.
 

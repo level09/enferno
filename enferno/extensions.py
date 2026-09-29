@@ -9,6 +9,7 @@ from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
+from flask_wtf.csrf import CSRFProtect
 from sqlalchemy.orm import DeclarativeBase
 
 
@@ -23,3 +24,4 @@ mail = Mail()
 debug_toolbar = DebugToolbarExtension()
 session = Session()
 babel = Babel()
+csrf = CSRFProtect()

@@ -77,6 +77,7 @@ Lists return `{"items": [...], "total": n, "perPage": n}`. Create and update tak
 
 - **Icons**: Tabler only (`ti-*`). Vuetify's built-in icons are mapped to Tabler in `static/js/config.js`; `mdi-*` renders blank.
 - **Logout**: POST only. Use a form posting to `/logout`, never a link.
+- **CSRF**: every POST/PUT/DELETE is checked (`CSRFProtect`). Axios sends the token automatically on `layout.html` pages; plain HTML forms need `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">`.
 - **Postgres driver**: `psycopg` 3. Do not add `psycopg2-binary`.
 - **Reactivity**: never mutate reactive state inside a computed property; Vue 3.5 loops forever.
 - **Vendored JS**: Vue and Vuetify versions must stay compatible; after updating them, load an admin page in a real browser.

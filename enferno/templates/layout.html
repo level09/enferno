@@ -90,6 +90,7 @@
                     <v-divider></v-divider>
 
                     <form method="post" action="/logout">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <v-list density="compact">
                         <v-list-item tag="button" type="submit" base-color="error" class="w-100 text-start">
                             <template v-slot:prepend><i class="ti ti-logout mr-3" style="font-size: 18px;"></i></template>
@@ -174,6 +175,7 @@
 <script src="/static/js/config.js"></script>
 <script src="/static/js/vuetify.min.js"></script>
 <script src="/static/js/axios.min.js"></script>
+<script>axios.defaults.headers.common["X-CSRFToken"] = "{{ csrf_token() }}";</script>
 
 <!-- Navigation Data -->
 <script src="/static/js/navigation.js"></script>

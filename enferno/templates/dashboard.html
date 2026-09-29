@@ -70,6 +70,7 @@
                             Change Password
                         </v-btn>
                         <form method="post" action="/logout">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <v-btn type="submit" variant="text">
                                 <template v-slot:prepend><i class="ti ti-logout"></i></template>
                                 Logout

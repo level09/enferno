@@ -2,9 +2,12 @@
 
 ## Unreleased
 
+### Security
+- Enable CSRF protection for the whole app. The admin JSON API accepted POST and DELETE requests without a token; only Flask-Security's own forms were protected. Axios now sends the token automatically on `layout.html` pages, and the logout forms include it.
+
 ### Changed
 - Move the `enferno-dev` skill to `.agents/skills/`, the shared location for Codex, Cursor, Copilot, Gemini CLI and others. `.claude/skills` is a symlink to it, and `npx skills add level09/enferno` installs it elsewhere.
-- Cut `AGENTS.md` from 1,130 to about 90 lines of stack, layout, commands, routes and hard rules; code patterns live only in the skill. Fixed skill examples that missed the `auth_required` import and mounted pages without `layoutMixin`.
+- Cut `AGENTS.md` from 1,130 to about 90 lines of stack, layout, commands, routes and hard rules; code patterns live only in the skill. Removed the unused `templates/core/` scaffolding templates, left over from the old OpenAI generator. Fixed skill examples that missed the `auth_required` import and mounted pages without `layoutMixin`.
 
 ## v13.2.0 (2026-09-29)
 
