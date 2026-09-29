@@ -25,6 +25,7 @@ Thanks to Ali Tanveer ([@alivirgo](https://github.com/alivirgo)) for privately r
 - Install Celery and Redis in the production Docker image. The image synced only the `wsgi` extra while `docker-compose.yml` runs a Celery worker, so `enferno.tasks` always fell back to `CELERY_AVAILABLE = False`.
 
 ### Changed
+- Build the production image on Python 3.13 and add Python 3.14 to the CI matrix.
 - Vendor Tabler Icons 3.48.0 (woff2 only) instead of loading `@latest` from a CDN, and remove the unused 5 MB Material Design Icons bundle.
 - Removed the passlib, flask-script, speaklater, six, mako, python-editor, pycparser, cffi and bcrypt pins. Flask-Security-Too supplies the `passlib` namespace through libpass, so the explicit passlib 1.7.4 pin was shadowing it.
 - Dropped the `setuptools<82` pin, which only existed for passlib 1.7.4's use of `pkg_resources`, and the warning suppression that went with it.
