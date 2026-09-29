@@ -55,7 +55,7 @@
                 <template v-slot:activator="{ props }">
                     <v-btn v-bind="props" icon variant="text" size="small" class="ml-1">
                         <v-avatar color="primary" size="32">
-                            <span class="text-body-2">{{ current_user.name[:2]|upper if current_user.name else 'U' }}</span>
+                            <span class="text-body-2">{{ current_user.display_name[:2]|upper }}</span>
                         </v-avatar>
                     </v-btn>
                 </template>
@@ -63,8 +63,8 @@
                 <v-card min-width="280">
                     <v-list>
                         <v-list-item
-                            title="{{ current_user.name }}"
-                            subtitle="{{ current_user.email }}"
+                            title="{{ current_user.display_name }}"
+                            {% if current_user.name %}subtitle="{{ current_user.email }}"{% endif %}
                         >
                             <template v-slot:prepend><i class="ti ti-user mr-3" style="font-size: 20px;"></i></template>
                         </v-list-item>
