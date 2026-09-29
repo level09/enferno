@@ -35,18 +35,10 @@ function resolveNavComponent(item) {
  * @returns {Array} Filtered navigation items
  */
 function filterNavByRole(items, userRoles = []) {
-  return items.filter(item => {
-    // If no role specified, show to everyone
-    if (!item.role) return true;
-
-    // Check if user has the required role
-    const hasRole = userRoles.includes(item.role);
-
-    // If item has children, filter them recursively
-    if (hasRole && item.children) {
-      item.children = filterNavByRole(item.children, userRoles);
-    }
-
-    return hasRole;
-  });
+  // Return copies: mutating reactive items inside a computed re-triggers it forever
+  return items
+    .filter(item => !item.role || userRoles.includes(item.role))
+    .map(item => item.children
+      ? { ...item, children: filterNavByRole(item.children, userRoles) }
+      : item);
 }
