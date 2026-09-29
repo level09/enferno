@@ -1,7 +1,0 @@
-@dataclasses.dataclass
-class Project(db.Model, BaseMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    url = db.Column(db.String, nullable=True)
-    name = db.Column(db.String, nullable=True)
-    description = db.Column(db.String, nullable=True)
-
