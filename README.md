@@ -9,7 +9,6 @@
 ```bash
 git clone git@github.com:level09/enferno.git && cd enferno
 ./setup.sh                    # Installs deps + generates secure .env
-uv run python checks.py --config # Check settings offline
 uv run flask create-db        # Setup database
 uv run flask install          # Create admin user
 uv run flask run              # → http://localhost:5000
@@ -78,13 +77,10 @@ automatically. Databases created before migrations existed: run
 
 ### Sanity Checks
 
-Check settings without starting the app or contacting services, then run the
-application smoke checks after initializing the database:
+Real code paths against your configured database, run after `create-db`:
 
 ```bash
-uv run python checks.py --config # Secrets, database URL/driver, OAuth, optional deps
-uv run python checks.py          # App and database smoke checks
-uv run pytest                   # Isolated setup and configuration regression tests
+uv run python checks.py     # Run before deploying
 ```
 
 ### Docker
@@ -99,7 +95,6 @@ docker compose up --build   # Redis, PostgreSQL, Nginx, Celery
 Compose requires `DB_PASSWORD` and `REDIS_PASSWORD`. For an existing installation,
 use the credentials already configured in its database and Redis; do not regenerate
 them with setup. Database and Redis ports are internal to the Compose network.
-Docker setup enables secure cookies, so use HTTPS when signing in.
 
 ### VPS Deploy
 

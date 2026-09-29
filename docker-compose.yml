@@ -48,7 +48,7 @@ services:
       - SQLALCHEMY_DATABASE_URI=postgresql://enferno:${DB_PASSWORD:?run ./setup.sh or set DB_PASSWORD in .env}@postgres/enferno
       - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD:?run ./setup.sh or set REDIS_PASSWORD in .env}@redis:6379/2
       - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD:?run ./setup.sh or set REDIS_PASSWORD in .env}@redis:6379/3
-      - REDIS_SESSION=redis://:${REDIS_PASSWORD:?run ./setup.sh or set REDIS_PASSWORD in .env}@redis:6379/1
+      - REDIS_URL=redis://:${REDIS_PASSWORD:?run ./setup.sh or set REDIS_PASSWORD in .env}@redis:6379/1
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/"]
       interval: 30s
@@ -99,7 +99,7 @@ services:
       - FLASK_APP=run.py
       - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD:?run ./setup.sh or set REDIS_PASSWORD in .env}@redis:6379/2
       - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD:?run ./setup.sh or set REDIS_PASSWORD in .env}@redis:6379/3
-      - REDIS_SESSION=redis://:${REDIS_PASSWORD:?run ./setup.sh or set REDIS_PASSWORD in .env}@redis:6379/1
+      - REDIS_URL=redis://:${REDIS_PASSWORD:?run ./setup.sh or set REDIS_PASSWORD in .env}@redis:6379/1
 
 volumes:
   redis-data:

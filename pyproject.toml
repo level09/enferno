@@ -53,7 +53,6 @@ full = [
     "celery>=5.6.2",
 ]
 dev = [
-    "pytest>=8.4.0",
     "ruff",
     "pre-commit",
 ]

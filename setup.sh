@@ -156,9 +156,6 @@ if ! awk -v sk="$SECRET_KEY" -v ts1="$TOTP_SECRET1" -v ts2="$TOTP_SECRET2" -v ps
         # Use the default instance/enferno.db path from settings.py.
         next
     }
-    else if ($0 ~ /^SESSION_COOKIE_SECURE=/) {
-        print "SESSION_COOKIE_SECURE=" (docker == "true" ? "True" : "False")
-    }
     else if (full == "true" && docker != "true" && $0 ~ /^#(REDIS_URL|CELERY_BROKER_URL|CELERY_RESULT_BACKEND)=redis:\/\/localhost:/) {
         sub(/^#/, "")
         print
@@ -221,7 +218,6 @@ echo
 echo -e "${GREEN}Next steps:${NC}"
 echo -e "1. Update the remaining values in your .env file (mail settings, etc.)"
 echo -e "2. Modern uv workflow - use these commands:"
-echo -e "   ${GREEN}uv run python checks.py --config${NC} # Check settings offline"
 echo -e "   ${GREEN}uv run flask create-db${NC}   # Initialize database"
 echo -e "   ${GREEN}uv run flask install${NC}     # Create admin user"
 echo -e "   ${GREEN}uv run flask run${NC}         # Start development server"

@@ -6,14 +6,9 @@ No frameworks, no mocking, just real code paths.
 Usage:
     uv run python checks.py
     uv run python checks.py -v  # verbose
-    uv run python checks.py --config  # offline configuration checks
 """
 
-import argparse
-import importlib.util
-import os
 import sys
-from pathlib import Path
 
 VERBOSE = "-v" in sys.argv
 PASSED = 0
@@ -111,85 +106,6 @@ def check_security_config(app):
 # =============================================================================
 
 
-def check_configuration():
-    """Check local settings without booting the app or contacting services."""
-    from dotenv import dotenv_values, load_dotenv
-    from sqlalchemy import create_engine
-    from sqlalchemy.exc import SQLAlchemyError
-
-    root = Path(__file__).resolve().parent
-    load_dotenv(root / ".env")
-    sample = dotenv_values(root / ".env-sample")
-    errors = []
-
-    def require(name, value, action):
-        if (
-            not value
-            or not value.strip()
-            or "your_" in value
-            or value == sample.get(name)
-        ):
-            errors.append(f"{name}: missing or placeholder value. {action}")
-
-    for name in ("SECRET_KEY", "SECURITY_PASSWORD_SALT", "SECURITY_TOTP_SECRETS"):
-        require(
-            name,
-            os.environ.get(name),
-            "Generate secure values with ./setup.sh for a new install.",
-        )
-
-    redis_url = os.environ.get("REDIS_URL") or os.environ.get("REDIS_SESSION")
-    broker = os.environ.get("CELERY_BROKER_URL")
-    backend = os.environ.get("CELERY_RESULT_BACKEND")
-    if backend and not broker:
-        errors.append("CELERY_BROKER_URL: required when CELERY_RESULT_BACKEND is set.")
-    for package, needed in (
-        ("redis", redis_url or broker or backend),
-        ("celery", broker or backend),
-    ):
-        if needed and importlib.util.find_spec(package) is None:
-            errors.append(
-                f"{package}: configured but not installed. Run uv sync --extra dev --extra full."
-            )
-
-    # Config can fail during import; validate its startup requirements first.
-    if not errors:
-        try:
-            from enferno.settings import Config
-        except (ValueError, TypeError):
-            errors.append(
-                "Config could not load. Check REDIS_URL/REDIS_SESSION and Redis URL options."
-            )
-        else:
-            try:
-                # Engine construction validates the URL and driver without connecting.
-                create_engine(Config.SQLALCHEMY_DATABASE_URI).dispose()
-            except (SQLAlchemyError, ValueError, ImportError, TypeError):
-                errors.append(
-                    "SQLALCHEMY_DATABASE_URI: invalid database URL or unavailable dialect/driver."
-                )
-
-            for provider in ("GOOGLE", "GITHUB"):
-                if getattr(Config, f"{provider}_AUTH_ENABLED"):
-                    for field in ("CLIENT_ID", "CLIENT_SECRET"):
-                        name = f"{provider}_OAUTH_{field}"
-                        require(
-                            name,
-                            getattr(Config, name),
-                            f"Set it or disable {provider}_AUTH_ENABLED.",
-                        )
-
-    for error in errors:
-        print(f"FAIL {error}")
-    if errors:
-        print(f"Configuration checks failed: {len(errors)} issue(s).")
-        return 1
-    print(
-        "Configuration checks passed. Service connectivity and credentials were not verified."
-    )
-    return 0
-
-
 def run_checks():
     from enferno.app import create_app
 
@@ -211,15 +127,4 @@ def run_checks():
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Check Enferno configuration or application health."
-    )
-    parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Show smoke-check errors"
-    )
-    parser.add_argument(
-        "--config", action="store_true", help="Check settings without starting the app"
-    )
-    args = parser.parse_args()
-    VERBOSE = args.verbose
-    sys.exit(check_configuration() if args.config else run_checks())
+    sys.exit(run_checks())

@@ -61,7 +61,6 @@ enferno/
 ```bash
 ./setup.sh                    # SQLite data and sessions; generate .env
 ./setup.sh --full             # Also install and configure Redis sessions and Celery
-uv run python checks.py --config  # Offline settings check before app startup
 uv sync --extra dev           # Install dependencies with dev tools
 uv sync --extra wsgi          # For Unix deployments that need uWSGI
 ```
@@ -82,7 +81,6 @@ uv run flask run --port 5001         # Use 5001 locally if 5000 is busy (macOS)
 
 ### Code Quality
 ```bash
-uv run pytest                       # Setup and configuration regression tests
 uv run ruff check .                  # Lint code with ruff
 uv run ruff format .                 # Format code with ruff
 uv run ruff check --fix .            # Auto-fix linting issues
@@ -479,7 +477,9 @@ const config = {
 
 <!-- CORRECT: Jinja expressions (server-side) -->
 {% if current_user.is_authenticated %}
-    <v-btn href="/logout">Logout</v-btn>
+    <form method="post" action="/logout">
+        <v-btn type="submit">Logout</v-btn>
+    </form>
 {% endif %}
 
 <!-- WRONG: Never use {{ }} for Vue expressions -->
