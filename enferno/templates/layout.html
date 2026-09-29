@@ -89,12 +89,14 @@
 
                     <v-divider></v-divider>
 
+                    <form method="post" action="/logout">
                     <v-list density="compact">
-                        <v-list-item href="/logout" base-color="error">
+                        <v-list-item tag="button" type="submit" base-color="error" class="w-100 text-start">
                             <template v-slot:prepend><i class="ti ti-logout mr-3" style="font-size: 18px;"></i></template>
                             <v-list-item-title>Logout</v-list-item-title>
                         </v-list-item>
                     </v-list>
+                    </form>
                 </v-card>
             </v-menu>
             {% endif %}

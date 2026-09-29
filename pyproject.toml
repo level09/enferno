@@ -11,7 +11,6 @@ requires-python = ">=3.11"
 
 dependencies = [
     "babel>=2.18.0",
-    "bleach>=6.3.0",
     "blinker>=1.9.0",
     "click>=8.3.2",
     "cryptography>=50.0.0",
@@ -24,8 +23,8 @@ dependencies = [
     "flask-login>=0.6.3",
     "flask-mail>=0.10.0",
     "flask-migrate>=4.1.0",
-    # 5.8.0-5.8.1: unpatched WebAuthn reauth freshness bypass (GHSA-f66q-9rf6-8795)
-    "flask-security-too>=5.7.1,<5.8",
+    # 5.9.0 fixes GHSA-f66q-9rf6-8795 (WebAuthn reauth freshness bypass)
+    "flask-security-too>=5.9.0",
     "flask-session>=0.8.0",
     "flask-sqlalchemy>=3.1.1",
     "flask-wtf>=1.2.2",
@@ -45,6 +44,7 @@ dependencies = [
     "webauthn>=2.7.0",
     "werkzeug>=3.1.8",
     "wtforms>=3.2.1",
+    "nh3>=0.3",
 ]
 
 [project.optional-dependencies]

@@ -69,10 +69,12 @@
                             <template v-slot:prepend><i class="ti ti-key"></i></template>
                             Change Password
                         </v-btn>
-                        <v-btn href="/logout" variant="text">
-                            <template v-slot:prepend><i class="ti ti-logout"></i></template>
-                            Logout
-                        </v-btn>
+                        <form method="post" action="/logout">
+                            <v-btn type="submit" variant="text">
+                                <template v-slot:prepend><i class="ti ti-logout"></i></template>
+                                Logout
+                            </v-btn>
+                        </form>
                     </v-card-actions>
                 </v-card>
             </v-col>

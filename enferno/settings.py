@@ -2,7 +2,7 @@ import importlib.util
 import os
 from datetime import timedelta
 
-import bleach
+import nh3
 from dotenv import load_dotenv
 
 # Detect optional dependencies (installed via --extra full)
@@ -25,7 +25,7 @@ else:
 
 def uia_email_mapper(identity):
     # Sanitize and strip whitespace from email input
-    return bleach.clean(identity, strip=True).strip() if identity else identity
+    return nh3.clean(identity, tags=set()).strip() if identity else identity
 
 
 class Config:
