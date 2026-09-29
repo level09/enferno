@@ -91,5 +91,6 @@ ignore = [
 known-first-party = ["enferno"]
 
 [tool.ruff.format]
+exclude = ["*.md"]  # ruff 0.16 formats code blocks in docs; keep examples as written
 quote-style = "double"
 indent-style = "space"
