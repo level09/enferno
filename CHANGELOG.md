@@ -1,9 +1,15 @@
 # Changelog
 
-## Unreleased
+## v13.2.0 (2026-09-29)
+
+### Upgrade notes for existing apps
+- Logout is POST-only in Flask-Security 5.9. Replace any `href="/logout"` links in your own templates with a form that posts to `/logout`.
+- `psycopg2-binary` is replaced by `psycopg` 3. Run `uv sync`; `postgresql://` URLs keep working.
+- Databases created before migrations existed: run `uv run flask db stamp head` once.
 
 ### Added
-- PostgreSQL smoke checks on Python 3.11, 3.12, and 3.13 and a production container build in CI.
+- Alembic migrations via Flask-Migrate, with a baseline revision. `flask create-db` stamps new databases automatically.
+- PostgreSQL smoke checks on Python 3.11 to 3.14 and a production container build in CI.
 
 ### Security
 - Upgrade Flask-Security-Too to 5.9.0, which fixes GHSA-f66q-9rf6-8795 (WebAuthn reauthentication freshness bypass). Logout is now POST-only; templates submit a form instead of linking to `/logout`.
@@ -25,6 +31,7 @@ Thanks to Ali Tanveer ([@alivirgo](https://github.com/alivirgo)) for privately r
 - Install Celery and Redis in the production Docker image. The image synced only the `wsgi` extra while `docker-compose.yml` runs a Celery worker, so `enferno.tasks` always fell back to `CELERY_AVAILABLE = False`.
 
 ### Changed
+- Upgrade all dependencies, including SQLAlchemy 2.1, Flask-Security-Too 5.9 and oauthlib 4.0.
 - Build the production image on Python 3.13 and add Python 3.14 to the CI matrix.
 - Vendor Tabler Icons 3.48.0 (woff2 only) instead of loading `@latest` from a CDN, and remove the unused 5 MB Material Design Icons bundle.
 - Removed the passlib, flask-script, speaklater, six, mako, python-editor, pycparser, cffi and bcrypt pins. Flask-Security-Too supplies the `passlib` namespace through libpass, so the explicit passlib 1.7.4 pin was shadowing it.
@@ -43,6 +50,7 @@ Thanks to Ali Tanveer ([@alivirgo](https://github.com/alivirgo)) for privately r
 - AI-assisted development with AGENTS.md for Claude Code and Cursor
 
 ### Changed
+- Upgrade all dependencies, including SQLAlchemy 2.1, Flask-Security-Too 5.9 and oauthlib 4.0.
 - Redis and Celery moved to optional dependencies
 - SQLite database path now uses absolute path in `instance/enferno.db`
 - Updated documentation for lite/full mode workflow
@@ -58,6 +66,7 @@ Thanks to Ali Tanveer ([@alivirgo](https://github.com/alivirgo)) for privately r
 - Enhanced setup.sh script with Docker configuration option
 
 ### Changed
+- Upgrade all dependencies, including SQLAlchemy 2.1, Flask-Security-Too 5.9 and oauthlib 4.0.
 - Optimized Dockerfile with multi-stage build for smaller, more secure images
 - Fixed Redis connectivity by using correct environment variables
 - Improved nginx configuration with proper retry settings
@@ -72,6 +81,7 @@ Thanks to Ali Tanveer ([@alivirgo](https://github.com/alivirgo)) for privately r
 - Better Python environment isolation
 
 ### Changed
+- Upgrade all dependencies, including SQLAlchemy 2.1, Flask-Security-Too 5.9 and oauthlib 4.0.
 - Updated setup.sh script to use uv instead of venv
 - Modified Dockerfile to use uv for package installation
 - Updated documentation to reference uv
@@ -84,6 +94,7 @@ Thanks to Ali Tanveer ([@alivirgo](https://github.com/alivirgo)) for privately r
 - Comprehensive documentation for Cursor Rules approach
 
 ### Changed
+- Upgrade all dependencies, including SQLAlchemy 2.1, Flask-Security-Too 5.9 and oauthlib 4.0.
 - Improved user and roles tables design in both frontend and backend
 - Transitioned from OpenAI integration to Cursor Rules for code generation
 - Enhanced admin user creation with better console output

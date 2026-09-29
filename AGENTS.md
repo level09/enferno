@@ -886,7 +886,7 @@ celery -A enferno.tasks worker --loglevel=info
 
 ```dockerfile
 # Build stage
-FROM python:3.12-slim AS builder
+FROM python:3.13-slim AS builder
 WORKDIR /app
 
 # Install build dependencies
@@ -903,7 +903,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --extra wsgi --frozen
 
 # Runtime stage
-FROM python:3.12-slim
+FROM python:3.13-slim
 WORKDIR /app
 
 # Copy virtual environment from build stage
