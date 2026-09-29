@@ -95,6 +95,40 @@ def check_routes(app):
         assert route in rules, f"Missing route: {route}"
 
 
+@check("Login and logout work")
+def check_auth_flow(app):
+    import uuid
+
+    from flask_security.utils import hash_password
+
+    from enferno.extensions import db
+    from enferno.user.models import Session, User
+
+    # Runs against the configured DB, so the throwaway user is always removed.
+    email = f"checks-{uuid.uuid4().hex}@example.com"
+    password = uuid.uuid4().hex
+    with app.app_context():
+        db.session.add(User(email=email, password=hash_password(password), active=True))
+        db.session.commit()
+    csrf = app.config.get("WTF_CSRF_ENABLED", True)
+    app.config["WTF_CSRF_ENABLED"] = False
+    try:
+        client = app.test_client()
+        r = client.post("/login", data={"email": email, "password": password})
+        assert r.status_code == 302, f"login returned {r.status_code}"
+        assert client.get("/dashboard/").status_code == 200, "dashboard after login"
+        r = client.post("/logout")
+        assert r.status_code == 302, f"logout returned {r.status_code}"
+        assert client.get("/dashboard/").status_code == 302, "dashboard after logout"
+    finally:
+        app.config["WTF_CSRF_ENABLED"] = csrf
+        with app.app_context():
+            user = db.session.execute(db.select(User).filter_by(email=email)).scalar()
+            db.session.execute(db.delete(Session).where(Session.user_id == user.id))
+            db.session.delete(user)
+            db.session.commit()
+
+
 @check("Security config is sane")
 def check_security_config(app):
     assert app.config["SECURITY_PASSWORD_LENGTH_MIN"] >= 8

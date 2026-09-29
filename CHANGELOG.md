@@ -14,6 +14,8 @@
 Thanks to Ali Tanveer ([@alivirgo](https://github.com/alivirgo)) for privately reporting the shared Docker Compose port and default password issues in ReadyKit.
 
 ### Fixed
+- Switch the PostgreSQL driver from `psycopg2-binary` to `psycopg` 3. SQLAlchemy 2.1 resolves `postgresql://` URLs to psycopg 3, so existing URLs work unchanged.
+- `checks.py` now logs a throwaway user in and out, catching auth regressions such as the POST-only logout in Flask-Security 5.9.
 - Require Python 3.11 or newer in setup and install dependencies with the selected interpreter.
 - Install and configure optional Redis sessions and Celery with `./setup.sh --full` or Docker setup.
 - Generate Docker Redis settings using `REDIS_URL` and preserve the SQLite default for local setup.
