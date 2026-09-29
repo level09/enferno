@@ -495,7 +495,7 @@ All pages extend `layout.html` which provides Vue/Vuetify setup:
 <html>
 <head>
     <link href="/static/css/vuetify.min.css" rel="stylesheet">
-    <link href="/static/mdi/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="/static/tabler/tabler-icons.min.css" rel="stylesheet">
     {% block head %}{% endblock %}
 </head>
 <body>
@@ -727,7 +727,7 @@ methods: {
             <v-spacer></v-spacer>
             <v-text-field
                 v-model="search"
-                append-icon="mdi-magnify"
+                append-icon="ti-search"
                 label="Search"
                 single-line
                 hide-details>
@@ -739,8 +739,8 @@ methods: {
     </template>
 
     <template v-slot:item.actions="{ item }">
-        <v-btn icon="mdi-pencil" size="small" @click="editItem(item)"></v-btn>
-        <v-btn icon="mdi-delete" size="small" color="error" @click="deleteItem(item)"></v-btn>
+        <v-btn icon="ti-pencil" size="small" @click="editItem(item)"></v-btn>
+        <v-btn icon="ti-trash" size="small" color="error" @click="deleteItem(item)"></v-btn>
     </template>
 </v-data-table>
 
@@ -789,18 +789,18 @@ methods: {
 
 ```html
 <!-- Buttons -->
-<v-btn color="primary" variant="elevated" prepend-icon="mdi-plus" @click="newItem">
+<v-btn color="primary" variant="elevated" prepend-icon="ti-plus" @click="newItem">
     Add New
 </v-btn>
 <v-btn variant="text" @click="closeDialog">Cancel</v-btn>
-<v-btn icon="mdi-pencil" size="small" @click="editItem(item)"></v-btn>
-<v-btn color="error" variant="outlined" prepend-icon="mdi-delete">Delete</v-btn>
+<v-btn icon="ti-pencil" size="small" @click="editItem(item)"></v-btn>
+<v-btn color="error" variant="outlined" prepend-icon="ti-trash">Delete</v-btn>
 
 <!-- Card Layout -->
 <v-card class="ma-2">
     <v-card-title class="d-flex justify-space-between align-center">
         <span>Card Title</span>
-        <v-btn icon="mdi-refresh" @click="refresh"></v-btn>
+        <v-btn icon="ti-refresh" @click="refresh"></v-btn>
     </v-card-title>
 
     <v-card-text>

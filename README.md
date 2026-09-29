@@ -44,7 +44,7 @@ What's Included
 
 - **Collapsible sidebar** - Nested navigation groups with smooth expand/collapse animations
 - **Dark mode** - Theme toggle with localStorage persistence, auto-detects system preference
-- **Tabler Icons** - 5000+ icons via CDN, no build step
+- **Tabler Icons** - 5000+ icons, vendored, no build step
 - **Ember color palette** - Fire-inspired theme matching the Enferno brand
 - **Polish included** - Card hover effects, smooth scrollbars, styled data tables
 

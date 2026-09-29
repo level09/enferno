@@ -243,10 +243,10 @@ def list_products():
 >
   <template v-slot:item.actions="{ item }">
     <v-btn icon size="small" @click="editItem(item)">
-      <v-icon>mdi-pencil</v-icon>
+      <v-icon>ti-pencil</v-icon>
     </v-btn>
     <v-btn icon size="small" color="error" @click="deleteItem(item)">
-      <v-icon>mdi-delete</v-icon>
+      <v-icon>ti-trash</v-icon>
     </v-btn>
   </template>
 </v-data-table-server>

@@ -14,6 +14,8 @@
 Thanks to Ali Tanveer ([@alivirgo](https://github.com/alivirgo)) for privately reporting the shared Docker Compose port and default password issues in ReadyKit.
 
 ### Fixed
+- Admin pages froze the browser on Vue 3.5: `filterNavByRole` mutated reactive nav items inside a computed property, re-triggering it forever. It now returns copies.
+- Vuetify's built-in icons (table sort, pagination, selects, checkboxes) rendered blank because they default to MDI, which the layout never loaded. They are now mapped to Tabler.
 - Switch the PostgreSQL driver from `psycopg2-binary` to `psycopg` 3. SQLAlchemy 2.1 resolves `postgresql://` URLs to psycopg 3, so existing URLs work unchanged.
 - `checks.py` now logs a throwaway user in and out, catching auth regressions such as the POST-only logout in Flask-Security 5.9.
 - Require Python 3.11 or newer in setup and install dependencies with the selected interpreter.
@@ -23,6 +25,7 @@ Thanks to Ali Tanveer ([@alivirgo](https://github.com/alivirgo)) for privately r
 - Install Celery and Redis in the production Docker image. The image synced only the `wsgi` extra while `docker-compose.yml` runs a Celery worker, so `enferno.tasks` always fell back to `CELERY_AVAILABLE = False`.
 
 ### Changed
+- Vendor Tabler Icons 3.48.0 (woff2 only) instead of loading `@latest` from a CDN, and remove the unused 5 MB Material Design Icons bundle.
 - Removed the passlib, flask-script, speaklater, six, mako, python-editor, pycparser, cffi and bcrypt pins. Flask-Security-Too supplies the `passlib` namespace through libpass, so the explicit passlib 1.7.4 pin was shadowing it.
 - Dropped the `setuptools<82` pin, which only existed for passlib 1.7.4's use of `pkg_resources`, and the warning suppression that went with it.
 - Dropped the kombu, amqp and vine pins from the `full` extra; Celery pulls them in.
