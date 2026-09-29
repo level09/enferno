@@ -34,7 +34,6 @@ dependencies = [
     "markupsafe>=3.0.3",
     "orjson>=3.11.8",
     "pillow>=12.2.0",
-    "psycopg2-binary>=2.9.11",
     "python-dateutil>=2.9.0.post0",
     "python-dotenv>=1.2.2",
     "pytz>=2026.1",
@@ -45,6 +44,7 @@ dependencies = [
     "werkzeug>=3.1.8",
     "wtforms>=3.2.1",
     "nh3>=0.3",
+    "psycopg[binary]>=3.2",
 ]
 
 [project.optional-dependencies]
