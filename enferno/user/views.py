@@ -276,4 +276,8 @@ def user_logged_out_handler(app, user, **extra_args):
             {"is_active": False}
         )
         db.session.commit()
+    # Flask-Login deletes the remember cookie only if its "clear" flag survives this.
+    remember = session.get("_remember")
     session.clear()
+    if remember:
+        session["_remember"] = remember
