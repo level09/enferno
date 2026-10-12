@@ -182,19 +182,17 @@ def api_activities():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", PER_PAGE, type=int)
 
-    # Join with User to avoid N+1 queries
-    query = (
-        db.select(Activity, User)
-        .outerjoin(User, Activity.user_id == User.id)
-        .order_by(Activity.created_at.desc())
-    )
-
-    # Paginate results
+    query = db.select(Activity).order_by(Activity.created_at.desc())
     pagination = db.paginate(query, page=page, per_page=per_page)
 
-    # Convert activities to dictionaries
+    # One query for the page's users; activities outlive deleted users
+    user_ids = {activity.user_id for activity in pagination.items}
+    users = db.session.execute(db.select(User).where(User.id.in_(user_ids))).scalars()
+    users_by_id = {user.id: user for user in users}
+
     items = []
-    for activity, user in pagination.items:
+    for activity in pagination.items:
+        user = users_by_id.get(activity.user_id)
         items.append(
             {
                 "id": activity.id,

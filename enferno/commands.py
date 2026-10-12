@@ -100,25 +100,18 @@ def add_role(email, role):
     """Adds a role to the specified user."""
     from enferno.user.models import Role
 
-    u = User.query.filter(User.email == email).first()
-
+    u = db.session.execute(db.select(User).filter_by(email=email)).scalar()
     if u is None:
-        print("Sorry, this user does not exist!")
-    else:
-        r = db.session.execute(db.select(Role).filter_by(name=role)).scalar_one()
-        if r is None:
-            print("Sorry, this role does not exist!")
-            u = click.prompt("Would you like to create one? Y/N", default="N")
-            if u.lower() == "y":
-                r = Role(name=role)
-                try:
-                    db.session.add(r)
-                    db.session.commit()
-                    print("Role created successfully, you may add it now to the user")
-                except Exception:
-                    db.session.rollback()
-        # add role to user
+        raise click.ClickException("This user does not exist.")
+
+    r = db.session.execute(db.select(Role).filter_by(name=role)).scalar()
+    if r is None:
+        click.confirm(f"Role '{role}' does not exist. Create it?", abort=True)
+        r = Role(name=role)
+    if r not in u.roles:
         u.roles.append(r)
+    db.session.commit()
+    print(f"User {email} now has the role {role}.")
 
 
 @click.command()
