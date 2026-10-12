@@ -1,6 +1,11 @@
 # Changelog
 
-## Unreleased
+## v13.3.0 (2026-10-12)
+
+### Upgrade notes for existing apps
+- CSRF is enforced on every POST, PUT and DELETE. Plain HTML forms in your own templates need `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">`; axios on `layout.html` pages sends the token automatically.
+- `checks.py` is gone; run `uv run pytest` instead. Point `TEST_DATABASE_URI` only at a disposable database, because the suite drops every table.
+- Run `uv sync` to pick up Flask-Security-Too 5.9.1.
 
 ### Security
 - Require Flask-Security-Too 5.9.1, which fixes an open redirect (GHSA-ccgp-pv8r-95wm). Other dependencies upgraded, including SQLAlchemy 2.1.4.
