@@ -1,126 +1,109 @@
 # Enferno 🔥
 
+[![Checks](https://github.com/level09/enferno/actions/workflows/checks.yml/badge.svg)](https://github.com/level09/enferno/actions/workflows/checks.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**[Live Demo](https://demo.enferno.io/)** · **[Tutorials](https://github.com/level09/enferno/wiki)** · **[Docs](https://docs.enferno.io)** · **Stop configuring. Start shipping.**
+**[Live Demo](https://demo.enferno.io/)** · **[Docs](https://docs.enferno.io)** · **[Tutorials](https://github.com/level09/enferno/wiki)**
 
-~~Webpack~~ ~~Vite~~ ~~node_modules~~ ~~npm install~~ — Just Python.
+A Flask framework built for coding agents. You describe the app; your agent builds it on a stack it already understands, and a test suite tells it when it got something wrong.
 
-```bash
-git clone git@github.com:level09/enferno.git && cd enferno
-./setup.sh                    # Installs deps + generates secure .env
-uv run flask create-db        # Setup database
-uv run flask install          # Create admin user
-uv run flask run              # → http://localhost:5000
+Plain Python, Vue 3 and Vuetify with no build step, production auth out of the box. No webpack, no node_modules, nothing for the agent to configure.
+
+## Start
+
+Paste this into Claude Code, Codex, Cursor or any coding agent:
+
+```
+Clone https://github.com/level09/enferno into ./myapp, follow its AGENTS.md
+to set it up, create an admin user, start it on port 5001 and run the tests.
 ```
 
+Or by hand:
+
+```bash
+git clone https://github.com/level09/enferno.git myapp && cd myapp
+./setup.sh                    # Installs deps, generates .env with secrets
+uv run flask create-db        # Create the database
+uv run flask install          # Create an admin user
+uv run flask run              # http://localhost:5000
+```
+
+`setup.sh` never prompts when there is no terminal, so agents and CI run it with flags: `--full` adds Redis and Celery, `--docker` configures the Compose stack.
 
 https://github.com/user-attachments/assets/a87bfad2-45dc-4d94-bdf1-0448dfea8084
 
+## Then just ask
 
+```
+Add a Product model with name, price and category, an admin page to manage it,
+and a migration.
 
-Why Enferno?
-===========
-- **Zero build step** - Vue 3 + Vuetify 3 run directly in browser. Delete your `node_modules`
-- **Auth that works** - 2FA, WebAuthn, OAuth (Google/GitHub) — not a tutorial, actual production code
-- **SQLite by default** - Deploy anywhere. ~~Managed database~~ not required
-- **AI-native** - Ships `AGENTS.md` and an agent skill. Any coding agent already knows the codebase
-- **Complexity is opt-in** - Redis, Celery, PostgreSQL when *you* decide, not when the framework demands
+Let users export the activity log as CSV.
 
-> **Want payments?** → **[ReadyKit](https://readykit.dev)** adds Stripe, multi-tenancy, teams on top of Enferno
-
-What's Included
----------------
-- **Frontend**: Vue 3, Vuetify 3, Axios - no build tools needed
-- **Auth**: Login, registration, password recovery, session management
-- **2FA**: TOTP authenticator apps (Google Authenticator, Authy, 1Password)
-- **WebAuthn**: Passkeys and hardware security keys (YubiKey, Touch ID)
-- **Recovery codes**: Backup codes for account recovery
-- **OAuth**: Google and GitHub login
-- **Database**: SQLAlchemy ORM with Alembic migrations
-- **Patterns**: Data tables, dialogs, notifications - ready to use
-
-### UI Features
-
-- **Collapsible sidebar** - Nested navigation groups with smooth expand/collapse animations
-- **Dark mode** - Theme toggle with localStorage persistence, auto-detects system preference
-- **Tabler Icons** - 5000+ icons, vendored, no build step
-- **Ember color palette** - Fire-inspired theme matching the Enferno brand
-- **Polish included** - Card hover effects, smooth scrollbars, styled data tables
-
-Requirements: Python 3.11+ and [uv](https://docs.astral.sh/uv/)
-
-### Background Tasks
-
-For a new installation with Redis sessions and Celery, run `./setup.sh --full`.
-For an existing installation, preserve `.env` and enable them manually:
-
-```bash
-uv sync --extra full        # Adds Redis + Celery
-# Set REDIS_URL, CELERY_BROKER_URL in .env
+Add a status column to users and show it as a chip in the users table.
 ```
 
-### Database Migrations
+## How your agent knows Enferno
 
-Schema changes are managed with Alembic (Flask-Migrate). Autogenerate drafts the
-migration; always review and edit it before applying:
+| | What it gives the agent | When |
+|---|---|---|
+| [`AGENTS.md`](AGENTS.md) | Stack, layout, commands, routes and hard rules, in about 100 lines | Every session, read automatically |
+| [`enferno-dev` skill](.agents/skills/enferno-dev/SKILL.md) | Full patterns for models, APIs, Vue pages, dialogs, migrations and upgrades | Loaded only when a task needs it |
+| `flask mcp` | Live routes, schema with row counts, migration revision and audit log, read-only | When the agent needs the real state, not the docs |
+| `/llms.txt` | A short description of your app for LLM tools | Edit it to describe what you build |
+
+The skill lives in `.agents/skills/`, the shared location for Codex, Cursor, Copilot and Gemini CLI, and `.claude/skills` links to it for Claude Code. `npx skills add level09/enferno` installs it in another project. MCP is opt-in: `uv sync --extra dev --extra mcp`, and `.mcp.json` lets MCP-aware agents offer to connect.
+
+## How your agent checks its work
+
+Agents write code fast; they also forget migrations and leave routes unprotected. `uv run pytest` catches the mistakes they actually make:
+
+- **Every protected route** rejects anonymous users, and every admin route rejects non-admins, including routes the agent just added.
+- **Models match migrations**: change a model without `flask db migrate` and the suite fails.
+- **CSRF** is enforced on the admin API, and a valid token still works.
+- **Auth flows**: login, wrong password, POST-only logout, audited admin CRUD.
+- **`setup.sh`** in every mode, without touching your `.env`.
+
+Tests run on in-memory SQLite in about four seconds. CI runs them on PostgreSQL across Python 3.11 to 3.14. Set `TEST_DATABASE_URI` to use PostgreSQL locally; it must be a disposable database, because the suite drops every table.
+
+`AGENTS.md` also gives the agent the rules that tests cannot: Tabler icons only, POST-only logout, migrations reviewed by hand, and a real browser check after a frontend upgrade.
+
+## What's in the box
+
+- **Frontend**: Vue 3, Vuetify 3 and axios, vendored and pinned by `vendor.sh`. No build step
+- **Auth**: login, registration, password recovery, TOTP 2FA, passkeys (WebAuthn), recovery codes, Google and GitHub OAuth
+- **Admin**: users, roles and an audit log of admin actions
+- **Database**: SQLAlchemy 2 with Alembic migrations. SQLite by default, PostgreSQL when you want it
+- **UI**: collapsible sidebar, dark mode, Tabler icons, data tables, dialogs and notifications
+- **Optional**: Redis sessions and Celery (`--extra full`), MCP (`--extra mcp`), uWSGI (`--extra wsgi`)
+
+Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/).
+
+## Deploy
+
+Docker, with PostgreSQL, Redis, Celery and nginx:
 
 ```bash
-uv run flask db migrate -m "add status to user"   # Draft from model changes
-# Review migrations/versions/<revision>.py, adjust as needed
-uv run flask db upgrade                           # Apply
+./setup.sh --docker
+docker compose up --build
 ```
 
-Fresh databases: `uv run flask create-db` builds the full schema and stamps it
-automatically. Databases created before migrations existed: run
-`uv run flask db stamp head` once, then use the workflow above.
+Compose requires `DB_PASSWORD` and `REDIS_PASSWORD`, which `setup.sh --docker` generates. For an existing installation, keep the credentials its database and Redis already use. Database and Redis ports stay internal to the Compose network.
 
-### Tests
-
-```bash
-uv run pytest               # Run before deploying
-```
-
-Tests use an in-memory SQLite database. Set `TEST_DATABASE_URI` to run them against a disposable PostgreSQL database; the suite drops every table in it.
-
-### MCP for Coding Agents
-
-`uv sync --extra dev --extra mcp` enables `uv run flask mcp`, a local, read-only MCP server that shows agents the live routes, database schema with row counts, migration revision and audit log. `.mcp.json` registers it, so MCP-aware agents such as Claude Code offer to connect when you open the project.
-
-### Docker
-
-Configure a new installation, then start the full production stack:
-
-```bash
-./setup.sh --docker         # New installation with Docker settings
-docker compose up --build   # Redis, PostgreSQL, Nginx, Celery
-```
-
-Compose requires `DB_PASSWORD` and `REDIS_PASSWORD`. For an existing installation,
-use the credentials already configured in its database and Redis; do not regenerate
-them with setup. Database and Redis ports are internal to the Compose network.
-
-### VPS Deploy
-
-One command to deploy on any Ubuntu VPS (Hetzner, DigitalOcean, etc.):
+Any Ubuntu VPS, with Caddy and automatic SSL, via [Ignite](https://github.com/level09/ignite):
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/level09/ignite/main/ignite.sh | sudo DOMAIN=your-domain.com bash
 ```
 
-Handles Caddy (auto SSL), Python 3.13, Redis, systemd services. See [Ignite](https://github.com/level09/ignite).
+## Configuration
 
-Configuration
-------------
-
-Environment variables (`.env`):
+`setup.sh` writes `.env` with generated secrets. The values you are most likely to change:
 
 ```bash
-SECRET_KEY=your_secret_key
-FLASK_APP=run.py
 FLASK_DEBUG=1                    # 0 in production
 
-# PostgreSQL (optional - SQLite works by default)
+# PostgreSQL (optional, SQLite works by default)
 # SQLALCHEMY_DATABASE_URI=postgresql://user:pass@localhost/dbname
 
 # Background tasks (optional)
@@ -128,13 +111,13 @@ FLASK_DEBUG=1                    # 0 in production
 # CELERY_BROKER_URL=redis://localhost:6379/2
 ```
 
-Documentation: [docs.enferno.io](https://docs.enferno.io)
+Full guides: [docs.enferno.io](https://docs.enferno.io)
 
-Looking for async?
-------------------
-Check out **[STK](https://stk.dev)** — same philosophy, built on Quart (async Flask) with native WebSockets.
+## Related
 
-License
--------
+- **[ReadyKit](https://readykit.dev)** adds Stripe, workspaces and teams on top of Enferno.
+- **[STK](https://stk.dev)** is the same philosophy on Quart (async Flask) with native WebSockets.
+
+## License
+
 MIT
-
