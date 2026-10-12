@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Security
+- Require Flask-Security-Too 5.9.1, which fixes an open redirect (GHSA-ccgp-pv8r-95wm). Other dependencies upgraded, including SQLAlchemy 2.1.4.
 - Enable CSRF protection for the whole app. The admin JSON API accepted POST and DELETE requests without a token; only Flask-Security's own forms were protected. Axios now sends the token automatically on `layout.html` pages, and the logout forms include it.
 
 ### Fixed

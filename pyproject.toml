@@ -23,8 +23,8 @@ dependencies = [
     "flask-login>=0.6.3",
     "flask-mail>=0.10.0",
     "flask-migrate>=4.1.0",
-    # 5.9.0 fixes GHSA-f66q-9rf6-8795 (WebAuthn reauth freshness bypass)
-    "flask-security-too>=5.9.0",
+    # 5.9.0 fixes GHSA-f66q-9rf6-8795, 5.9.1 fixes GHSA-ccgp-pv8r-95wm (open redirect)
+    "flask-security-too>=5.9.1",
     "flask-session>=0.8.0",
     "flask-sqlalchemy>=3.1.1",
     "flask-wtf>=1.2.2",
