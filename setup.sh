@@ -8,14 +8,17 @@ YELLOW='\033[0;33m'
 NC='\033[0m'
 
 FULL_CONFIG=false
+DOCKER_CONFIG=false
 for arg in "$@"; do
     case "$arg" in
         --full) FULL_CONFIG=true ;;
+        --docker) DOCKER_CONFIG=true; FULL_CONFIG=true ;;
         -h|--help)
-            echo "Usage: ./setup.sh [--full]"
+            echo "Usage: ./setup.sh [--full] [--docker]"
             echo "Default: SQLite data and sessions, no Redis required."
             echo "--full: Install and configure Redis sessions and Celery."
-            echo "Choosing Docker also enables the full stack."
+            echo "--docker: Configure Docker (implies --full)."
+            echo "Without a terminal (agents, CI) setup never prompts and uses these flags."
             exit 0
             ;;
         *) echo "Unknown option: $arg"; exit 1 ;;
@@ -82,13 +85,20 @@ if [ ! -f .env-sample ]; then
     exit 1
 fi
 
+# Prompts need a terminal; agents and CI get the flag defaults instead
+INTERACTIVE=false
+[ -t 0 ] && INTERACTIVE=true
+
 # Ask about Docker configuration
-read -p "Would you like to configure Docker settings? (y/N) " -n 1 -r
-echo
-DOCKER_CONFIG=false
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    DOCKER_CONFIG=true
-    FULL_CONFIG=true
+if [ "$DOCKER_CONFIG" = false ] && [ "$INTERACTIVE" = true ]; then
+    read -p "Would you like to configure Docker settings? (y/N) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        DOCKER_CONFIG=true
+        FULL_CONFIG=true
+    fi
+fi
+if [ "$DOCKER_CONFIG" = true ]; then
     echo -e "${GREEN}Docker configuration will be included.${NC}"
 else
     echo -e "${YELLOW}Skipping Docker configuration.${NC}"
@@ -96,6 +106,10 @@ fi
 
 # Check if .env already exists
 if [ -f .env ]; then
+    if [ "$INTERACTIVE" = false ]; then
+        echo -e "${RED}Error: .env already exists. Not overwriting it without a terminal; keep it, or delete it and rerun.${NC}"
+        exit 1
+    fi
     read -p "A .env file already exists. Do you want to overwrite it? (y/N) " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then

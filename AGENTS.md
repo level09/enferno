@@ -34,7 +34,7 @@ setup.sh              # Venv, deps, .env with generated secrets (--full for Redi
 ## Commands
 
 ```bash
-./setup.sh                             # First-time setup (add --full for Redis + Celery)
+./setup.sh                             # First-time setup (--full for Redis + Celery, --docker for Compose)
 uv run flask create-db                 # Create tables, stamp migrations
 uv run flask install                   # Create admin user
 uv run flask run --port 5001           # Dev server (5000 is often taken on macOS)

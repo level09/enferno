@@ -88,7 +88,7 @@ uv run python checks.py     # Run before deploying
 Configure a new installation, then start the full production stack:
 
 ```bash
-./setup.sh                  # Select Docker for a new installation
+./setup.sh --docker         # New installation with Docker settings
 docker compose up --build   # Redis, PostgreSQL, Nginx, Celery
 ```
 
