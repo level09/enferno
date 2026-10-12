@@ -53,6 +53,7 @@ full = [
     "celery>=5.6.2",
 ]
 dev = [
+    "pytest>=8.4.0",
     "ruff",
     "pre-commit",
 ]
@@ -63,6 +64,11 @@ wsgi = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Flask-Session 0.8 calls datetime.utcnow(); not ours to fix.
+filterwarnings = ["ignore:datetime.datetime.utcnow:DeprecationWarning:flask_session"]
 
 [tool.ruff]
 line-length = 88

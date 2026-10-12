@@ -42,23 +42,10 @@ jobs:
       - name: Run lint
         run: uv run ruff check .
 
-      - name: Create database tables
+      - name: Run tests
         env:
-          FLASK_APP: run.py
-          SQLALCHEMY_DATABASE_URI: postgresql://test:test@localhost:5432/test
-          SECRET_KEY: test-secret-key-for-ci
-          SECURITY_PASSWORD_SALT: test-salt-for-ci
-          SECURITY_TOTP_SECRETS: test-totp-secret
-        run: uv run flask create-db
-
-      - name: Run checks
-        env:
-          FLASK_APP: run.py
-          SQLALCHEMY_DATABASE_URI: postgresql://test:test@localhost:5432/test
-          SECRET_KEY: test-secret-key-for-ci
-          SECURITY_PASSWORD_SALT: test-salt-for-ci
-          SECURITY_TOTP_SECRETS: test-totp-secret
-        run: uv run python checks.py -v
+          TEST_DATABASE_URI: postgresql://test:test@localhost:5432/test
+        run: uv run pytest -v
 
   container:
     runs-on: ubuntu-latest

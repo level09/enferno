@@ -16,7 +16,7 @@ uv run flask create-db                            # Create tables and stamp migr
 uv run flask install                              # Create admin user
 uv run flask db migrate -m "msg"                  # Draft migration, review before upgrade
 uv run flask db upgrade                           # Apply migrations
-uv run python checks.py                           # Boot, DB, routes, login/logout smoke checks
+uv run pytest                                     # Routes, auth, admin API, migrations, setup.sh
 uv run ruff check . && uv run ruff format .       # Lint + format
 ```
 
@@ -215,7 +215,7 @@ def process_order(order_id):
 
 ## Dependency Upgrades
 
-`uv lock --upgrade && uv sync --extra dev --extra full`, then `uv run --with pip-audit pip-audit` and `uv run python checks.py`. Read the Flask-Security changelog for changed defaults, and load an admin page in a real browser: a Vue upgrade once froze admin pages while every Python check passed.
+`uv lock --upgrade && uv sync --extra dev --extra full`, then `uv run --with pip-audit pip-audit` and `uv run pytest`. Bump vendored JS by editing the pins in `vendor.sh` and running it. Read the Flask-Security changelog for changed defaults, and load an admin page in a real browser: a Vue upgrade once froze admin pages while every Python check passed.
 
 ## More Patterns
 

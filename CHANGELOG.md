@@ -5,7 +5,20 @@
 ### Security
 - Enable CSRF protection for the whole app. The admin JSON API accepted POST and DELETE requests without a token; only Flask-Security's own forms were protected. Axios now sends the token automatically on `layout.html` pages, and the logout forms include it.
 
+### Fixed
+- The activity log API crashed once any activity existed: it unpacked `(activity, user)` pairs from `db.paginate()`, which returns activities only. It now loads the page's users in one query.
+- `flask add-role` never saved the role, crashed when the role was missing, and could not create it. It now commits, and offers to create a missing role.
+- `migrations/env.py` used `get_engine()`, which Flask-SQLAlchemy 3.2 removes.
+
+### Added
+- pytest suite replacing `checks.py`: every protected route rejects anonymous users and non-admins, login and POST-only logout, audited admin CRUD, CSRF on the admin API, a single migration head, models matching migrations, and `setup.sh` modes. `TEST_DATABASE_URI` runs it against PostgreSQL, as CI does.
+- `setup.sh --docker`, and setup runs without prompts when there is no terminal (agents, CI). It refuses to overwrite an existing `.env` in that mode.
+- `vendor.sh` pins and downloads Vue, Vuetify and axios.
+- `/llms.txt`, a starter description of the app for LLM tools, served like `robots.txt`.
+
 ### Changed
+- Vue 3.5.43, Vuetify 3.13.6 and axios 1.20.0.
+- `AGENTS.md` is the single agent guide; removed the stale `.windsurfrules`, which recommended Material Design icons. The docs page `cursor-rules` is now `ai-coding`, with a redirect.
 - Move the `enferno-dev` skill to `.agents/skills/`, the shared location for Codex, Cursor, Copilot, Gemini CLI and others. `.claude/skills` is a symlink to it, and `npx skills add level09/enferno` installs it elsewhere.
 - Cut `AGENTS.md` from 1,130 to about 90 lines of stack, layout, commands, routes and hard rules; code patterns live only in the skill. Removed the unused `templates/core/` scaffolding templates, left over from the old OpenAI generator. Fixed skill examples that missed the `auth_required` import and mounted pages without `layoutMixin`.
 

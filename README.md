@@ -24,7 +24,7 @@ Why Enferno?
 - **Zero build step** - Vue 3 + Vuetify 3 run directly in browser. Delete your `node_modules`
 - **Auth that works** - 2FA, WebAuthn, OAuth (Google/GitHub) — not a tutorial, actual production code
 - **SQLite by default** - Deploy anywhere. ~~Managed database~~ not required
-- **AI-native** - Ships with Claude Code & Cursor rules. Your AI already knows the codebase
+- **AI-native** - Ships `AGENTS.md` and an agent skill. Any coding agent already knows the codebase
 - **Complexity is opt-in** - Redis, Celery, PostgreSQL when *you* decide, not when the framework demands
 
 > **Want payments?** → **[ReadyKit](https://readykit.dev)** adds Stripe, multi-tenancy, teams on top of Enferno
@@ -75,13 +75,13 @@ Fresh databases: `uv run flask create-db` builds the full schema and stamps it
 automatically. Databases created before migrations existed: run
 `uv run flask db stamp head` once, then use the workflow above.
 
-### Sanity Checks
-
-Real code paths against your configured database, run after `create-db`:
+### Tests
 
 ```bash
-uv run python checks.py     # Run before deploying
+uv run pytest               # Run before deploying
 ```
+
+Tests use an in-memory SQLite database. Set `TEST_DATABASE_URI` to run them against a disposable PostgreSQL database; the suite drops every table in it.
 
 ### Docker
 

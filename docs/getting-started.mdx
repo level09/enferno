@@ -31,8 +31,8 @@ uv run flask run          # Start server
 Visit `http://localhost:5000` to see your application.
 
 Setup requires Python 3.11 or newer. Local setup uses SQLite for data and sessions,
-with Redis and Celery disabled. After initializing the database, run
-`uv run python checks.py` for app smoke checks.
+with Redis and Celery disabled. Run `uv run pytest` to check routes, auth, the
+admin API and migrations.
 
 ## Adding Background Tasks
 

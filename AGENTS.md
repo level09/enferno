@@ -27,7 +27,8 @@ enferno/
 ├── static/js/        # vue, vuetify, axios, config.js, navigation.js, components/
 └── templates/        # layout.html, cms/, security/
 migrations/           # Alembic revisions
-checks.py             # Smoke checks against the configured database
+tests/                # pytest: routes, auth, admin API, migrations, setup.sh
+vendor.sh             # Pinned Vue, Vuetify and axios downloads
 setup.sh              # Venv, deps, .env with generated secrets (--full for Redis/Celery)
 ```
 
@@ -44,7 +45,8 @@ uv run flask create -e <email> -p <password>
 uv run flask add-role -e <email> -r <role>
 uv run flask reset -e <email> -p <password>
 uv run flask i18n extract|init|update|compile
-uv run python checks.py -v             # Boot, DB, blueprints, routes, login/logout
+uv run pytest                          # In-memory SQLite; TEST_DATABASE_URI drops all tables
+./vendor.sh                            # Re-download vendored JS after bumping its pins
 uv run ruff check --fix . && uv run ruff format .
 docker compose up --build              # Postgres, Redis, Celery, nginx (needs DB_PASSWORD, REDIS_PASSWORD)
 ```
@@ -80,12 +82,12 @@ Lists return `{"items": [...], "total": n, "perPage": n}`. Create and update tak
 - **CSRF**: every POST/PUT/DELETE is checked (`CSRFProtect`). Axios sends the token automatically on `layout.html` pages; plain HTML forms need `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">`.
 - **Postgres driver**: `psycopg` 3. Do not add `psycopg2-binary`.
 - **Reactivity**: never mutate reactive state inside a computed property; Vue 3.5 loops forever.
-- **Vendored JS**: Vue and Vuetify versions must stay compatible; after updating them, load an admin page in a real browser.
+- **Vendored JS**: bump pins in `vendor.sh` and run it, never hand-edit the files. Vue and Vuetify must stay compatible; after updating, load an admin page in a real browser.
 
 ## Before committing
 
 1. `uv run ruff check --fix . && uv run ruff format .`
-2. `uv run python checks.py` after `flask create-db`
+2. `uv run pytest`
 3. For UI changes, click through `/dashboard/` and `/users/` as an admin.
 
 ## Commits
