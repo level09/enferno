@@ -32,7 +32,7 @@
             "group": "Development",
             "pages": [
               "development",
-              "cursor-rules"
+              "ai-coding"
             ]
           }
         ]
@@ -49,5 +49,11 @@
       "label": "GitHub",
       "href": "https://github.com/level09/enferno"
     }
-  }
-} 
+  },
+  "redirects": [
+    {
+      "source": "/cursor-rules",
+      "destination": "/ai-coding"
+    }
+  ]
+}
