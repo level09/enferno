@@ -119,6 +119,7 @@ def index():
 
 
 @public.route("/robots.txt")
+@public.route("/llms.txt")
 def static_from_root():
     return send_from_directory(public.static_folder, request.path[1:])
 

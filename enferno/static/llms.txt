@@ -1,0 +1,10 @@
+# Enferno
+
+> A web application built on Enferno: Flask 3, SQLAlchemy 2, Flask-Security and Vue 3 with Vuetify, no frontend build step. Replace this summary with what your application does.
+
+Public pages need no login. The dashboard and admin API require a session; admin endpoints also require the `admin` role.
+
+## Docs
+
+- [Enferno documentation](https://docs.enferno.io/llms.txt): framework guides for authentication, development and deployment
+- [Source code](https://github.com/level09/enferno): application code and the AGENTS.md guide for coding agents
