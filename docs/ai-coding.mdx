@@ -6,10 +6,11 @@ sidebarTitle: "AI Coding"
 
 ## Overview
 
-Enferno ships two pieces of context for coding agents:
+Enferno ships three pieces of context for coding agents:
 
 - **`AGENTS.md`**: a short, always-loaded guide with the stack, layout, commands, routes and hard rules. Claude Code, Codex, Cursor, GitHub Copilot and most other agents read it automatically.
 - **The `enferno-dev` skill** in `.agents/skills/enferno-dev/`: full code patterns for models, APIs, Vue pages, dialogs and migrations. Agents load it only when a task needs it, so it costs nothing the rest of the time.
+- **`flask mcp`**: a local, read-only MCP server with the live routes, schema and row counts, migration revision and audit log. Install it with `uv sync --extra dev --extra mcp`; `.mcp.json` registers it, and your agent asks before connecting.
 
 `.agents/skills/` is the shared location for Codex, Cursor, Copilot, Gemini CLI, OpenCode and others. `.claude/skills` is a symlink to it, so Claude Code sees the same skill.
 

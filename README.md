@@ -83,6 +83,10 @@ uv run pytest               # Run before deploying
 
 Tests use an in-memory SQLite database. Set `TEST_DATABASE_URI` to run them against a disposable PostgreSQL database; the suite drops every table in it.
 
+### MCP for Coding Agents
+
+`uv sync --extra dev --extra mcp` enables `uv run flask mcp`, a local, read-only MCP server that shows agents the live routes, database schema with row counts, migration revision and audit log. `.mcp.json` registers it, so MCP-aware agents such as Claude Code offer to connect when you open the project.
+
 ### Docker
 
 Configure a new installation, then start the full production stack:

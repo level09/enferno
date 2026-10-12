@@ -1,3 +1,5 @@
+import sys
+
 from enferno.extensions import db
 from enferno.user.models import User
 
@@ -29,3 +31,12 @@ def test_add_role_rejects_unknown_user(app):
     )
     assert result.exit_code == 1
     assert "does not exist" in result.output
+
+
+def test_mcp_without_extra_explains_how_to_install(app, monkeypatch):
+    for name in ["mcp", *[m for m in sys.modules if m.startswith("mcp.")]]:
+        monkeypatch.setitem(sys.modules, name, None)
+    monkeypatch.delitem(sys.modules, "enferno.agent_mcp", raising=False)
+    result = app.test_cli_runner().invoke(args=["mcp"])
+    assert result.exit_code == 1
+    assert "uv sync --extra dev --extra mcp" in result.output

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "enferno": {
+      "command": "uv",
+      "args": ["run", "flask", "mcp"]
+    }
+  }
+}

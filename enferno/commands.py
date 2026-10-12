@@ -5,6 +5,7 @@ import secrets
 import string
 
 import click
+from flask import current_app
 from flask.cli import AppGroup, with_appcontext
 from flask_security.utils import hash_password
 from rich.console import Console
@@ -13,6 +14,21 @@ from enferno.extensions import db
 from enferno.user.models import User
 
 console = Console()
+
+
+@click.command("mcp")
+@with_appcontext
+def mcp_server():
+    """Serve a read-only view of the app to coding agents over MCP (stdio)."""
+    try:
+        from enferno.agent_mcp import build_server
+    except ModuleNotFoundError as e:
+        if e.name.split(".")[0] != "mcp":
+            raise
+        raise click.ClickException(
+            "MCP support is not installed: uv sync --extra dev --extra mcp"
+        ) from e
+    build_server(current_app._get_current_object()).run()
 
 
 @click.command()

@@ -12,6 +12,7 @@
 - `migrations/env.py` used `get_engine()`, which Flask-SQLAlchemy 3.2 removes.
 
 ### Added
+- `flask mcp`: a local, read-only MCP server (stdio) for coding agents, exposing routes, schema with row counts, migration revision and the audit log. Install with `--extra mcp`; `.mcp.json` registers it.
 - pytest suite replacing `checks.py`: every protected route rejects anonymous users and non-admins, login and POST-only logout, audited admin CRUD, CSRF on the admin API, a single migration head, models matching migrations, and `setup.sh` modes. `TEST_DATABASE_URI` runs it against PostgreSQL, as CI does.
 - `setup.sh --docker`, and setup runs without prompts when there is no terminal (agents, CI). It refuses to overwrite an existing `.env` in that mode.
 - `vendor.sh` pins and downloads Vue, Vuetify and axios.

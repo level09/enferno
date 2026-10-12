@@ -8,7 +8,7 @@ Guidance for coding agents working on Enferno. Code patterns and full examples l
 - **Database**: SQLAlchemy 2.x (`db.select()`, `db.paginate()`), Alembic via Flask-Migrate. SQLite by default, PostgreSQL through `psycopg` 3
 - **Auth**: Flask-Security-Too 5.9 (email login, TOTP 2FA, WebAuthn, recovery codes), Google/GitHub OAuth via Flask-Dance
 - **Frontend**: Vue 3 + Vuetify 3 served from `enferno/static/js/`, no build step, Tabler icons vendored in `enferno/static/tabler/`
-- **Optional**: Redis sessions and Celery (`uv sync --extra full`); uWSGI (`--extra wsgi`)
+- **Optional**: Redis sessions and Celery (`uv sync --extra full`); MCP server for agents (`--extra mcp`); uWSGI (`--extra wsgi`)
 - **Tooling**: `uv` for everything, Ruff for lint and format
 
 ## Layout
@@ -29,6 +29,7 @@ enferno/
 migrations/           # Alembic revisions
 tests/                # pytest: routes, auth, admin API, migrations, setup.sh
 vendor.sh             # Pinned Vue, Vuetify and axios downloads
+.mcp.json             # Registers `flask mcp` with MCP-aware agents
 setup.sh              # Venv, deps, .env with generated secrets (--full for Redis/Celery)
 ```
 
@@ -47,6 +48,7 @@ uv run flask reset -e <email> -p <password>
 uv run flask i18n extract|init|update|compile
 uv run pytest                          # In-memory SQLite; TEST_DATABASE_URI drops all tables
 ./vendor.sh                            # Re-download vendored JS after bumping its pins
+uv run flask mcp                       # Read-only MCP: routes, schema, migration revision, audit log
 uv run ruff check --fix . && uv run ruff format .
 docker compose up --build              # Postgres, Redis, Celery, nginx (needs DB_PASSWORD, REDIS_PASSWORD)
 ```
