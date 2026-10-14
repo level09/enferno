@@ -1,5 +1,15 @@
 # Changelog
 
+## v13.3.1 (2026-10-14)
+
+### Fixed
+- Rerunning `setup.sh` on an existing `.env` regenerated `SECRET_KEY`, the password salt and the TOTP secrets, which broke every stored password and 2FA enrollment. With `--docker` it also rotated `DB_PASSWORD`, which Postgres only reads when its volume is first created. Setup now keeps all of these, plus `REDIS_PASSWORD`, and moves other edits to the backup.
+- `.env` and its backups are created with mode 600 instead of being readable by every user on the machine.
+- Added `.flaskenv` so `flask` commands work with a `.env` that doesn't set `FLASK_APP`.
+
+### Upgrade notes
+- Tighten an existing `.env`: `chmod 600 .env .env.backup.*`
+
 ## v13.3.0 (2026-10-12)
 
 ### Upgrade notes for existing apps
