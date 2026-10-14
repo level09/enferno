@@ -110,14 +110,14 @@ if [ -f .env ]; then
         echo -e "${RED}Error: .env already exists. Not overwriting it without a terminal; keep it, or delete it and rerun.${NC}"
         exit 1
     fi
-    read -p "A .env file already exists. Do you want to overwrite it? (y/N) " -n 1 -r
+    read -p "A .env file already exists. Regenerate it? Secrets and passwords are kept, other edits go to a backup. (y/N) " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         exit 1
     fi
     # Backup existing .env
     BACKUP_FILE=".env.backup.$(date +%Y%m%d_%H%M%S)"
-    if ! cp .env "$BACKUP_FILE"; then
+    if ! cp .env "$BACKUP_FILE" || ! chmod 600 "$BACKUP_FILE"; then
         echo -e "${RED}Error: Failed to create backup file${NC}"
         exit 1
     fi
@@ -153,18 +153,27 @@ if [ -z "$SECRET_KEY" ] || [ -z "$TOTP_SECRET1" ] || [ -z "$TOTP_SECRET2" ] || [
     exit 1
 fi
 
+# Keep secrets from an earlier .env: rotating them breaks stored passwords, 2FA and the Postgres volume
+PREVIOUS_ENV=${BACKUP_FILE:-/dev/null}
+
 # Process the .env file
-if ! awk -v sk="$SECRET_KEY" -v ts1="$TOTP_SECRET1" -v ts2="$TOTP_SECRET2" -v ps="$PASSWORD_SALT" \
+if ! awk -v prev="$PREVIOUS_ENV" -v sk="$SECRET_KEY" -v ts1="$TOTP_SECRET1" -v ts2="$TOTP_SECRET2" -v ps="$PASSWORD_SALT" \
        -v docker="$DOCKER_CONFIG" -v full="$FULL_CONFIG" -v rpass="$REDIS_PASSWORD" -v dbpass="$DB_PASSWORD" -v uid="$DOCKER_UID" '
+function keep(key, fresh) { return (key in old) ? old[key] : key "=" fresh }
+FILENAME == prev {
+    if ($0 ~ /^(SECRET_KEY|SECURITY_TOTP_SECRETS|SECURITY_PASSWORD_SALT|REDIS_PASSWORD|DB_PASSWORD)=/)
+        old[substr($0, 1, index($0, "=") - 1)] = $0
+    next
+}
 {
     if ($0 ~ /^SECRET_KEY=/) {
-        print "SECRET_KEY=\"" sk "\""
+        print keep("SECRET_KEY", "\"" sk "\"")
     }
     else if ($0 ~ /^SECURITY_TOTP_SECRETS=/) {
-        print "SECURITY_TOTP_SECRETS=\"" ts1 "," ts2 "\""
+        print keep("SECURITY_TOTP_SECRETS", "\"" ts1 "," ts2 "\"")
     }
     else if ($0 ~ /^SECURITY_PASSWORD_SALT=/) {
-        print "SECURITY_PASSWORD_SALT=\"" ps "\""
+        print keep("SECURITY_PASSWORD_SALT", "\"" ps "\"")
     }
     else if ($0 ~ /^SQLALCHEMY_DATABASE_URI=/) {
         # Use the default instance/enferno.db path from settings.py.
@@ -175,10 +184,10 @@ if ! awk -v sk="$SECRET_KEY" -v ts1="$TOTP_SECRET1" -v ts2="$TOTP_SECRET2" -v ps
         print
     }
     else if (docker == "true" && $0 ~ /^#REDIS_PASSWORD=/) {
-        print "REDIS_PASSWORD=" rpass
+        print keep("REDIS_PASSWORD", rpass)
     }
     else if (docker == "true" && $0 ~ /^#DB_PASSWORD=/) {
-        print "DB_PASSWORD=" dbpass
+        print keep("DB_PASSWORD", dbpass)
     }
     else if (docker == "true" && $0 ~ /^#SQLALCHEMY_DATABASE_URI=postgresql:\/\/enferno:/) {
         print "SQLALCHEMY_DATABASE_URI=postgresql://enferno:${DB_PASSWORD}@postgres/enferno"
@@ -198,12 +207,12 @@ if ! awk -v sk="$SECRET_KEY" -v ts1="$TOTP_SECRET1" -v ts2="$TOTP_SECRET2" -v ps
     else {
         print $0
     }
-}' .env > .env.new; then
+}' "$PREVIOUS_ENV" .env > .env.new; then
     echo -e "${RED}Error: Failed to process .env file${NC}"
     exit 1
 fi
 
-if ! mv .env.new .env; then
+if ! chmod 600 .env.new || ! mv .env.new .env; then
     echo -e "${RED}Error: Failed to save .env file${NC}"
     rm -f .env.new
     exit 1
@@ -216,7 +225,11 @@ if [ ! -f .env ]; then
 fi
 
 echo -e "${GREEN}Successfully generated .env file with secure keys${NC}"
-echo -e "${GREEN}Generated secure values for: SECRET_KEY, SECURITY_TOTP_SECRETS, SECURITY_PASSWORD_SALT${NC}"
+if [ -n "$BACKUP_FILE" ]; then
+    echo -e "${GREEN}Kept existing secrets and passwords from $BACKUP_FILE${NC}"
+else
+    echo -e "${GREEN}Generated secure values for: SECRET_KEY, SECURITY_TOTP_SECRETS, SECURITY_PASSWORD_SALT${NC}"
+fi
 if [ "$DOCKER_CONFIG" = true ]; then
     echo -e "${GREEN}Docker configuration enabled with secure passwords for Redis and PostgreSQL${NC}"
 else

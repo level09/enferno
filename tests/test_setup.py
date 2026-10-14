@@ -1,6 +1,9 @@
+import os
+import pty
 import shutil
 import stat
 import subprocess
+import termios
 from pathlib import Path
 
 import pytest
@@ -24,22 +27,35 @@ def setup(tmp_path):
     bin_dir.mkdir()
     _executable(bin_dir / "uv", "printf '%s\\n' \"$@\" > uv-args.txt")
 
-    def run(*args, python="python3"):
+    def run(*args, python="python3", answer=None):
         for name in PYTHONS:
             ok = name == python
             _executable(
                 bin_dir / name,
                 f'[ "$1" = "-c" ] && exit {0 if ok else 1}; echo "Python 3.{14 if ok else 10}"',
             )
-        return subprocess.run(
-            ["bash", "setup.sh", *args],
-            cwd=tmp_path,
-            env={"PATH": f"{bin_dir}:/usr/bin:/bin", "HOME": str(tmp_path)},
-            stdin=subprocess.DEVNULL,
-            capture_output=True,
-            text=True,
-            check=False,
-        )
+        stdin = subprocess.DEVNULL
+        if answer:
+            # A pty makes setup.sh prompt; echo off, or unread echo blocks the read
+            primary, stdin = pty.openpty()
+            attrs = termios.tcgetattr(stdin)
+            attrs[3] &= ~termios.ECHO
+            termios.tcsetattr(stdin, termios.TCSANOW, attrs)
+            os.write(primary, answer.encode())
+        try:
+            return subprocess.run(
+                ["bash", "setup.sh", *args],
+                cwd=tmp_path,
+                env={"PATH": f"{bin_dir}:/usr/bin:/bin", "HOME": str(tmp_path)},
+                stdin=stdin,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+        finally:
+            if answer:
+                os.close(stdin)
+                os.close(primary)
 
     return run
 
@@ -80,6 +96,28 @@ def test_docker_wires_services_to_generated_passwords(setup, tmp_path):
         f"postgresql://enferno:{env['DB_PASSWORD']}@postgres/enferno"
     )
     assert env["REDIS_URL"] == f"redis://:{env['REDIS_PASSWORD']}@redis:6379/1"
+
+
+def test_env_is_private(setup, tmp_path):
+    assert setup().returncode == 0
+    assert stat.S_IMODE((tmp_path / ".env").stat().st_mode) == 0o600
+
+
+def test_regenerating_keeps_secrets(setup, tmp_path):
+    assert setup("--docker").returncode == 0
+    env_file = tmp_path / ".env"
+    before = dotenv_values(env_file)
+    env_file.write_text(env_file.read_text() + "CUSTOM=edit\n")
+    result = setup("--docker", answer="y")
+    assert result.returncode == 0, result.stdout + result.stderr
+    after = dotenv_values(env_file)
+    keys = ("SECRET_KEY", "SECURITY_TOTP_SECRETS", "SECURITY_PASSWORD_SALT")
+    for key in (*keys, "REDIS_PASSWORD", "DB_PASSWORD"):
+        assert after[key] == before[key]
+    assert "CUSTOM" not in after
+    (backup,) = tmp_path.glob(".env.backup.*")
+    assert dotenv_values(backup)["CUSTOM"] == "edit"
+    assert stat.S_IMODE(backup.stat().st_mode) == 0o600
 
 
 def test_never_overwrites_env_without_a_terminal(setup, tmp_path):
