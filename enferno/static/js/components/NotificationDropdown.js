@@ -33,7 +33,7 @@ const NotificationDropdown = {
 
       <v-card width="380">
         <v-card-title class="d-flex align-center py-3 px-4">
-          <span class="text-body-1 font-weight-medium">Notifications</span>
+          <span class="text-body-large font-weight-medium">Notifications</span>
           <v-chip v-if="unreadCount > 0" size="x-small" color="primary" class="ml-2">
             {{ unreadCount }} New
           </v-chip>
@@ -70,13 +70,13 @@ const NotificationDropdown = {
                 </v-avatar>
               </template>
 
-              <v-list-item-title class="text-body-2 font-weight-medium mb-1">
+              <v-list-item-title class="text-body-medium font-weight-medium mb-1">
                 {{ notification.title }}
               </v-list-item-title>
-              <v-list-item-subtitle class="text-caption">
+              <v-list-item-subtitle class="text-body-small">
                 {{ notification.subtitle }}
               </v-list-item-subtitle>
-              <v-list-item-subtitle v-if="notification.time" class="text-caption mt-1" style="opacity: 0.6;">
+              <v-list-item-subtitle v-if="notification.time" class="text-body-small mt-1" style="opacity: 0.6;">
                 {{ notification.time }}
               </v-list-item-subtitle>
 
@@ -107,7 +107,7 @@ const NotificationDropdown = {
           <v-list-item v-if="!notifications.length" class="text-center py-8">
             <div class="d-flex flex-column align-center">
               <i class="ti ti-bell-off mb-2" style="font-size: 48px; opacity: 0.3;"></i>
-              <v-list-item-title class="text-body-2 text-medium-emphasis">
+              <v-list-item-title class="text-body-medium text-medium-emphasis">
                 No notifications
               </v-list-item-title>
             </div>

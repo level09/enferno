@@ -7,7 +7,7 @@ Guidance for coding agents working on Enferno. Code patterns and full examples l
 - **Backend**: Flask 3.1, blueprints, application factory in `enferno/app.py`
 - **Database**: SQLAlchemy 2.x (`db.select()`, `db.paginate()`), Alembic via Flask-Migrate. SQLite by default, PostgreSQL through `psycopg` 3
 - **Auth**: Flask-Security-Too 5.9 (email login, TOTP 2FA, WebAuthn, recovery codes), Google/GitHub OAuth via Flask-Dance
-- **Frontend**: Vue 3 + Vuetify 3 served from `enferno/static/js/`, no build step, Tabler icons vendored in `enferno/static/tabler/`
+- **Frontend**: Vue 3 + Vuetify 4 served from `enferno/static/js/`, no build step, Tabler icons vendored in `enferno/static/tabler/`
 - **Optional**: Redis sessions and Celery (`uv sync --extra full`); MCP server for agents (`--extra mcp`); uWSGI (`--extra wsgi`)
 - **Tooling**: `uv` for everything, Ruff for lint and format
 
@@ -84,6 +84,7 @@ Lists return `{"items": [...], "total": n, "perPage": n}`. Create and update tak
 - **CSRF**: every POST/PUT/DELETE is checked (`CSRFProtect`). Axios sends the token automatically on `layout.html` pages; plain HTML forms need `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">`.
 - **Postgres driver**: `psycopg` 3. Do not add `psycopg2-binary`.
 - **Reactivity**: never mutate reactive state inside a computed property; Vue 3.5 loops forever.
+- **Vuetify 4**: Material Design 3 classes (`text-headline-small`, `text-body-medium`, `text-body-small`; `text-h5`, `text-body-2` and `text-caption` no longer exist). Align rows with classes (`<v-row class="align-center">`), not `align`/`justify` props. Vuetify's CSS is in cascade layers, so any unlayered rule beats every component style; put element-level rules like `a { }` in `@layer vuetify-core.reset`.
 - **Vendored JS**: bump pins in `vendor.sh` and run it, never hand-edit the files. Vue and Vuetify must stay compatible; after updating, load an admin page in a real browser.
 
 ## Before committing

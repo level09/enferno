@@ -73,13 +73,13 @@ const config = {
                     dark: false,
                     colors: {
                         // Ember light theme
-                        primary: '#EA580C',      // Ember Orange
+                        primary: '#C2410C',      // Ember Orange (orange-700: 5.2:1 with white text)
                         secondary: '#1E293B',    // Slate (for contrast)
                         accent: '#F97316',       // Bright Orange
                         error: '#DC2626',        // Red
-                        info: '#0EA5E9',         // Sky Blue
-                        success: '#16A34A',      // Green
-                        warning: '#EAB308',      // Yellow
+                        info: '#0369A1',         // Sky 700
+                        success: '#15803D',      // Green 700
+                        warning: '#A16207',      // Yellow 700
                         background: '#FFFFFF',   // White
                         surface: '#F8FAFC',      // Slate 50
                         'surface-light': '#F1F5F9', // Slate 100
@@ -93,7 +93,7 @@ const config = {
                         primary: '#F97316',      // Bright Orange (more visible on dark)
                         secondary: '#CBD5E1',    // Slate 300
                         accent: '#FB923C',       // Orange 400
-                        error: '#EF4444',        // Red 500
+                        error: '#F87171',        // Red 400: 5.3:1 on surface
                         info: '#38BDF8',         // Sky 400
                         success: '#22C55E',      // Green 500
                         warning: '#FACC15',      // Yellow 400
@@ -101,6 +101,13 @@ const config = {
                         surface: '#1E293B',      // Slate 800
                         'surface-light': '#334155', // Slate 700
                         'on-surface': '#F1F5F9', // Slate 100
+                        // Bright fills need dark text; white on them is under 4:1
+                        'on-primary': '#0F172A',
+                        'on-accent': '#0F172A',
+                        'on-error': '#0F172A',
+                        'on-info': '#0F172A',
+                        'on-success': '#0F172A',
+                        'on-warning': '#0F172A',
                     }
                 }
             }

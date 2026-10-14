@@ -64,11 +64,23 @@ html, body {
 }
 
 /* ===== Links ===== */
-a {
-    color: rgb(var(--v-theme-primary));
-    transition: opacity 0.2s;
+/* Vuetify 4 layers its CSS; unlayered rules would beat v-btn and v-list-item links */
+@layer vuetify-core.reset {
+    a {
+        color: rgb(var(--v-theme-primary));
+        transition: opacity 0.2s;
+    }
+
+    a:hover {
+        opacity: 0.8;
+    }
 }
 
-a:hover {
-    opacity: 0.8;
+/* ===== Adaptive Logo (inverts in dark mode) ===== */
+.logo-adaptive {
+    transition: filter 0.2s ease;
+}
+
+.v-theme--dark .logo-adaptive {
+    filter: invert(1) brightness(2);
 }

@@ -6,7 +6,7 @@ description: |
 
 # Enferno Development
 
-Flask 3 + SQLAlchemy 2.x + Vue 3 + Vuetify 3. No frontend build step. `uv` for everything.
+Flask 3 + SQLAlchemy 2.x + Vue 3 + Vuetify 4. No frontend build step. `uv` for everything.
 
 ## Quick Reference
 
@@ -190,6 +190,8 @@ Rules:
 - CSRF is enforced on every POST/PUT/DELETE. Axios on `layout.html` pages already sends the `X-CSRFToken` header; plain HTML forms need `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">`.
 - Pass server data through a `<script type="application/json">` tag and `|tojson`, never by interpolating into JS.
 - Never mutate reactive state inside a computed property. It loops forever on Vue 3.5.
+- Vuetify 4 uses Material Design 3 type classes: `text-headline-small`, `text-title-large`, `text-body-medium`, `text-body-small`. The Vuetify 3 names (`text-h5`, `text-body-2`, `text-caption`) render unstyled. Align rows with classes (`class="align-center justify-center"`), not props.
+- Vuetify's CSS lives in cascade layers, so unlayered CSS beats every component style. Scope custom rules to your own classes; put element rules such as `a { }` in `@layer vuetify-core.reset`.
 
 ## Queries (SQLAlchemy 2.x)
 

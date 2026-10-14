@@ -1,13 +1,13 @@
 {% extends 'layout.html' %}
 {% block body_class %}home{% endblock %}
 {% block content %}
-    <v-container fluid class="fill-height">
-        <v-row align="center" justify="center">
+    <v-container fluid class="fill-height d-flex align-center flex-wrap">
+        <v-row class="align-center justify-center">
             <v-col cols="12" sm="10" md="6" lg="4" class="text-center">
                 <img src="/static/img/enferno.svg" alt="Enferno" style="width: 120px; height: 120px;" class="mb-6 logo-adaptive">
 
-                <h1 class="text-h4 font-weight-bold mb-3">Build faster with Enferno</h1>
-                <p class="text-body-1 text-medium-emphasis mb-8">
+                <h1 class="text-headline-large font-weight-bold mb-3">Build faster with Enferno</h1>
+                <p class="text-body-large text-medium-emphasis mb-8">
                     A modern Flask framework for building web applications.
                 </p>
 
@@ -20,7 +20,7 @@
                 <v-btn color="primary" size="large" href="/register">
                     Get Started
                 </v-btn>
-                <div class="mt-4 text-body-2 text-medium-emphasis">
+                <div class="mt-4 text-body-medium text-medium-emphasis">
                     Already have an account? <a href="/login" class="text-primary">Sign in</a>
                 </div>
                 {% endif %}
@@ -28,7 +28,7 @@
         </v-row>
     </v-container>
 
-    <div style="position: fixed; bottom: 24px; left: 0; right: 0;" class="text-center text-caption text-medium-emphasis">
+    <div style="position: fixed; bottom: 24px; left: 0; right: 0;" class="text-center text-body-small text-medium-emphasis">
         <a href="https://docs.enferno.io" target="_blank" rel="noopener" class="text-decoration-none">Documentation</a>
         <span class="mx-2">•</span>
         <a href="https://github.com/level09/enferno" target="_blank" rel="noopener" class="text-decoration-none">GitHub</a>

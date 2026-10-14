@@ -11,9 +11,9 @@
 <v-main class="d-flex flex-column align-center justify-center" style="min-height: 100vh; background: rgb(var(--v-theme-background));">
     <v-card class="mx-auto pa-8 w-100" rounded="lg" style="max-width: 424px;">
         <div class="text-center mb-6">
-            <img src="/static/img/enferno.svg" alt="Logo" height="40" class="mb-4">
-            <div class="text-h5 font-weight-bold">Sign in with Passkey</div>
-            <div class="text-body-2 text-medium-emphasis">Use your security key or passkey</div>
+            <img src="/static/img/enferno.svg" alt="Logo" height="40" class="mb-4 logo-adaptive">
+            <div class="text-headline-small font-weight-bold">Sign in with Passkey</div>
+            <div class="text-body-medium text-medium-emphasis">Use your security key or passkey</div>
         </div>
 
         {% if not credential_options %}
@@ -47,8 +47,8 @@
         {% else %}
         <div class="text-center pa-6">
             <v-progress-circular indeterminate color="primary" size="48" class="mb-4"></v-progress-circular>
-            <div class="text-body-1">Waiting for your security key...</div>
-            <div class="text-caption text-medium-emphasis mb-4">Follow the prompts on your device</div>
+            <div class="text-body-large">Waiting for your security key...</div>
+            <div class="text-body-small text-medium-emphasis mb-4">Follow the prompts on your device</div>
         </div>
 
         <form action="{{ url_for_security('wan_signin_response', token=wan_state) }}{{ prop_next() }}" method="post" id="wan-signin-response-form">

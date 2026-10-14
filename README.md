@@ -70,7 +70,7 @@ Tests run on in-memory SQLite in about four seconds. CI runs them on PostgreSQL 
 
 ## What's in the box
 
-- **Frontend**: Vue 3, Vuetify 3 and axios, vendored and pinned by `vendor.sh`. No build step
+- **Frontend**: Vue 3, Vuetify 4 and axios, vendored and pinned by `vendor.sh`. No build step
 - **Auth**: login, registration, password recovery, TOTP 2FA, passkeys (WebAuthn), recovery codes, Google and GitHub OAuth
 - **Admin**: users, roles and an audit log of admin actions
 - **Database**: SQLAlchemy 2 with Alembic migrations. SQLite by default, PostgreSQL when you want it

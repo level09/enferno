@@ -4,7 +4,7 @@
 {% block content %}
 <v-container fluid class="pa-4">
     <v-card max-width="600" class="mx-auto">
-        <v-card-title class="text-h5">
+        <v-card-title class="text-headline-small">
             <i class="ti ti-shield-lock mr-2"></i>
             Two-Factor Authentication
         </v-card-title>
@@ -29,8 +29,8 @@
                         <i class="ti ti-check" style="font-size: 24px;"></i>
                     </v-avatar>
                     <div class="flex-grow-1">
-                        <div class="text-h6 text-uppercase">{{ primary_method }}</div>
-                        <div class="text-caption">Currently enabled</div>
+                        <div class="text-title-large text-uppercase">{{ primary_method }}</div>
+                        <div class="text-body-small">Currently enabled</div>
                     </div>
                     <v-btn color="error" variant="outlined" @click="disable2FA">
                         <i class="ti ti-x mr-1"></i>
@@ -55,7 +55,7 @@
                     </v-avatar>
                     <div class="flex-grow-1">
                         <div class="font-weight-medium">Authenticator App</div>
-                        <div class="text-caption text-medium-emphasis">Use Google Authenticator, Authy, or similar</div>
+                        <div class="text-body-small text-medium-emphasis">Use Google Authenticator, Authy, or similar</div>
                     </div>
                     <v-btn variant="outlined" color="primary" onclick="document.getElementById('setup-form').submit()">
                         Setup
@@ -67,7 +67,7 @@
             {% if chosen_method == "authenticator" %}
             <!-- QR Code Setup -->
             <v-card variant="outlined" class="mb-4">
-                <v-card-title class="text-subtitle-1">
+                <v-card-title class="text-body-large">
                     <i class="ti ti-qrcode mr-2"></i>
                     Scan QR Code
                 </v-card-title>
@@ -94,7 +94,7 @@
             {% if chosen_method %}
             <!-- Verify Code -->
             <v-card variant="outlined">
-                <v-card-title class="text-subtitle-1">
+                <v-card-title class="text-body-large">
                     <i class="ti ti-numbers mr-2"></i>
                     Enter Verification Code
                 </v-card-title>
@@ -126,7 +126,7 @@
                     </v-avatar>
                     <div class="flex-grow-1">
                         <div class="font-weight-medium">Security Keys & Passkeys</div>
-                        <div class="text-caption text-medium-emphasis">Hardware keys or device passkeys</div>
+                        <div class="text-body-small text-medium-emphasis">Hardware keys or device passkeys</div>
                     </div>
                     <v-btn variant="outlined" color="primary" href="{{ url_for_security('wan_register') }}">
                         Manage
@@ -143,7 +143,7 @@
                     </v-avatar>
                     <div class="flex-grow-1">
                         <div class="font-weight-medium">Recovery Codes</div>
-                        <div class="text-caption text-medium-emphasis">Backup codes for account recovery</div>
+                        <div class="text-body-small text-medium-emphasis">Backup codes for account recovery</div>
                     </div>
                     <v-btn variant="outlined" color="primary" href="{{ url_for_security('mf_recovery_codes') }}">
                         Manage

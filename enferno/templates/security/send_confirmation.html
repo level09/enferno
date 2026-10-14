@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-    <v-app id="app" class="justify-center align-center min-vh-100 d-flex">
+    <div class="justify-center align-center min-vh-100 d-flex">
         <v-container class="d-flex align-center justify-center">
             <div class="main">
                 <h2>Resend confirmation instructions</h2>
@@ -18,7 +18,7 @@
                 <v-btn text color="primary" @click.native="value = false">Close</v-btn>
             </v-snackbar>
         </v-container>
-    </v-app>
+    </div>
 {% endblock %}
 
 {% block js %}

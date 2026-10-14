@@ -19,7 +19,8 @@
 </head>
 
 <body class="{% block body_class %} {% endblock %}">
-<v-app id="app">
+<div id="app">
+<v-app>
     <v-layout class="rounded rounded-md">
         <!-- App Bar -->
         <v-app-bar color="surface" density="comfortable" elevation="1">
@@ -55,7 +56,7 @@
                 <template v-slot:activator="{ props }">
                     <v-btn v-bind="props" icon variant="text" size="small" class="ml-1">
                         <v-avatar color="primary" size="32">
-                            <span class="text-body-2">{{ current_user.display_name[:2]|upper }}</span>
+                            <span class="text-body-medium">{{ current_user.display_name[:2]|upper }}</span>
                         </v-avatar>
                     </v-btn>
                 </template>
@@ -137,7 +138,7 @@
         {% endif %}
 
         <!-- Main Content -->
-        <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
+        <v-main class="d-flex justify-center" style="min-height: 300px;">
             {% block content %}
             {% endblock %}
         </v-main>
@@ -156,6 +157,7 @@
         {% endif %}
     </v-layout>
 </v-app>
+</div>
 
 <!-- Flash message auto-hide (outside Vue template) -->
 {% if messages %}

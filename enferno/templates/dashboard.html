@@ -1,6 +1,6 @@
 {% extends 'layout.html' %}
 {% block content %}
-    <v-container class="py-6">
+    <v-container fluid class="py-6">
         {% if current_user.has_role('admin') %}
         <!-- Stats Row (admin only) -->
         <v-row class="mb-6">
@@ -9,7 +9,7 @@
                     <div class="d-flex align-center">
                         <i class="ti ti-users mr-4 text-medium-emphasis" style="font-size: 32px;"></i>
                         <div>
-                            <div class="text-h4 font-weight-bold">{{ stats.users }}</div>
+                            <div class="text-headline-large font-weight-bold">{{ stats.users }}</div>
                             <div class="text-medium-emphasis">Users</div>
                         </div>
                     </div>
@@ -20,7 +20,7 @@
                     <div class="d-flex align-center">
                         <i class="ti ti-shield mr-4 text-medium-emphasis" style="font-size: 32px;"></i>
                         <div>
-                            <div class="text-h4 font-weight-bold">{{ stats.roles }}</div>
+                            <div class="text-headline-large font-weight-bold">{{ stats.roles }}</div>
                             <div class="text-medium-emphasis">Roles</div>
                         </div>
                     </div>
@@ -31,7 +31,7 @@
                     <div class="d-flex align-center">
                         <i class="ti ti-history mr-4 text-medium-emphasis" style="font-size: 32px;"></i>
                         <div>
-                            <div class="text-h4 font-weight-bold">{{ stats.activities }}</div>
+                            <div class="text-headline-large font-weight-bold">{{ stats.activities }}</div>
                             <div class="text-medium-emphasis">Activity Logs</div>
                         </div>
                     </div>
@@ -47,10 +47,10 @@
                     <v-card-text class="pa-6">
                         <div class="d-flex align-center mb-4">
                             <v-avatar color="primary" size="64" class="mr-4">
-                                <span class="text-h5">{{ current_user.name[:2]|upper if current_user.name else 'U' }}</span>
+                                <span class="text-headline-small">{{ current_user.name[:2]|upper if current_user.name else 'U' }}</span>
                             </v-avatar>
                             <div>
-                                <div class="text-h5 font-weight-medium">{{ current_user.display_name }}</div>
+                                <div class="text-headline-small font-weight-medium">{{ current_user.display_name }}</div>
                                 <div class="text-medium-emphasis">{{ current_user.email }}</div>
                             </div>
                         </div>

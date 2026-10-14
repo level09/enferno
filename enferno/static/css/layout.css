@@ -275,17 +275,8 @@
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-/* ===== Adaptive Logo (inverts in dark mode) ===== */
-.logo-adaptive {
-  transition: filter 0.2s ease;
-}
-
-body.dark-mode .logo-adaptive {
-  filter: invert(1) brightness(2);
-}
-
 /* ===== QR Code (inverts in dark mode) ===== */
-body.dark-mode .qr-adaptive {
+.v-theme--dark .qr-adaptive {
   filter: invert(1);
 }
 
@@ -309,16 +300,16 @@ body.dark-mode .qr-adaptive {
   justify-content: space-between;
 }
 
-.flash-message.success { background: #16A34A; }
-.flash-message.error { background: #DC2626; }
-.flash-message.warning { background: #EAB308; }
-.flash-message.info { background: #0EA5E9; }
-.flash-message.primary { background: #EA580C; }
+.flash-message.success { background: rgb(var(--v-theme-success)); color: rgb(var(--v-theme-on-success)); }
+.flash-message.error { background: rgb(var(--v-theme-error)); color: rgb(var(--v-theme-on-error)); }
+.flash-message.warning { background: rgb(var(--v-theme-warning)); color: rgb(var(--v-theme-on-warning)); }
+.flash-message.info { background: rgb(var(--v-theme-info)); color: rgb(var(--v-theme-on-info)); }
+.flash-message.primary { background: rgb(var(--v-theme-primary)); color: rgb(var(--v-theme-on-primary)); }
 
 .flash-close {
   background: none;
   border: none;
-  color: white;
+  color: inherit;
   cursor: pointer;
   font-size: 18px;
   margin-left: 12px;
