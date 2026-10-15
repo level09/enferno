@@ -3,7 +3,7 @@
 ## v14.0.0 (2026-10-15)
 
 ### Upgrade notes for existing apps
-- Vuetify 4 replaces Vuetify 3. Run `./vendor.sh` after pulling, then check your own templates:
+- Vuetify 4 replaces Vuetify 3; the vendored files come with the update. Check your own templates:
   - Typography classes moved to Material Design 3 names. `text-h4` becomes `text-headline-large`, `text-h5` becomes `text-headline-small`, `text-h6` becomes `text-title-large`, `text-subtitle-1` and `text-body-1` become `text-body-large`, `text-body-2` becomes `text-body-medium`, `text-caption` becomes `text-body-small`. The old classes no longer exist and render unstyled.
   - Use classes for row alignment: `<v-row class="align-center justify-center">` instead of the `align` and `justify` props.
   - Vuetify's CSS now lives in cascade layers, so any CSS outside a layer beats every Vuetify style. Element rules such as `a { color: ... }` in your own stylesheets will recolor buttons and list items; scope them to your own classes or put them in `@layer vuetify-core.reset`.
