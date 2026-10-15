@@ -1,5 +1,32 @@
 # Changelog
 
+## v14.0.0 (2026-10-15)
+
+### Upgrade notes for existing apps
+- Vuetify 4 replaces Vuetify 3. Run `./vendor.sh` after pulling, then check your own templates:
+  - Typography classes moved to Material Design 3 names. `text-h4` becomes `text-headline-large`, `text-h5` becomes `text-headline-small`, `text-h6` becomes `text-title-large`, `text-subtitle-1` and `text-body-1` become `text-body-large`, `text-body-2` becomes `text-body-medium`, `text-caption` becomes `text-body-small`. The old classes no longer exist and render unstyled.
+  - Use classes for row alignment: `<v-row class="align-center justify-center">` instead of the `align` and `justify` props.
+  - Vuetify's CSS now lives in cascade layers, so any CSS outside a layer beats every Vuetify style. Element rules such as `a { color: ... }` in your own stylesheets will recolor buttons and list items; scope them to your own classes or put them in `@layer vuetify-core.reset`.
+  - Buttons are no longer uppercase by default, elevation goes up to 5 instead of 24, and `v-container` max widths are smaller. A `fill-height` container no longer centers its content vertically; add `d-flex align-center`.
+- `layout.html` now mounts Vue on `<div id="app">` with `<v-app>` inside it. Pages that extend `layout.html` and wrap their content in their own `<v-app id="app">` must drop that wrapper.
+- The light theme uses darker shades so text and buttons meet WCAG AA contrast: primary `#C2410C`, info `#0369A1`, success `#15803D`, warning `#A16207`. The dark theme puts dark text on its bright buttons, and its error red is `#F87171`.
+- The `dark-mode` class on `body` is gone. Target dark mode in CSS with `.v-theme--dark`.
+
+### Fixed
+- The page background now follows the theme. `<v-app>` was the Vue mount point, so it never rendered and dark mode showed the browser's grey instead of the theme's slate.
+- Between 840 and 1145px wide, the navigation drawer opened as an overlay on every page load and the menu button to reopen it was hidden. The drawer and menu button now share Vuetify's mobile breakpoint, and the drawer starts closed on small screens.
+- Edit and delete in the users and roles tables are real buttons with labels, reachable from the keyboard and screen readers. Other icon-only buttons have labels too.
+- The flame logo inverts on every dark page, including the login and 2FA screens.
+- Flash messages use theme colors; warning text was 1.9:1 on yellow.
+- The forgot password, reset password and resend confirmation pages were Vue 2 era templates that broke the layout. They are rebuilt like the 2FA pages and work when `SECURITY_RECOVERABLE` or `SECURITY_CONFIRMABLE` is turned on.
+
+### Removed
+- The unused `confirm_email.html` template and the Read the Docs config left over from MkDocs. Docs are on Mintlify.
+
+### Changed
+- Vuetify 4.2.4. Dependency lock refreshed.
+- `AGENTS.md` and the `enferno-dev` skill describe the Vuetify 4 rules, so coding agents stop writing Vuetify 3 class names.
+
 ## v13.3.1 (2026-10-14)
 
 ### Fixed
