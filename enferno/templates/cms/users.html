@@ -42,19 +42,8 @@
                 </template>
 
                 <template v-slot:item.actions="{ item }">
-                    <v-icon
-                            small
-                            class="mr-2"
-                            @click="editItem(item)"
-                    >
-                        ti ti-pencil
-                    </v-icon>
-                    <v-icon
-                            small
-                            @click="deleteItem(item)"
-                    >
-                        ti ti-trash
-                    </v-icon>
+                    <v-btn icon="ti-pencil" variant="text" size="small" aria-label="Edit user" @click="editItem(item)"></v-btn>
+                    <v-btn icon="ti-trash" variant="text" size="small" aria-label="Delete user" @click="deleteItem(item)"></v-btn>
                 </template>
 
             </v-data-table-server>
@@ -70,7 +59,7 @@
             <v-toolbar>
                 <v-toolbar-title>User Editor</v-toolbar-title>
                 <template v-slot:append>
-                    <v-btn @click="edialog=false" size="small" icon="ti ti-x" variant="text"></v-btn>
+                    <v-btn @click="edialog=false" size="small" icon="ti ti-x" aria-label="Close" variant="text"></v-btn>
                 </template>
             </v-toolbar>
             
@@ -110,7 +99,7 @@
 
         ${snackMessage}
         <template v-slot:actions>
-            <v-btn @click="snackBar=false" icon="ti ti-x" class="ml-auto" size="small" variant="text"></v-btn>
+            <v-btn @click="snackBar=false" icon="ti ti-x" aria-label="Close" class="ml-auto" size="small" variant="text"></v-btn>
         </template>
     </v-snackbar>
 

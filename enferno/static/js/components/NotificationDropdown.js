@@ -18,7 +18,7 @@ const NotificationDropdown = {
   template: `
     <v-menu offset="14" :close-on-content-click="false" max-width="380" transition="fade-transition">
       <template v-slot:activator="{ props }">
-        <v-btn v-bind="props" icon variant="text" size="small">
+        <v-btn v-bind="props" icon variant="text" size="small" aria-label="Notifications">
           <v-badge
             :model-value="unreadCount > 0"
             :content="unreadCount"

@@ -107,7 +107,7 @@
                                         Last used: {{ cred.lastuse }}
                                     </div>
                                 </div>
-                                <v-btn icon variant="text" color="error" size="small" @click="deleteDevice('{{ cred.name }}')">
+                                <v-btn icon variant="text" color="error" size="small" aria-label="Remove {{ cred.name }}" @click="deleteDevice('{{ cred.name }}')">
                                     <i class="ti ti-trash"></i>
                                 </v-btn>
                             </div>

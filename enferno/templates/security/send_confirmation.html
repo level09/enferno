@@ -1,48 +1,35 @@
-{% extends 'layout.html' %}
+{% extends 'login-layout.html' %}
 
 {% block content %}
-    <div class="justify-center align-center min-vh-100 d-flex">
-        <v-container class="d-flex align-center justify-center">
-            <div class="main">
-                <h2>Resend confirmation instructions</h2>
+<v-main class="d-flex flex-column align-center justify-center" style="min-height: 100vh; background: rgb(var(--v-theme-background));">
+    <v-card class="mx-auto pa-8 w-100" rounded="lg" style="max-width: 424px;">
+        <div class="text-center mb-6">
+            <img src="/static/img/enferno.svg" alt="Logo" height="40" class="mb-4 logo-adaptive">
+            <div class="text-headline-small font-weight-bold">Confirm your email</div>
+            <div class="text-body-medium text-medium-emphasis">We'll send a new confirmation link</div>
+        </div>
 
-                <form action="{{ url_for_security('send_confirmation') }}" method="POST" name="send_confirmation_form">
-                    {{ send_confirmation_form.hidden_tag() }}
-                    <v-text-field required label="Email" name="email" type="email"></v-text-field>
+        <form action="{{ url_for_security('send_confirmation') }}" method="POST" name="send_confirmation_form">
+            {{ send_confirmation_form.hidden_tag() }}
+            <v-text-field name="email" type="email" label="Email" autocomplete="email" required
+                          {% if send_confirmation_form.errors.email %}error-messages="{{ send_confirmation_form.errors.email[0] }}"{% endif %}
+                          class="mb-2"></v-text-field>
 
-                    <v-btn type="submit" color="primary">Resend Instructions</v-btn>
-                </form>
-            </div>
-            <v-snackbar absolute button v-model="snackBar">
-                ${snackMessage}
-                <v-btn text color="primary" @click.native="value = false">Close</v-btn>
-            </v-snackbar>
-        </v-container>
+            {% include "security/_messages.html" %}
+
+            <v-btn type="submit" color="primary" size="large" block>Send confirmation link</v-btn>
+        </form>
+    </v-card>
+
+    <div class="mt-6 w-100 text-center" style="max-width: 424px;">
+        <a href="{{ url_for_security('login') }}">Back to log in</a>
     </div>
+</v-main>
 {% endblock %}
 
 {% block js %}
-    <script>
-        const {createApp} = Vue;
-        const {createVuetify} = Vuetify;
-        const vuetify = createVuetify(config.vuetifyConfig);
-
-        const app = createApp({
-            data() {
-                return {
-                    snackBar: false,
-                    snackMessage: '',
-                };
-            },
-            methods: {
-                showSnack(message) {
-                    this.snackMessage = message;
-                    this.snackBar = true;
-                },
-            },
-            delimiters: ['${', '}']
-        });
-
-        app.use(vuetify).mount('#app');
-    </script>
+<script>
+    const app = Vue.createApp({ delimiters });
+    app.use(Vuetify.createVuetify(vuetifyConfig)).mount('#app');
+</script>
 {% endblock %}

@@ -36,19 +36,8 @@
                 </template>
 
                 <template v-slot:item.actions="{ item }">
-                    <v-icon
-                            small
-                            class="mr-2"
-                            @click="editItem(item)"
-                    >
-                        ti ti-pencil
-                    </v-icon>
-                    <v-icon
-                            small
-                            @click="deleteItem(item)"
-                    >
-                        ti ti-trash
-                    </v-icon>
+                    <v-btn icon="ti-pencil" variant="text" size="small" aria-label="Edit role" @click="editItem(item)"></v-btn>
+                    <v-btn icon="ti-trash" variant="text" size="small" aria-label="Delete role" @click="deleteItem(item)"></v-btn>
                 </template>
 
             </v-data-table-server>
@@ -61,7 +50,7 @@
     <v-dialog v-model="edialog" width="660">
         <v-card v-if="edialog" class="pa-6">
             <v-sheet class="d-flex justify-end">
-                <v-btn @click="edialog=false" size="small" icon="ti ti-x" variant="text"></v-btn>
+                <v-btn @click="edialog=false" size="small" icon="ti ti-x" aria-label="Close" variant="text"></v-btn>
             </v-sheet>
             <v-card-title>Role Editor</v-card-title>
 
@@ -83,7 +72,7 @@
 
         ${snackMessage}
         <template v-slot:actions>
-            <v-btn @click="snackBar=false" icon="ti ti-x" class="ml-auto" variant="text" size="small"></v-btn>
+            <v-btn @click="snackBar=false" icon="ti ti-x" aria-label="Close" class="ml-auto" variant="text" size="small"></v-btn>
         </template>
     </v-snackbar>
 

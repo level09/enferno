@@ -25,7 +25,7 @@
         <!-- App Bar -->
         <v-app-bar color="surface" density="comfortable" elevation="1">
             {% if current_user.is_authenticated %}
-            <v-app-bar-nav-icon @click="drawer = !drawer" class="d-md-none"></v-app-bar-nav-icon>
+            <v-app-bar-nav-icon v-show="isMobile" @click="drawer = !drawer" aria-label="Toggle navigation"></v-app-bar-nav-icon>
             {% endif %}
 
             <v-app-bar-title>
@@ -54,7 +54,7 @@
             <!-- User Menu -->
             <v-menu :close-on-content-click="false" location="bottom end" transition="fade-transition">
                 <template v-slot:activator="{ props }">
-                    <v-btn v-bind="props" icon variant="text" size="small" class="ml-1">
+                    <v-btn v-bind="props" icon variant="text" size="small" class="ml-1" aria-label="Account menu">
                         <v-avatar color="primary" size="32">
                             <span class="text-body-medium">{{ current_user.display_name[:2]|upper }}</span>
                         </v-avatar>
@@ -106,10 +106,10 @@
 
         {% if current_user.is_authenticated %}
         <!-- Navigation Drawer (authenticated users only) -->
-        <v-navigation-drawer v-model="drawer" :rail="isNavCollapsed" :rail-width="68" width="260">
+        <v-navigation-drawer v-model="drawer" :rail="rail" :rail-width="68" width="260">
             <!-- Nav Header -->
             <div class="nav-header">
-                <span v-show="!isNavCollapsed" class="app-title">Navigation</span>
+                <span v-show="!rail" class="app-title">Navigation</span>
                 <v-spacer></v-spacer>
                 <v-btn
                     v-show="!isMobile"
@@ -117,9 +117,10 @@
                     variant="text"
                     size="small"
                     @click="toggleNavCollapse"
-                    :title="isNavCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'"
+                    :title="rail ? 'Expand Sidebar' : 'Collapse Sidebar'"
+                    :aria-label="rail ? 'Expand Sidebar' : 'Collapse Sidebar'"
                 >
-                    <i :class="isNavCollapsed ? 'ti ti-layout-sidebar-right' : 'ti ti-layout-sidebar-left-collapse'" style="font-size: 20px;"></i>
+                    <i :class="rail ? 'ti ti-layout-sidebar-right' : 'ti ti-layout-sidebar-left-collapse'" style="font-size: 20px;"></i>
                 </v-btn>
             </div>
 
@@ -200,9 +201,9 @@
     const layoutMixin = {
         data() {
             return {
-                drawer: true,
+                // null lets Vuetify open the drawer on desktop and keep it closed on mobile
+                drawer: null,
                 isNavCollapsed: false,
-                isMobile: window.innerWidth < 960,
                 navItems: typeof enfernoNavigation !== 'undefined' ? enfernoNavigation : [],
                 notifications: [
                     // Example notifications - replace with real data
@@ -213,6 +214,13 @@
         computed: {
             filteredNavItems() {
                 return filterNavByRole(this.navItems, userRoles);
+            },
+            // Same breakpoint the drawer uses to switch to an overlay
+            isMobile() {
+                return this.$vuetify.display.mobile;
+            },
+            rail() {
+                return this.isNavCollapsed && !this.isMobile;
             }
         },
         methods: {
@@ -220,12 +228,6 @@
             toggleNavCollapse() {
                 this.isNavCollapsed = !this.isNavCollapsed;
                 localStorage.setItem('enferno-nav-collapsed', this.isNavCollapsed);
-            },
-            handleResize() {
-                this.isMobile = window.innerWidth < 960;
-                if (this.isMobile) {
-                    this.isNavCollapsed = false;
-                }
             },
             // Notification methods
             handleNotificationClick(notification) {
@@ -251,16 +253,7 @@
         },
         mounted() {
             // Restore nav collapsed state
-            const savedCollapsed = localStorage.getItem('enferno-nav-collapsed');
-            if (savedCollapsed !== null && !this.isMobile) {
-                this.isNavCollapsed = savedCollapsed === 'true';
-            }
-
-            // Handle resize
-            window.addEventListener('resize', this.handleResize);
-        },
-        beforeUnmount() {
-            window.removeEventListener('resize', this.handleResize);
+            this.isNavCollapsed = localStorage.getItem('enferno-nav-collapsed') === 'true';
         }
     };
 </script>
