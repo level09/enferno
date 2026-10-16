@@ -6,216 +6,109 @@ sidebarTitle: "Authentication"
 
 ## Overview
 
-Enferno provides a robust authentication system built on Flask-Security-Too with modern security features and OAuth integration.
+Authentication is built on Flask-Security-Too 5.9. Out of the box you get:
 
-## Features
+- Email login and registration
+- Password change, with a 12 character minimum
+- TOTP two-factor authentication with recovery codes
+- Passkeys (WebAuthn), as a first factor or a second one
+- Google and GitHub OAuth
+- Roles, with an admin UI for users and roles
+- Server-side sessions and CSRF protection on every POST, PUT and DELETE
 
-- User registration and login
-- Role-based access control (RBAC)
-- Two-factor authentication (2FA)
-- WebAuthn / Passkeys
-- OAuth integration (Google, GitHub)
-- Password policies
-- Session protection
-- CSRF protection
+Password recovery and email confirmation are off by default because they need a mail server. Turn them on in `enferno/settings.py` (`SECURITY_RECOVERABLE`, `SECURITY_CONFIRMABLE`) and set the mail variables below.
 
-## OAuth Integration
+## Configuration
 
-Enable social login with Google and GitHub:
+Security behavior lives in `enferno/settings.py`. `.env` holds the secrets, which `setup.sh` generates:
 
 ```bash
-# Google OAuth
+SECRET_KEY=...
+SECURITY_PASSWORD_SALT=...
+SECURITY_TOTP_SECRETS=...
+
+# Mail, for password recovery and confirmation
+MAIL_SERVER=smtp.example.com
+MAIL_USERNAME=...
+MAIL_PASSWORD=...
+SECURITY_EMAIL_SENDER=noreply@example.com
+```
+
+Rerunning `setup.sh` keeps existing secrets, so sessions, password hashes and 2FA keep working.
+
+## OAuth
+
+```bash
 GOOGLE_AUTH_ENABLED=true
 GOOGLE_OAUTH_CLIENT_ID=your_client_id
 GOOGLE_OAUTH_CLIENT_SECRET=your_client_secret
 
-# GitHub OAuth
 GITHUB_AUTH_ENABLED=true
 GITHUB_OAUTH_CLIENT_ID=your_client_id
 GITHUB_OAUTH_CLIENT_SECRET=your_client_secret
 ```
 
-Scopes:
-- Google: profile and email
-- GitHub: user:email
+Register these callback URLs with each provider:
 
-## User Management
+- Google: `https://your-domain.com/login/google/authorized`
+- GitHub: `https://your-domain.com/login/github/authorized`
 
-### Registration
+Google requests the profile and email scopes, GitHub `user:email`. For local testing over plain HTTP, set `OAUTHLIB_INSECURE_TRANSPORT=1`.
 
-```python
-from enferno.user.models import User
-from enferno.user.forms import RegisterForm
+## Protecting Routes
 
-@app.route('/register', methods=['POST'])
-def register():
-    form = RegisterForm()
-    if form.validate_on_submit():
-        user = User(
-            email=form.email.data,
-            password=form.password.data,
-            active=True
-        )
-        user.save()
-        return jsonify({'message': 'Registration successful'})
-    return jsonify(form.errors), 400
-```
-
-### Role-Based Access
+Protect a whole blueprint in `before_request` instead of decorating each route:
 
 ```python
-from flask_security import roles_required, roles_accepted
+from flask import Blueprint
+from flask_security import auth_required, roles_required
 
-@app.route('/admin')
-@roles_required('admin')
-def admin_dashboard():
-    return 'Admin only content'
+bp = Blueprint("reports", __name__)
 
-@app.route('/premium')
-@roles_accepted('premium', 'admin')
-def premium_content():
-    return 'Premium or admin content'
-```
 
-## API Authentication
-
-### Token-Based Auth
-
-```python
-from flask_security import auth_token_required
-
-@app.route('/api/protected')
-@auth_token_required
-def protected_endpoint():
-    return jsonify({'message': 'Authenticated access'})
-```
-
-### Generate Auth Token
-
-```python
-from flask_security.utils import get_token_status
-
-def generate_auth_token(user):
-    token = user.get_auth_token()
-    return jsonify({
-        'token': token,
-        'expires': get_token_status(token)['exp']
-    })
-```
-
-## Security Configuration
-
-Key security settings in `.env`:
-
-```bash
-# Security Settings
-SECURITY_PASSWORD_SALT=your_secure_salt
-SECURITY_TOTP_SECRETS=your_totp_secrets
-SECURITY_REGISTERABLE=true
-SECURITY_CONFIRMABLE=true
-SECURITY_RECOVERABLE=true
-SECURITY_TRACKABLE=true
-SECURITY_PASSWORD_LENGTH_MIN=8
-SECURITY_TOKEN_MAX_AGE=86400
-```
-
-## Two-Factor Authentication
-
-Enable 2FA for enhanced security:
-
-```python
-from flask_security import two_factor_required
-
-@app.route('/sensitive')
-@two_factor_required
-def sensitive_data():
-    return 'Two-factor authenticated content'
-```
-
-## WebAuthn Support
-
-Enable WebAuthn for passwordless authentication:
-
-```python
-from flask_security import webauthn_required
-
-@app.route('/webauthn-protected')
-@webauthn_required
-def webauthn_protected():
-    return 'WebAuthn authenticated content'
-```
-
-## Session Protection
-
-Enferno includes several session security measures:
-
-```python
-# Session Configuration
-SESSION_PROTECTION = 'strong'
-PERMANENT_SESSION_LIFETIME = timedelta(days=1)
-SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Lax'
-```
-
-## Rate Limiting (Optional)
-
-Add rate limiting with flask-limiter:
-
-```bash
-uv add flask-limiter
-```
-
-```python
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-
-limiter = Limiter(app, key_func=get_remote_address)
-
-@app.route('/login', methods=['POST'])
-@limiter.limit("5 per minute")
-def login():
+@bp.before_request
+@auth_required("session")
+@roles_required("admin")
+def before_request():
     pass
 ```
 
-## Best Practices
+For a single route, `@roles_accepted("editor", "admin")` allows any of the listed roles.
 
-1. **Password Storage**
-   - Passwords are automatically hashed using secure algorithms
-   - Salt is unique per user
-   - Configurable password policies
+## Users and Roles
 
-2. **CSRF Protection**
-   - Automatic CSRF token generation
-   - Required for all POST/PUT/DELETE requests
-   - Configurable token lifetime
+```bash
+uv run flask install                            # Create the first admin
+uv run flask create -e <email> -p <password>    # Create a user
+uv run flask add-role -e <email> -r <role>      # Grant a role
+uv run flask reset -e <email> -p <password>     # Reset a password
+```
 
-3. **XSS Prevention**
-   - Content Security Policy headers
-   - Automatic HTML escaping in templates
-   - Secure cookie flags
+Admins can also manage users and roles at `/users/` and `/roles/`. Every change is recorded in the activity log at `/activities/`.
 
-4. **Security Headers**
-   - HSTS enabled
-   - X-Frame-Options set
-   - X-Content-Type-Options: nosniff
-   - Referrer-Policy configured
+## Sessions
+
+Sessions are stored server-side, in the database by default or in Redis with `setup.sh --full`. They last one hour, and Flask-Security asks for the password again before sensitive changes if the login is older than 60 minutes.
+
+Cookie flags come from `.env`:
+
+```bash
+SESSION_COOKIE_SECURE=true      # Required behind HTTPS; setup.sh --docker sets it
+SESSION_COOKIE_HTTPONLY=true
+SESSION_COOKIE_SAMESITE=Lax
+```
+
+## API Requests
+
+The JSON API uses the same session as the pages (`SECURITY_API_ENABLED_METHODS = ["session"]`). Pages that extend `layout.html` send the CSRF token with every axios request. Plain HTML forms need:
+
+```html
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+```
+
+Logout is POST only, so use a form posting to `/logout`, never a link.
 
 ## Troubleshooting
 
-Common issues and solutions:
-
-1. **Token Expiration**
-   - Check `SECURITY_TOKEN_MAX_AGE` setting
-   - Verify system time synchronization
-   - Clear expired tokens regularly
-
-2. **OAuth Issues**
-   - Verify callback URLs in provider settings
-   - Check scope permissions
-   - Ensure secrets are correctly configured
-
-3. **2FA Problems**
-   - Verify TOTP secrets configuration
-   - Check time synchronization
-   - Provide backup codes for recovery 
+- **2FA codes rejected**: TOTP depends on the clock. Check the server and phone time are in sync.
+- **OAuth redirect mismatch**: the callback URL registered with the provider must match the domain and scheme exactly.

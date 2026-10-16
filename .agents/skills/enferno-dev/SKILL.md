@@ -140,7 +140,7 @@ def delete_product(id):
     <v-data-table-server :headers="headers" :items="items" :items-length="total"
                          :loading="loading" @update:options="loadItems">
       <template v-slot:item.actions="{ item }">
-        <v-btn icon="ti-pencil" variant="text" @click="editItem(item)"></v-btn>
+        <v-btn icon="ti-pencil" variant="text" aria-label="Edit" @click="editItem(item)"></v-btn>
       </template>
     </v-data-table-server>
   </v-card-text>
@@ -185,7 +185,7 @@ app.use(vuetify).mount('#app');
 ```
 
 Rules:
-- Icons are Tabler only: `ti-*` names (`icon="ti-pencil"`, `<i class="ti ti-user">`). Never `mdi-*`; it renders blank.
+- Icons are Tabler only: `ti-*` names (`icon="ti-pencil"`, `<i class="ti ti-user">`). Never `mdi-*`; it renders blank. Icon-only buttons need an `aria-label`.
 - Logout is POST-only: a form posting to `/logout`, never `href="/logout"`.
 - CSRF is enforced on every POST/PUT/DELETE. Axios on `layout.html` pages already sends the `X-CSRFToken` header; plain HTML forms need `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">`.
 - Pass server data through a `<script type="application/json">` tag and `|tojson`, never by interpolating into JS.

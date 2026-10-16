@@ -64,7 +64,7 @@ Agents write code fast; they also forget migrations and leave routes unprotected
 - **Auth flows**: login, wrong password, POST-only logout, audited admin CRUD.
 - **`setup.sh`** in every mode, without touching your `.env`.
 
-Tests run on in-memory SQLite in about four seconds. CI runs them on PostgreSQL across Python 3.11 to 3.14. Set `TEST_DATABASE_URI` to use PostgreSQL locally; it must be a disposable database, because the suite drops every table.
+The app tests run on in-memory SQLite in about two seconds; the `setup.sh` tests add about ten. CI runs them on PostgreSQL across Python 3.11 to 3.14. Set `TEST_DATABASE_URI` to use PostgreSQL locally; it must be a disposable database, because the suite drops every table.
 
 `AGENTS.md` also gives the agent the rules that tests cannot: Tabler icons only, POST-only logout, migrations reviewed by hand, and a real browser check after a frontend upgrade.
 

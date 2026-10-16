@@ -49,7 +49,7 @@ uv sync --extra full      # Adds Redis + Celery
 Configure a new installation, then start the full production stack:
 
 ```bash
-./setup.sh  # Select Docker for a new installation
+./setup.sh --docker
 docker compose up --build
 ```
 
@@ -65,7 +65,6 @@ Key variables in `.env`:
 
 ```bash
 SECRET_KEY=your_secret_key
-FLASK_APP=run.py
 FLASK_DEBUG=1                    # 0 in production
 
 # PostgreSQL (optional - SQLite works by default)

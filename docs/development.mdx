@@ -8,252 +8,157 @@ sidebarTitle: "Development"
 
 ```
 enferno/
-├── enferno/                # Main application package
-│   ├── app.py             # Application factory
-│   ├── settings.py        # Configuration
-│   ├── extensions.py      # Flask extensions
-│   ├── commands.py        # CLI commands
-│   ├── portal/            # Blueprint: Protected routes
-│   ├── public/            # Blueprint: Public routes
-│   ├── user/              # Blueprint: User management
-│   ├── tasks/             # Background tasks (optional Celery)
-│   ├── utils/             # Utility functions
-│   ├── static/            # Static assets (Vue, Vuetify, CSS)
-│   └── templates/         # Jinja2 templates
-├── docs/                  # Documentation
-├── instance/             # SQLite database
-├── pyproject.toml        # Dependencies and project config
-├── setup.sh              # Setup script
-├── run.py                # Entry point
-├── AGENTS.md             # AI coding instructions
-├── .agents/skills/       # enferno-dev agent skill (.claude/skills links here)
-└── docker-compose.yml    # Docker configuration
+├── enferno/
+│   ├── app.py             # Application factory, blueprint registration
+│   ├── settings.py        # Config from .env
+│   ├── extensions.py      # db, migrate, cache, mail, session, CSRF, debug toolbar
+│   ├── commands.py        # Flask CLI commands
+│   ├── agent_mcp.py       # Read-only MCP server for coding agents
+│   ├── public/            # "/" and OAuth handlers, no auth
+│   ├── portal/            # "/dashboard/", login required
+│   ├── user/              # Admin: users, roles, activity log
+│   ├── tasks/             # Celery (optional)
+│   ├── utils/base.py      # BaseMixin: save() and delete()
+│   ├── static/            # Vendored Vue, Vuetify, axios, Tabler icons, app JS and CSS
+│   └── templates/         # layout.html, admin pages, auth pages
+├── migrations/            # Alembic revisions
+├── tests/                 # pytest suite
+├── instance/              # SQLite database
+├── setup.sh               # Dependencies and .env with generated secrets
+├── vendor.sh              # Pinned frontend library downloads
+├── run.py                 # Entry point
+├── AGENTS.md              # Instructions for coding agents
+└── .agents/skills/        # enferno-dev agent skill
 ```
+
+The full code patterns, with complete examples, live in the [`enferno-dev` skill](https://github.com/level09/enferno/blob/master/.agents/skills/enferno-dev/SKILL.md). This page covers the essentials.
 
 ## Blueprints
 
-Enferno uses a three-blueprint architecture for better organization and security:
-
-### 1. Portal Blueprint (`portal/`)
-Usually contains protected routes that require authentication. Enferno uses a pattern of protecting all routes in this blueprint automatically using `before_request`:
+Each feature is a blueprint registered in `register_blueprints()` in `enferno/app.py`. Protect a whole blueprint in `before_request`:
 
 ```python
-from flask import Blueprint
+from flask import Blueprint, render_template
 from flask_security import auth_required
 
-portal = Blueprint('portal', __name__)
+portal = Blueprint("portal", __name__)
 
-# Protect all routes in this blueprint automatically
+
 @portal.before_request
-@auth_required()
+@auth_required("session")
 def before_request():
     pass
 
-@portal.route('/dashboard')
+
+@portal.get("/dashboard/")
 def dashboard():
-    return render_template('portal/dashboard.html')
-
-@portal.route('/settings')
-def settings():
-    return render_template('portal/settings.html')
+    return render_template("dashboard.html")
 ```
 
-This pattern ensures that all routes within the portal blueprint require authentication without needing to decorate each route individually.
+Admin blueprints add `@roles_required("admin")` under `@auth_required("session")`.
 
-### 2. User Blueprint (`user/`)
-Handles user management, authentication, and profile-related routes:
-```python
-from flask import Blueprint
-from flask_security import auth_required
+## Models and Migrations
 
-user = Blueprint('user', __name__)
-
-@user.route('/profile')
-@auth_required()
-def profile():
-    return render_template('user/profile.html')
-```
-
-### 3. Public Blueprint (`public/`)
-Contains routes that are publicly accessible without authentication:
-```python
-from flask import Blueprint
-
-public = Blueprint('public', __name__)
-
-@public.route('/')
-def index():
-    return render_template('public/index.html')
-```
-
-## Database Operations
-
-Enferno uses SQLAlchemy 2.x with the Flask-SQLAlchemy extension. The `db` instance is available from `enferno.extensions`.
-
-### Model Definition
+Models use `BaseMixin` and implement `to_dict()` and `from_dict()`:
 
 ```python
 from enferno.extensions import db
-from datetime import datetime
+from enferno.utils.base import BaseMixin
 
-class Post(db.Model):
+
+class Post(db.Model, BaseMixin):
+    __tablename__ = "posts"
+
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(80), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
     content = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user = db.relationship('User', back_populates='posts')
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    def to_dict(self):
+        return {"id": self.id, "title": self.title, "content": self.content}
+
+    def from_dict(self, data):
+        self.title = data.get("title", self.title)
+        self.content = data.get("content", self.content)
+        return self
 ```
 
-### Database Operations
+After changing a model, draft a migration, read it, then apply it:
+
+```bash
+uv run flask db migrate -m "add posts"
+uv run flask db upgrade
+```
+
+The test suite fails if a model and the migrations disagree.
+
+## Queries
+
+SQLAlchemy 2.x style, through Flask-SQLAlchemy:
 
 ```python
-from enferno.extensions import db
-from enferno.models import Post
-from sqlalchemy import select
-
-# Create
-post = Post(title='New Post', content='Content here')
-db.session.add(post)
-db.session.commit()
-
-# Simple queries
-stmt = db.session.select(Post)  # Select all posts
-posts = db.session.scalars(stmt).all()
-
-post = db.session.get(Post, 1)  # Get by ID
-
-# Filtered query
-stmt = db.session.select(Post).where(Post.title.like('%python%'))
-python_posts = db.session.scalars(stmt).all()
-
-# Ordered query with join
-stmt = (
-    db.session.select(Post)
-    .join(Post.user)
-    .order_by(Post.created_at.desc())
-)
-recent_posts = db.session.scalars(stmt).all()
-
-# Update
-post = db.session.get(Post, 1)
-post.title = 'Updated Title'
-db.session.commit()
-
-# Delete
-db.session.delete(post)
-db.session.commit()
+posts = db.session.scalars(db.select(Post).order_by(Post.created_at.desc())).all()
+post = db.get_or_404(Post, 1)
+page = db.paginate(db.select(Post), page=1, per_page=25)
 ```
+
+## Admin APIs
+
+Lists return `{"items": [...], "total": n, "perPage": n}`. Create and update take `{"item": {...}}`. Record admin changes in the activity log:
+
+```python
+from flask_security import current_user
+
+from enferno.user.models import Activity
+
+Activity.register(current_user.id, "Post Update", {"old": old, "new": post.to_dict()})
+```
+
+## Pages
+
+Pages extend `layout.html`, mount their own Vue app with `layoutMixin`, and use `${ }` for Vue expressions, since `{{ }}` is Jinja. The frontend is Vue 3 and Vuetify 4 with no build step:
+
+- Icons are Tabler only (`ti-*`); `mdi-*` icons render blank.
+- Use Material Design 3 type classes such as `text-headline-small` and `text-body-medium`. Vuetify 3 names like `text-h5` and `text-caption` no longer exist.
+- Icon-only buttons need an `aria-label`.
+- Pass server data with `<script type="application/json">{{ data|tojson|safe }}</script>`.
 
 ## Background Tasks (Optional)
 
-Celery is available when you need async job processing. First, install the full extras:
-
 ```bash
-uv sync --extra full    # Adds Redis + Celery
+uv sync --extra full
 ```
-
-Define tasks in `enferno/tasks/__init__.py`:
 
 ```python
 from enferno.tasks import celery
 
+
 @celery.task
-def send_email(user_id, subject, message):
-    from enferno.extensions import db
-    from enferno.user.models import User
-
-    user = db.session.get(User, user_id)
-    # Send email...
-    return True
+def send_report(user_id):
+    ...
 ```
 
-Call tasks asynchronously:
-```python
-from enferno.tasks import send_email
-send_email.delay(user.id, 'Welcome', 'Welcome to Enferno!')
-```
-
-Run Celery worker:
 ```bash
 uv run celery -A enferno.tasks worker --loglevel=info
 ```
 
-## API Development
+`enferno.tasks.celery` is `None` when Celery is not installed or configured.
 
-Add API endpoints to your blueprints:
-
-```python
-from flask import Blueprint, jsonify
-from enferno.extensions import db
-
-api = Blueprint('api', __name__)
-
-@api.route('/posts')
-def get_posts():
-    query = db.select(Post).order_by(Post.created_at.desc())
-    posts = db.session.scalars(query).all()
-    return jsonify([post.to_dict() for post in posts])
-```
-
-## Development Server
+## Checks
 
 ```bash
-uv run flask run              # Start server
-uv run ruff check --fix .     # Lint and auto-fix
-uv run ruff format .          # Format code
+uv run ruff check --fix . && uv run ruff format .
+uv run pytest
 ```
 
-## Security Best Practices
-
-1. **Input Validation**
-   ```python
-   from flask_wtf import FlaskForm
-   from wtforms import StringField
-   from wtforms.validators import DataRequired, Length
-
-   class PostForm(FlaskForm):
-       title = StringField('Title', validators=[
-           DataRequired(),
-           Length(max=80)
-       ])
-   ```
-
-2. **CSRF Protection**
-   ```python
-   from flask_wtf.csrf import CSRFProtect
-   csrf = CSRFProtect(app)
-   ```
-
-3. **Authentication**
-   ```python
-   from flask_security import auth_required
-
-   @app.route('/protected')
-   @auth_required()
-   def protected_route():
-       return 'Protected content'
-   ```
+The suite checks that every protected route rejects anonymous users and non-admins, that models match migrations, CSRF, the auth flows and `setup.sh`. For UI changes, also click through `/dashboard/` and `/users/` as an admin.
 
 ## Debugging
 
-Enferno includes several debugging tools:
+The Flask Debug Toolbar is wired in; enable it with `DEBUG_TB_ENABLED=1` in `.env`. To log SQL:
 
-1. **Flask Debug Toolbar**
-   ```python
-   from flask_debugtoolbar import DebugToolbarExtension
-   toolbar = DebugToolbarExtension(app)
-   ```
+```python
+import logging
 
-2. **Logging**
-   ```python
-   import logging
-   logging.basicConfig(level=logging.DEBUG)
-   logger = logging.getLogger(__name__)
-   ```
-
-3. **Database Debugging**
-   ```python
-   # Enable SQLAlchemy query logging
-   logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-   ``` 
+logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
+```
