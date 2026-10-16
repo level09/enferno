@@ -4,9 +4,9 @@
   "name": "Enferno Documentation",
   "description": "A Flask framework for developers who ship. No build tools. No configuration maze.",
   "colors": {
-    "primary": "#3B82F6",
-    "light": "#60A5FA",
-    "dark": "#2563EB"
+    "primary": "#C2410C",
+    "light": "#F97316",
+    "dark": "#9A3412"
   },
   "favicon": "/favicon.svg",
   "navigation": {
