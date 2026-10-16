@@ -3,7 +3,7 @@
 [![Checks](https://github.com/level09/enferno/actions/workflows/checks.yml/badge.svg)](https://github.com/level09/enferno/actions/workflows/checks.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**[Live Demo](https://demo.enferno.io/)** · **[Docs](https://docs.enferno.io)** · **[Tutorials](https://github.com/level09/enferno/wiki)**
+**[Docs](https://docs.enferno.io)** · **[Tutorials](https://github.com/level09/enferno/wiki)**
 
 A Flask framework built for coding agents. You describe the app; your agent builds it on a stack it already understands, and a test suite tells it when it got something wrong.
 
