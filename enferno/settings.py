@@ -114,8 +114,9 @@ class Config:
 
     # flask mail settings
     MAIL_SERVER = os.environ.get("MAIL_SERVER")
-    MAIL_PORT = 465
-    MAIL_USE_SSL = True
+    MAIL_PORT = int(os.environ.get("MAIL_PORT", 465))
+    MAIL_USE_SSL = os.environ.get("MAIL_USE_SSL", "True").lower() == "true"
+    MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", "False").lower() == "true"
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     SECURITY_EMAIL_SENDER = os.environ.get("SECURITY_EMAIL_SENDER", "info@domain.com")
