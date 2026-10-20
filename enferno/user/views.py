@@ -219,6 +219,10 @@ def api_activities():
 @user_authenticated.connect
 def user_authenticated_handler(app, user, authn_via, **extra_args):
     """Handle user authentication - create session record and check for new IP."""
+    # On registration the new user is logged in before its row is flushed
+    if user.id is None:
+        db.session.flush()
+
     session_data = {
         "user_id": user.id,
         "session_token": session.sid if hasattr(session, "sid") else str(id(session)),
