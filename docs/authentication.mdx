@@ -31,8 +31,13 @@ SECURITY_TOTP_SECRETS=...
 MAIL_SERVER=smtp.example.com
 MAIL_USERNAME=...
 MAIL_PASSWORD=...
+MAIL_PORT=465
+MAIL_USE_SSL=True
+MAIL_USE_TLS=False
 SECURITY_EMAIL_SENDER=noreply@example.com
 ```
+
+The mail defaults are port 465 with SSL on and TLS off. For a provider that uses STARTTLS, set `MAIL_PORT=587`, `MAIL_USE_SSL=False` and `MAIL_USE_TLS=True`.
 
 Rerunning `setup.sh` keeps existing secrets, so sessions, password hashes and 2FA keep working.
 
