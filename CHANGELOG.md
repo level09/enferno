@@ -1,5 +1,24 @@
 # Changelog
 
+## v14.1.0 (2026-10-21)
+
+### Upgrade notes for existing apps
+- Google and GitHub sign-in no longer links to an existing account with the same email. Users who registered with a password sign in with it; accounts already linked keep working.
+- OAuth sign-in requires an email the provider has verified. For GitHub that is the primary verified address.
+- Sending `"roles": []` when updating a user now removes all roles instead of leaving them unchanged.
+
+### Security
+- OAuth sign-in goes through two-factor authentication when the user has it enabled.
+- The session id is replaced on every login, so a session id planted before login cannot be reused.
+- With `DISABLE_MULTIPLE_SESSIONS`, a new login now signs out other sessions and remember-me cookies. Before, it only marked their tracking rows inactive.
+
+### Fixed
+- Registering a new account returned a 500 (#74).
+- `.env-sample` uses `apikey` as the SendGrid SMTP username (#75).
+
+### Added
+- `MAIL_PORT`, `MAIL_USE_SSL` and `MAIL_USE_TLS` are read from the environment. The default stays port 465 with SSL (#73).
+
 ## v14.0.0 (2026-10-15)
 
 ### Upgrade notes for existing apps
