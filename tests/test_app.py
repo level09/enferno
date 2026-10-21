@@ -52,6 +52,20 @@ def test_wrong_password_is_rejected(app, make_user):
     assert client.get("/dashboard/").status_code == 302
 
 
+def test_register_logs_the_new_user_in(app):
+    client = app.test_client()
+    response = client.post(
+        "/register",
+        data={
+            "email": "new@example.com",
+            "password": "correct horse battery staple",
+            "password_confirm": "correct horse battery staple",
+        },
+    )
+    assert response.status_code == 302, response.status_code
+    assert client.get("/dashboard/").status_code == 200
+
+
 def test_admin_pages_render(admin_client):
     for path in ("/users/", "/roles/", "/activities/"):
         assert admin_client.get(path).status_code == 200, path
