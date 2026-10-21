@@ -23,6 +23,8 @@ class TestConfig(Config):
     SESSION_TYPE = "sqlalchemy"
     SESSION_REDIS = None
     WTF_CSRF_ENABLED = False
+    # example.com refuses mail (null MX); skip the DNS deliverability lookup.
+    SECURITY_EMAIL_VALIDATOR_ARGS = {"check_deliverability": False}
     CELERY_BROKER_URL = None
     CELERY_RESULT_BACKEND = None
 
