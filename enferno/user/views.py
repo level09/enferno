@@ -41,7 +41,7 @@ def api_user():
     query = db.select(User)
 
     # Paginate results
-    pagination = db.paginate(query, page=page, per_page=per_page)
+    pagination = db.paginate(query, page=page, per_page=per_page, max_per_page=100)
 
     # Convert users to dictionaries
     items = [user.to_dict() for user in pagination.items]
@@ -114,7 +114,7 @@ def api_roles():
     query = db.select(Role)
 
     # Paginate results
-    pagination = db.paginate(query, page=page, per_page=per_page)
+    pagination = db.paginate(query, page=page, per_page=per_page, max_per_page=100)
 
     # Convert roles to dictionaries
     items = [role.to_dict() for role in pagination.items]
@@ -183,7 +183,7 @@ def api_activities():
     per_page = request.args.get("per_page", PER_PAGE, type=int)
 
     query = db.select(Activity).order_by(Activity.created_at.desc())
-    pagination = db.paginate(query, page=page, per_page=per_page)
+    pagination = db.paginate(query, page=page, per_page=per_page, max_per_page=100)
 
     # One query for the page's users; activities outlive deleted users
     user_ids = {activity.user_id for activity in pagination.items}
@@ -223,6 +223,9 @@ def user_authenticated_handler(app, user, authn_via, **extra_args):
     if user.id is None:
         db.session.flush()
 
+    # A pre-login session id may have been planted by an attacker.
+    current_app.session_interface.regenerate(session)
+
     session_data = {
         "user_id": user.id,
         "session_token": session.sid if hasattr(session, "sid") else str(id(session)),
@@ -246,8 +249,12 @@ def user_authenticated_handler(app, user, authn_via, **extra_args):
             {"old_ip": user.last_login_ip, "new_ip": user.current_login_ip},
         )
 
-    # Enforce single session if configured
+    # Enforce single session if configured. Sessions resolve users by
+    # fs_uniquifier, so rotating it signs out every other session and remember
+    # cookie; the tracking rows alone revoke nothing.
     if current_app.config.get("DISABLE_MULTIPLE_SESSIONS", False):
+        current_app.extensions["security"].datastore.set_uniquifier(user)
+        session["_user_id"] = user.fs_uniquifier
         user.logout_other_sessions(session_data["session_token"])
 
 

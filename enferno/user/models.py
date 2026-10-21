@@ -107,11 +107,7 @@ class User(UserMixin, db.Model, BaseMixin):
         # Update roles if specified, otherwise leave unchanged
         if "roles" in json_dict:
             role_ids = [r.get("id") for r in json_dict["roles"]]
-            self.roles = (
-                Role.query.filter(Role.id.in_(role_ids)).all()
-                if role_ids
-                else self.roles
-            )
+            self.roles = Role.query.filter(Role.id.in_(role_ids)).all()
         self.active = json_dict.get("active", self.active)
         return self
 

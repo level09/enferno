@@ -13,7 +13,6 @@ from flask.templating import render_template
 from flask_dance.consumer import oauth_authorized, oauth_error
 from flask_security import current_user, login_user, logout_user
 from oauthlib.oauth2.rfc6749.errors import OAuth2Error
-from sqlalchemy.orm.exc import NoResultFound
 
 from enferno.extensions import db
 from enferno.user.models import OAuth, User
@@ -83,7 +82,13 @@ def get_oauth_user_data(blueprint):
         if not resp.ok:
             current_app.logger.error(f"Failed to fetch user info: {resp.text}")
             return None
-        return resp.json()
+        data = resp.json()
+        return {
+            "id": data.get("id"),
+            "email": data.get("email"),
+            "email_verified": data.get("verified_email") is True,
+            "name": data.get("name", ""),
+        }
     elif blueprint.name == "github":
         # Get user profile
         resp = blueprint.session.get("/user")
@@ -92,21 +97,24 @@ def get_oauth_user_data(blueprint):
             return None
         data = resp.json()
 
-        # GitHub doesn't return email in basic profile if private, need separate call
-        if not data.get("email"):
-            email_resp = blueprint.session.get("/user/emails")
-            if email_resp.ok:
-                emails = email_resp.json()
-                primary_email = next(
-                    (email["email"] for email in emails if email["primary"]), None
-                )
-                if primary_email:
-                    data["email"] = primary_email
+        # The profile email may be private or unverified; only the emails
+        # endpoint says which address GitHub has verified.
+        email_resp = blueprint.session.get("/user/emails")
+        if not email_resp.ok:
+            current_app.logger.error(
+                f"Failed to fetch GitHub emails: {email_resp.text}"
+            )
+            return None
+        primary = next(
+            (e for e in email_resp.json() if e.get("primary") and e.get("verified")),
+            None,
+        )
 
         # Normalize the data structure to match our needs
         return {
             "id": str(data["id"]),  # Convert to string to match Google's ID format
-            "email": data.get("email"),
+            "email": primary["email"] if primary else None,
+            "email_verified": primary is not None,
             "name": data.get("name")
             or data.get("login"),  # Fallback to username if name not set
         }
@@ -150,48 +158,56 @@ def oauth_logged_in(blueprint, token):
     try:
         # Get user info from provider
         provider_data = get_oauth_user_data(blueprint)
-        if not provider_data:
+        if (
+            not provider_data
+            or not provider_data.get("id")
+            or not provider_data.get("email")
+            or provider_data.get("email_verified") is not True
+        ):
+            flash("Authentication failed.", category="error")
             return False
 
         user_id = provider_data["id"]
         real_ip = get_real_ip()
 
-        # First check if we already have OAuth entry
-        query = OAuth.query.filter_by(provider=blueprint.name, provider_user_id=user_id)
-        try:
-            oauth = query.one()
-        except NoResultFound:
+        oauth = OAuth.query.filter_by(
+            provider=blueprint.name, provider_user_id=user_id
+        ).one_or_none()
+        if oauth:
+            user = oauth.user
+            update_login_info = True
+        else:
+            # Email ownership at an IdP does not prove ownership of a local
+            # account an attacker may have pre-registered with that address.
+            if User.query.filter_by(email=provider_data["email"]).first():
+                flash(
+                    "An account with this email already exists. "
+                    "Sign in with your password instead.",
+                    category="error",
+                )
+                return redirect(url_for("security.login"))
+            user = create_oauth_user(provider_data, token, real_ip)
             oauth = OAuth(
                 provider=blueprint.name, provider_user_id=user_id, token=token
             )
+            oauth.user = user
+            db.session.add_all([user, oauth])
+            db.session.commit()
+            update_login_info = False  # create_oauth_user already recorded it
 
-        if oauth.user:
-            if current_user.is_authenticated and current_user.id != oauth.user.id:
-                logout_user()
-            update_user_login_info(oauth.user, real_ip)
-            login_user(oauth.user)
-        else:
-            # Check if user exists with this email
-            existing_user = User.query.filter_by(
-                email=provider_data.get("email")
-            ).first()
-            if existing_user:
-                # Link OAuth to existing user
-                oauth.user = existing_user
-                db.session.add(oauth)
-                db.session.commit()
-                update_user_login_info(existing_user, real_ip)
-                login_user(existing_user)
-                flash("Account linked successfully.", category="success")
-            else:
-                # Create new user
-                user = create_oauth_user(provider_data, token, real_ip)
-                oauth.user = user
-                db.session.add_all([user, oauth])
-                db.session.commit()
-                login_user(user)
-                flash("Successfully signed in.")
+        if current_user.is_authenticated and current_user.id != user.id:
+            logout_user()
 
+        # The provider login is a first factor only; enrolled local 2FA still applies.
+        response = current_app.extensions["security"].two_factor_plugins.tf_enter(
+            user, False, "oauth", next_loc=None
+        )
+        if response:
+            return response
+
+        if update_login_info:
+            update_user_login_info(user, real_ip)
+        login_user(user, authn_via=["oauth"])
         return redirect(url_for("portal.dashboard"))
 
     except OAuth2Error as e:
