@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v14.1.1 (2026-10-28)
 
 ### Security
 - Vendored axios 1.21.0, Vue 3.5.44, Vuetify 4.3.1 and Tabler icons 3.50.0, now fetched by `./vendor.sh`. Tabler ships its font as subsets in `static/tabler/fonts/`, so pages load only the icon groups they use.
