@@ -3,9 +3,9 @@
 # are committed. Bump a version, run this, then load an admin page in a browser.
 set -euo pipefail
 
-VUE_VERSION="3.5.43"
-VUETIFY_VERSION="4.2.4"
-AXIOS_VERSION="1.20.0"
+VUE_VERSION="3.5.44"
+VUETIFY_VERSION="4.3.1"
+AXIOS_VERSION="1.21.0"
 
 cd "$(dirname "$0")/enferno/static"
 CDN="https://cdn.jsdelivr.net/npm"
