@@ -1,5 +1,11 @@
 # Changelog
 
+## v14.1.3 (2026-11-17)
+
+### Security
+- dnspython is locked at 2.9.2 (GHSA-vvf4-9x63-8xvv) and opentelemetry-api, which only the optional `mcp` extra installs, at 1.45.2 (GHSA-mf5v-w3w3-f6cg).
+- The locked dependencies are updated (sqlalchemy 2.1.9, psycopg 3.3.9, email-validator 2.4.0, nh3 0.3.8, pydantic 2.14.3).
+
 ## v14.1.2 (2026-11-11)
 
 ### Security
