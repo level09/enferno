@@ -103,3 +103,5 @@ Lists return `{"items": [...], "total": n, "perPage": n}`. Create and update tak
 ## Commits
 
 One-line conventional messages (`fix: ...`, `chore: ...`). Stage files explicitly, never `git add .` or `-A`. No AI mentions.
+
+Releases follow [RELEASING.md](RELEASING.md): it lists every place a change must reach (README, docs, website, announcements).
