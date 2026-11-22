@@ -1,5 +1,38 @@
 # Changelog
 
+## v15.0.0 (2026-11-22)
+
+### Upgrade notes for existing apps
+- HTTP errors under `/api/` now return `{"message": ...}` JSON instead of an HTML page, including 401, 404, 500 and CSRF failures. Pages outside `/api/` are unchanged.
+- The admin views call `Activity.register` before committing, so a change and its audit entry are saved together or not at all. Apply the same order in your own views: leave the change pending (`flush()` for a new row's id), then register the activity.
+- `SECURITY_RECOVERABLE` now follows `MAIL_SERVER`: with mail configured, the login page offers "Forgot password?" and admins can invite users.
+- `layout.html` hides `#app` until Vue mounts (`v-cloak`). Pages without their own Vue app get a default one; a page that overrides `{% block js %}` must mount its own.
+- `User.logout_other_sessions()` now really signs other sessions out by rotating `fs_uniquifier`. It must run inside a request.
+- Saving a user with an empty password field keeps the current password instead of setting an empty one.
+- Every login and logout is recorded in the activity log. The separate "Login from new IP" entry is gone: a `Login` entry from a new address carries `previous_ip` instead.
+
+### Added
+- Admins can invite a user by leaving the password empty: the user gets an email with a link to set their own password.
+- A Sessions page lists the devices signed in to your account and signs out all the others.
+- Users, roles and activity tables sort on the server, search, and show skeleton rows while loading. The users table shows each user's last login.
+- `crudMixin` (`static/js/crud.js`) and `table_response()` (`enferno/utils/tables.py`) hold the table, dialog, paging, sort and search logic once, for the admin pages and for your own.
+- `notify()` and `confirmAction()` in `layoutMixin` replace per-page snackbars and the browser's `confirm()` popup.
+- The activity log shows updates as a before and after table of the fields that changed.
+- `tests/test_conventions.py` fails on the AGENTS.md hard rules a scan can check (`mdi-*` icons, Vuetify 3 type classes, `align`/`justify` props on `v-row`, logout links, `psycopg2`, pages that never mount Vue) and names the file, line and fix.
+- The route tests cover every method of every route. New routes count as admin-only until listed in `PUBLIC_BLUEPRINTS` or `MEMBER_ENDPOINTS` in `tests/test_app.py`.
+- The MCP `schema` tool lists model columns missing from the database, so a pending migration no longer looks applied.
+
+### Fixed
+- The users and roles editors no longer change the table row while you type, keep the dialog and your input when a save fails, ignore a second click on Save, and ignore list responses that arrive after a newer one.
+- Sortable column headers now sort; the API used to ignore them.
+- The users list loads every user's roles in one query instead of one per user.
+- The 401 and 500 pages render with the full layout instead of raw, unrendered markup.
+- A user who sets their password through a reset link is asked for it when changing it later.
+- Setting a user's password from the users page signs them out of their other sessions and voids any invite or reset link still open. Flask-Security checks those links against `fs_uniquifier` only, so before this an old link could overwrite the new password.
+
+### Changed
+- The `enferno-dev` skill points to `crudMixin`, `table_response()` and AGENTS.md instead of repeating code and rules in snippets.
+
 ## v14.1.3 (2026-11-17)
 
 ### Security
