@@ -68,7 +68,7 @@ class Product(db.Model, BaseMixin):
 
 ## API Endpoints
 
-Protect the whole blueprint in `before_request`. Payloads are `{"item": {...}}`; lists return `items`, `total`, `perPage`. Log admin actions with `Activity.register`.
+Protect the whole blueprint in `before_request`. Payloads are `{"item": {...}}`; lists return `items`, `total`, `perPage`. Log admin actions with `Activity.register`, which commits: leave the change pending (`flush()` for a new row's id) so the change and its audit entry are saved together or not at all. Errors under `/api/` return `{"message": ...}` JSON from the app-level handler.
 
 ```python
 from flask import Blueprint, render_template, request
@@ -76,6 +76,7 @@ from flask_security import auth_required, current_user, roles_required
 
 from enferno.extensions import db
 from enferno.user.models import Activity
+from enferno.utils.tables import table_response
 
 bp = Blueprint("products", __name__)
 
@@ -94,17 +95,19 @@ def products_page():
 
 @bp.get("/api/products")
 def list_products():
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 25, type=int)
-    pagination = db.paginate(db.select(Product), page=page, per_page=per_page)
-    return {"items": [p.to_dict() for p in pagination.items], "total": pagination.total, "perPage": pagination.per_page}
+    # Paging, ?sort_by= (only the columns named here) and ?q= search
+    return table_response(
+        db.select(Product).order_by(Product.id),
+        sortable={"name": Product.name, "price": Product.price},
+        searchable=(Product.name,),
+    )
 
 
 @bp.post("/api/product/")
 def create_product():
     product = Product().from_dict(request.json.get("item", {}))
     db.session.add(product)
-    db.session.commit()
+    db.session.flush()
     Activity.register(current_user.id, "Product Create", product.to_dict())
     return {"item": product.to_dict()}
 
@@ -114,7 +117,6 @@ def update_product(id):
     product = db.get_or_404(Product, id)
     old = product.to_dict()
     product.from_dict(request.json.get("item", {}))
-    db.session.commit()
     Activity.register(current_user.id, "Product Update", {"old": old, "new": product.to_dict()})
     return {"item": product.to_dict()}
 
@@ -122,9 +124,9 @@ def update_product(id):
 @bp.delete("/api/product/<int:id>")
 def delete_product(id):
     product = db.get_or_404(Product, id)
-    Activity.register(current_user.id, "Product Delete", product.to_dict())
+    data = product.to_dict()
     db.session.delete(product)
-    db.session.commit()
+    Activity.register(current_user.id, "Product Delete", data)
     return {"deleted": True}
 ```
 
@@ -132,66 +134,57 @@ def delete_product(id):
 
 `layout.html` owns `<v-app>`, the nav and the `#app` mount point. A page fills `{% block content %}` and mounts its app in `{% block js %}` with `layoutMixin` and `registerEnfernoComponents`, or the nav breaks. Vue expressions use `${ }`; `{{ }}` is Jinja.
 
+Data tables use `crudMixin` (`static/js/crud.js`) on the page and `table_response()` (`enferno/utils/tables.py`) on the server. Together they give paging, sorting, search, a skeleton while loading, an edit dialog that works on a copy, saves that keep the dialog open on failure, and an in-app delete confirmation. `cms/roles.html` is the smallest complete example. `layoutMixin` also provides `notify(message)`, `await confirmAction(message)` and `formatDate(iso)` for any page.
+
 ```html
 {% extends "layout.html" %}
 {% block content %}
 <v-card class="ma-2 mt-12 w-100">
   <v-card-text>
-    <v-data-table-server :headers="headers" :items="items" :items-length="total"
-                         :loading="loading" @update:options="loadItems">
+    <v-data-table-server :headers="headers" :items="items" :items-length="itemsLength"
+                         :loading="loading" :search="search" @update:options="refresh">
+      <template v-slot:top>
+        <v-text-field v-model="search" placeholder="Search" prepend-inner-icon="ti-search"
+                      density="compact" variant="outlined" hide-details clearable max-width="320"></v-text-field>
+      </template>
+      <template v-slot:loading><v-skeleton-loader type="table-row@5"></v-skeleton-loader></template>
       <template v-slot:item.actions="{ item }">
         <v-btn icon="ti-pencil" variant="text" aria-label="Edit" @click="editItem(item)"></v-btn>
+        <v-btn icon="ti-trash" variant="text" aria-label="Delete" @click="deleteItem(item, item.name)"></v-btn>
       </template>
     </v-data-table-server>
   </v-card-text>
 </v-card>
+
+<v-dialog v-model="edialog" width="600">
+  <v-card v-if="edialog" :title="eitem.id ? 'Edit Product' : 'Add Product'">
+    <v-card-text><v-text-field label="Name" v-model="eitem.name"></v-text-field></v-card-text>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn :loading="saving" color="primary" variant="elevated" @click="saveItem">Save</v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
 {% endblock %}
 
 {% block js %}
-<script type="application/json" id="categories-data">{{ categories|tojson|safe }}</script>
 <script>
-const { createApp } = Vue;
-const vuetify = Vuetify.createVuetify(config.vuetifyConfig);
-
-const app = createApp({
-  mixins: [layoutMixin],
+const app = Vue.createApp({
+  mixins: [layoutMixin, crudMixin({list: '/api/products', item: '/api/product/'})],
   delimiters: config.delimiters,
   data() {
-    return {
-      items: [], total: 0, loading: false,
-      categories: JSON.parse(document.querySelector('#categories-data').textContent),
-      headers: [
-        { title: 'Name', key: 'name' },
-        { title: 'Actions', key: 'actions', sortable: false },
-      ],
-    };
-  },
-  methods: {
-    async loadItems({ page, itemsPerPage }) {
-      this.loading = true;
-      const res = await axios.get('/api/products', { params: { page, per_page: itemsPerPage } });
-      this.items = res.data.items;
-      this.total = res.data.total;
-      this.loading = false;
-    },
-    editItem(item) { /* open dialog */ },
+    return {headers: [{title: 'Name', key: 'name'}, {title: 'Actions', key: 'actions', sortable: false}]};
   },
 });
-
 registerEnfernoComponents(app);
-app.use(vuetify).mount('#app');
+app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
 </script>
 {% endblock %}
 ```
 
-Rules:
-- Icons are Tabler only: `ti-*` names (`icon="ti-pencil"`, `<i class="ti ti-user">`). Never `mdi-*`; it renders blank. Icon-only buttons need an `aria-label`.
-- Logout is POST-only: a form posting to `/logout`, never `href="/logout"`.
-- CSRF is enforced on every POST/PUT/DELETE. Axios on `layout.html` pages already sends the `X-CSRFToken` header; plain HTML forms need `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">`.
-- Pass server data through a `<script type="application/json">` tag and `|tojson`, never by interpolating into JS.
-- Never mutate reactive state inside a computed property. It loops forever on Vue 3.5.
-- Vuetify 4 uses Material Design 3 type classes: `text-headline-small`, `text-title-large`, `text-body-medium`, `text-body-small`. The Vuetify 3 names (`text-h5`, `text-body-2`, `text-caption`) render unstyled. Align rows with classes (`class="align-center justify-center"`), not props.
-- Vuetify's CSS lives in cascade layers, so unlayered CSS beats every component style. Scope custom rules to your own classes; put element rules such as `a { }` in `@layer vuetify-core.reset`.
+Templates are parsed by the browser before Vue sees them: put `<tr>`/`<thead>` rows inside a `<template>` within `<v-table>`, or the parser moves them out. Pages without their own app (error pages) get a default mount from `layout.html`; a page that overrides `{% block js %}` must mount its own, because `#app` stays hidden (`v-cloak`) until Vue mounts.
+
+The hard rules (Tabler icons, POST logout, CSRF, no state writes in computed, Vuetify 4 classes, cascade layers) live in `AGENTS.md`. `tests/test_conventions.py` enforces the ones a scan can check. Icon-only buttons also need an `aria-label`.
 
 ## Queries (SQLAlchemy 2.x)
 

@@ -31,6 +31,11 @@ const enfernoNavigation = [
     to: '/mf-recovery-codes'
   },
   {
+    title: 'Sessions',
+    icon: 'ti ti-devices',
+    to: '/sessions'
+  },
+  {
     heading: 'Administration',
     role: 'admin'
   },

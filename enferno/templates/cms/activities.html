@@ -17,11 +17,21 @@
                 :headers="headers"
                 :items="items"
                 :items-length="itemsLength"
-                :page="options.page"
                 :items-per-page="options.itemsPerPage"
+                :loading="loading"
+                :search="search"
                 @update:options="refresh"
                 hover
             >
+                <template v-slot:top>
+                    <v-toolbar color="transparent" class="mb-4" density="compact" elevation="0">
+                        <v-text-field v-model="search" placeholder="Search actions" prepend-inner-icon="ti-search"
+                                      density="compact" variant="outlined" hide-details clearable max-width="320"></v-text-field>
+                    </v-toolbar>
+                </template>
+                <template v-slot:loading>
+                    <v-skeleton-loader type="table-row@5"></v-skeleton-loader>
+                </template>
                 <template v-slot:item.data="{ item }">
                     <v-btn size="small" variant="text" color="primary" @click="showData(item)">
                         View Data
@@ -36,23 +46,34 @@
     <v-dialog v-model="dataDialog" width="800">
         <v-card v-if="dataDialog" class="pa-4">
             <v-card-title class="d-flex align-center">
-                Activity Data
+                ${current.action}
                 <v-spacer></v-spacer>
                 <v-btn icon="ti ti-x" aria-label="Close" size="small" variant="text" @click="dataDialog = false"></v-btn>
             </v-card-title>
 
             <v-card-text>
-                <pre class="pa-4 rounded bg-grey-lighten-4"><code>${JSON.stringify(currentData, null, 2)}</code></pre>
+                <!-- Updates store {old, new}: show only the fields that changed -->
+                <!-- In-DOM templates: table rows must sit in a <template>, or the
+                     browser's HTML parser moves them out of <v-table> -->
+                <v-table v-if="changes" density="compact">
+                    <template v-slot:default>
+                        <thead>
+                            <tr><th>Field</th><th>Before</th><th>After</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="change in changes" :key="change.field">
+                                <td>${change.field}</td>
+                                <td class="text-error">${change.old}</td>
+                                <td class="text-success">${change.new}</td>
+                            </tr>
+                            <tr v-if="!changes.length"><td colspan="3">No fields changed.</td></tr>
+                        </tbody>
+                    </template>
+                </v-table>
+                <pre v-else class="pa-4 rounded bg-grey-lighten-4"><code>${JSON.stringify(current.data, null, 2)}</code></pre>
             </v-card-text>
         </v-card>
     </v-dialog>
-
-    <v-snackbar size="small" class="d-flex" v-model="snackBar" rounded="pill" elevation="5">
-        ${snackMessage}
-        <template v-slot:actions>
-            <v-btn @click="snackBar=false" icon="ti ti-x" aria-label="Close" class="ml-auto" variant="text" size="small"></v-btn>
-        </template>
-    </v-snackbar>
 
 {% endblock %} {% block js %}
 
@@ -61,72 +82,37 @@
         const {createVuetify} = Vuetify;
 
         const vuetify = createVuetify(config.vuetifyConfig);
+        const show = value => typeof value === 'object' && value !== null ? JSON.stringify(value) : String(value ?? '');
 
         window.app = createApp({
-            mixins: [layoutMixin],
+            mixins: [layoutMixin, crudMixin({list: '/api/activities'})],
+            delimiters: config.delimiters,
             data() {
                 return {
-                    snackBar: false,
-                    snackMessage: "",
-                    items: [],
-                    itemsLength: 0,
-                    options: {
-                        page: 1,
-                        itemsPerPage: 25
-                    },
                     dataDialog: false,
-                    currentData: null,
-
+                    current: null,
                     headers: [
-                        {title: 'ID', value: 'id', sortable: true},
-                        {title: 'User', value: 'user', sortable: true},
-                        {title: 'Action', value: 'action', sortable: true},
-                        {title: 'Date', value: 'created_at', sortable: true},
-                        {title: 'Data', value: 'data', sortable: false}
+                        {title: 'ID', key: 'id', sortable: false},
+                        {title: 'User', key: 'user', sortable: false},
+                        {title: 'Action', key: 'action'},
+                        {title: 'Date', key: 'created_at'},
+                        {title: 'Data', key: 'data', sortable: false}
                     ]
                 };
             },
-
-            mounted() {
-                // No refresh on mount
+            computed: {
+                changes() {
+                    const data = this.current?.data;
+                    if (!data || !data.old || !data.new) return null;
+                    const fields = new Set([...Object.keys(data.old), ...Object.keys(data.new)]);
+                    return [...fields]
+                        .map(field => ({field, old: show(data.old[field]), new: show(data.new[field])}))
+                        .filter(change => change.old !== change.new);
+                }
             },
-            delimiters: config.delimiters,
-
             methods: {
-                showSnack(message) {
-                    this.snackMessage = message;
-                    this.snackBar = true;
-                },
-
-                refresh(options) {
-                    // Use options from parameter or component state
-                    if (options) {
-                        // Update options with the values from the event
-                        this.options = {
-                            ...this.options,
-                            page: options.page,
-                            itemsPerPage: options.itemsPerPage
-                        };
-                    }
-                    
-                    // Make API request with pagination parameters
-                    axios.get(`/api/activities?page=${this.options.page}&per_page=${this.options.itemsPerPage}`)
-                        .then(res => {
-                            this.items = res.data.items;
-                            this.itemsLength = res.data.total;
-                            // Update itemsPerPage from API response if provided
-                            if (res.data.perPage) {
-                                this.options.itemsPerPage = res.data.perPage;
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error fetching activities:', error);
-                            this.showSnack('Failed to load activities');
-                        });
-                },
-
                 showData(item) {
-                    this.currentData = item.data;
+                    this.current = item;
                     this.dataDialog = true;
                 }
             }
@@ -135,4 +121,4 @@
         registerEnfernoComponents(app);
         app.use(vuetify).mount("#app");
     </script>
-{% endblock %} 
+{% endblock %}

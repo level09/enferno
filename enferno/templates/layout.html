@@ -19,7 +19,7 @@
 </head>
 
 <body class="{% block body_class %} {% endblock %}">
-<div id="app">
+<div id="app" v-cloak>
 <v-app>
     <v-layout class="rounded rounded-md">
         <!-- App Bar -->
@@ -156,6 +156,23 @@
                 {% endfor %}
             </div>
         {% endif %}
+
+        <!-- Shared feedback: pages call notify(message) and await confirmAction(message) -->
+        <v-snackbar v-model="snackBar" rounded="pill" elevation="5">
+            <span v-text="snackMessage"></span>
+            <template v-slot:actions>
+                <v-btn @click="snackBar = false" icon="ti ti-x" aria-label="Close" size="small" variant="text"></v-btn>
+            </template>
+        </v-snackbar>
+        <v-dialog v-model="confirmDialog.show" max-width="420" persistent>
+            <v-card :text="confirmDialog.message" title="Are you sure?">
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn variant="text" @click="answerConfirm(false)">Cancel</v-btn>
+                    <v-btn color="error" variant="elevated" @click="answerConfirm(true)">Confirm</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </v-layout>
 </v-app>
 </div>
@@ -182,6 +199,7 @@
 
 <!-- Navigation Data -->
 <script src="/static/js/navigation.js"></script>
+<script src="/static/js/crud.js"></script>
 
 <!-- Enferno Components -->
 <script src="/static/js/components/TransitionExpand.js"></script>
@@ -208,7 +226,10 @@
                 notifications: [
                     // Example notifications - replace with real data
                     // { id: 1, title: 'New Message', subtitle: 'You have a new message', time: '5 min ago', isSeen: false },
-                ]
+                ],
+                snackBar: false,
+                snackMessage: '',
+                confirmDialog: {show: false, message: '', resolve: null}
             };
         },
         computed: {
@@ -225,6 +246,23 @@
         },
         methods: {
             resolveNavComponent,
+            notify(message) {
+                this.snackMessage = message;
+                this.snackBar = true;
+            },
+            // In-app replacement for window.confirm(): resolves true or false
+            confirmAction(message) {
+                return new Promise(resolve => {
+                    this.confirmDialog = {show: true, message, resolve};
+                });
+            },
+            answerConfirm(answer) {
+                this.confirmDialog.show = false;
+                this.confirmDialog.resolve(answer);
+            },
+            formatDate(iso) {
+                return iso ? new Date(iso).toLocaleString() : 'Never';
+            },
             toggleNavCollapse() {
                 this.isNavCollapsed = !this.isNavCollapsed;
                 localStorage.setItem('enferno-nav-collapsed', this.isNavCollapsed);
@@ -258,6 +296,13 @@
     };
 </script>
 
-{% block js %}{% endblock %}
+{% block js %}
+<script>
+    // Pages without their own Vue app (error pages) still get the layout
+    const app = Vue.createApp({mixins: [layoutMixin], delimiters: config.delimiters});
+    registerEnfernoComponents(app);
+    app.use(Vuetify.createVuetify(config.vuetifyConfig)).mount('#app');
+</script>
+{% endblock %}
 </body>
 </html>

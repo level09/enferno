@@ -2,6 +2,11 @@ html, body {
     height: 100%;
 }
 
+/* Hide Vue templates until the app mounts, so raw markup never flashes */
+[v-cloak] {
+    display: none;
+}
+
 /* ===== Card Hover Effect ===== */
 .v-card {
     transition: box-shadow 0.2s ease, transform 0.2s ease;

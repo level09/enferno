@@ -9,45 +9,50 @@
         </v-toolbar>
         <v-card-text>
 
-            <v-data-table-server 
-            :items="items" 
+            <v-data-table-server
+            :items="items"
             :items-length="itemsLength"
             :headers="headers"
-            :page="options.page"
             :items-per-page="options.itemsPerPage"
+            :loading="loading"
+            :search="search"
             @update:options="refresh"
             hover
             >
 
                 <template v-slot:top>
-                    <v-toolbar class="mb-4" dense elevation="0" color="transparent">
+                    <v-toolbar class="mb-4 ga-4" density="compact" elevation="0" color="transparent">
+                        <v-text-field v-model="search" placeholder="Search name or email" prepend-inner-icon="ti-search"
+                                      density="compact" variant="outlined" hide-details clearable max-width="320"></v-text-field>
                         <v-btn class="ml-auto" @click="createItem" size="small" color="primary" variant="elevated">
                             <template v-slot:prepend><i class="ti ti-plus"></i></template>
                             Add User
                         </v-btn>
-                        
                     </v-toolbar>
+                </template>
+                <template v-slot:loading>
+                    <v-skeleton-loader type="table-row@5"></v-skeleton-loader>
                 </template>
                 <template v-slot:item.roles="{ item }">
                     <v-chip v-for="role in item.roles" :key="role.id" color="primary" class="mr-2">
                         ${role.name}
                     </v-chip>
-
                 </template>
 
-                 <template v-slot:item.active="{ item }">
-                    <v-avatar size="16" v-if="item.active" color="green"></v-avatar>
-                     <v-avatar size="16" v-if="!item.active" color="grey"></v-avatar>
+                <template v-slot:item.active="{ item }">
+                    <v-avatar size="16" :color="item.active ? 'green' : 'grey'"></v-avatar>
+                </template>
 
+                <template v-slot:item.last_login="{ item }">
+                    ${formatDate(item.last_login)}
                 </template>
 
                 <template v-slot:item.actions="{ item }">
                     <v-btn icon="ti-pencil" variant="text" size="small" aria-label="Edit user" @click="editItem(item)"></v-btn>
-                    <v-btn icon="ti-trash" variant="text" size="small" aria-label="Delete user" @click="deleteItem(item)"></v-btn>
+                    <v-btn icon="ti-trash" variant="text" size="small" aria-label="Delete user" @click="deleteItem(item, item.email)"></v-btn>
                 </template>
 
             </v-data-table-server>
-
 
         </v-card-text>
     </v-card>
@@ -57,20 +62,18 @@
     <v-dialog v-model="edialog" width="660">
         <v-card v-if="edialog">
             <v-toolbar>
-                <v-toolbar-title>User Editor</v-toolbar-title>
+                <v-toolbar-title>${eitem.id ? 'Edit User' : 'Add User'}</v-toolbar-title>
                 <template v-slot:append>
                     <v-btn @click="edialog=false" size="small" icon="ti ti-x" aria-label="Close" variant="text"></v-btn>
                 </template>
             </v-toolbar>
-            
-            
 
             <v-card-text>
-                <!-- fields go here -->
                 <v-text-field label="Name" v-model="eitem.name"></v-text-field>
                 <v-text-field type="email" v-model="eitem.email" label="Email" required></v-text-field>
 
-                <v-text-field placeholder="Password" type="password" v-model="eitem.password"></v-text-field>
+                <v-text-field label="Password" type="password" autocomplete="new-password" v-model="eitem.password"
+                              :hint="passwordHint" persistent-hint></v-text-field>
 
                 <v-select label="Roles"
                           item-title="name"
@@ -80,6 +83,7 @@
                           chips
                           clearable
                           :items="roles"
+                          class="mt-4"
                 ></v-select>
 
                 <v-switch color="primary" label="Active" v-model="eitem.active"></v-switch>
@@ -88,164 +92,58 @@
 
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="primary" @click="saveItem" variant="elevated">Save</v-btn>
+                <v-btn :loading="saving" color="primary" @click="saveItem" variant="elevated">${saveLabel}</v-btn>
             </v-card-actions>
         </v-card>
 
     </v-dialog>
 
-
-    <v-snackbar size="small" class="d-flex" v-model="snackBar" rounded="pill" elevation="5">
-
-        ${snackMessage}
-        <template v-slot:actions>
-            <v-btn @click="snackBar=false" icon="ti ti-x" aria-label="Close" class="ml-auto" size="small" variant="text"></v-btn>
-        </template>
-    </v-snackbar>
-
-
 {% endblock %} {% block js %}
 
-    <script type="application/json" id="roles-data">
-    {{ roles|tojson|safe }}
-
+    <script type="application/json" id="page-data">
+    {{ {"roles": roles, "invites": invites}|tojson|safe }}
     </script>
 
     <script>
-        const {createApp, toRaw} = Vue;
+        const {createApp} = Vue;
         const {createVuetify} = Vuetify;
 
         const vuetify = createVuetify(config.vuetifyConfig);
+        const pageData = JSON.parse(document.querySelector('#page-data').textContent);
 
         window.app = createApp({
-            mixins: [layoutMixin],
+            mixins: [layoutMixin, crudMixin({
+                list: '/api/users',
+                item: '/api/user/',
+                newItem: () => ({roles: [], active: true}),
+            })],
+            delimiters: config.delimiters,
             data() {
                 return {
-                    errors: "",
-                    snackBar: false,
-                    snackMessage: "",
-                    items: [],
-                    itemsLength: 0,
-                    options: {
-                        page: 1,
-                        itemsPerPage: 25
-                    },
-
                     headers: [
-                        {title: 'ID', value: 'id'},
-                        {title: 'Name', value: 'name'},
-                        {title: 'Email', value: 'email'},
-                        {title: 'Roles', value: 'roles', sortable: false},
-                        {title: 'Active', value: 'active', sortable: false},
-                        {title: 'Actions', value: 'actions', sortable: false}
+                        {title: 'ID', key: 'id'},
+                        {title: 'Name', key: 'name'},
+                        {title: 'Email', key: 'email'},
+                        {title: 'Roles', key: 'roles', sortable: false},
+                        {title: 'Active', key: 'active', sortable: false},
+                        {title: 'Last login', key: 'last_login'},
+                        {title: 'Actions', key: 'actions', sortable: false}
                     ],
-                    edialog: false,
-                    eitem: {
-                        id: "",
-                        name: "",
-                        email: "",
-                        password: "",
-                        roles: [],
-                        active: true
-                    },
-                    roles: JSON.parse(document.querySelector('#roles-data').textContent)
+                    roles: pageData.roles,
+                    invites: pageData.invites
                 };
             },
-
-            mounted() {
-                // No refresh on mount
-            },
-            delimiters: config.delimiters,
-
-            methods: {
-
-                showSnack(message) {
-                    this.snackMessage = message;
-                    this.snackBar = true;
+            computed: {
+                passwordHint() {
+                    if (this.eitem.id) return 'Leave empty to keep the current password';
+                    return this.invites
+                        ? 'Leave empty to email an invite with a link to set a password'
+                        : 'Required: invites need mail settings (MAIL_SERVER)';
                 },
-
-                refresh(options) {
-                    // Use options from parameter or component state
-                    if (options) {
-                        // Update options with the values from the event
-                        this.options = {
-                            ...this.options,
-                            page: options.page,
-                            itemsPerPage: options.itemsPerPage
-                        };
-                    }
-                    
-                    // Make API request with pagination parameters
-                    axios.get(`/api/users?page=${this.options.page}&per_page=${this.options.itemsPerPage}`)
-                        .then(res => {
-                            this.items = res.data.items;
-                            this.itemsLength = res.data.total;
-                            // Update itemsPerPage from API response if provided
-                            if (res.data.perPage) {
-                                this.options.itemsPerPage = res.data.perPage;
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error fetching users:', error);
-                            this.showSnack('Failed to load users');
-                        });
-                },
-                
-                createItem() {
-                    this.edialog = true;
-                    this.eitem = {};
-
-                },
-
-                editItem(item) {
-
-                    this.eitem = toRaw(item);
-
-                    this.$nextTick(() => {
-                        this.edialog = true;
-                    });
-
-                },
-
-                saveItem(item) {
-                    if (this.eitem.id) {
-                        // edit mode
-                        axios.post(`/api/user/${this.eitem.id}`, {item: this.eitem})
-                            .then(res => {
-                                this.showSnack(res.data?.message);
-                                this.refresh();
-                            })
-                            .catch(err => {
-                                this.showSnack(err.response?.data);
-                            });
-                    } else {
-                        // create mode
-                        axios.post('/api/user/', {item: this.eitem})
-                            .then(res => {
-                                this.showSnack(res.data?.message);
-                                this.refresh();
-                            })
-                            .catch(err => {
-                                this.showSnack(err.response?.data);
-                            });
-                    }
-                    this.edialog = false;
-                },
-
-                deleteItem(item) {
-                    if (confirm('Are you sure?')) {
-                        axios.delete(`/api/user/${item.id}`)
-                            .then(res => {
-                                this.showSnack(res.data?.message);
-                                this.refresh();
-                            })
-                            .catch(err => {
-                                this.showSnack(err.response?.data);
-                            });
-                    }
+                saveLabel() {
+                    return !this.eitem.id && !this.eitem.password && this.invites ? 'Send invite' : 'Save';
                 }
             }
-
         });
 
         registerEnfernoComponents(app);

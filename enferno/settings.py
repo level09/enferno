@@ -51,7 +51,8 @@ class Config:
 
     # security
     SECURITY_REGISTERABLE = True
-    SECURITY_RECOVERABLE = False
+    # Password reset, and admin invites built on it, need mail to send links
+    SECURITY_RECOVERABLE = bool(os.environ.get("MAIL_SERVER"))
     SECURITY_CONFIRMABLE = False
     SECURITY_CHANGEABLE = True
     SECURITY_TRACKABLE = True

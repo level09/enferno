@@ -1,0 +1,85 @@
+{% extends 'layout.html' %}
+{% block layout_classes %} align-center {% endblock %}
+{% block content %}
+
+    <v-card class="ma-2 mt-12 w-100" max-width="900">
+        <v-toolbar>
+            <v-toolbar-title>Sessions</v-toolbar-title>
+            <template v-slot:append>
+                <v-btn color="error" variant="tonal" size="small" :loading="signingOut"
+                       :disabled="loading || sessions.length < 2" @click="signOutOthers">
+                    Sign out other sessions
+                </v-btn>
+            </template>
+        </v-toolbar>
+        <v-card-text>
+            <p class="text-body-medium mb-4">Devices signed in to your account. If you don't recognise one, sign out
+                the other sessions and change your password.</p>
+
+            <v-skeleton-loader v-if="loading" type="list-item-two-line@3"></v-skeleton-loader>
+            <v-list v-else lines="two">
+                <v-list-item v-for="s in sessions" :key="s.id" prepend-icon="ti-device-desktop"
+                             :title="describeDevice(s.meta?.device)"
+                             :subtitle="`${s.ip_address || 'Unknown IP'} · signed in ${formatDate(s.last_active)}`">
+                    <template v-slot:append>
+                        <v-chip v-if="s.current" color="success" size="small">This device</v-chip>
+                    </template>
+                </v-list-item>
+            </v-list>
+        </v-card-text>
+    </v-card>
+
+{% endblock %}
+{% block js %}
+    <script>
+        const {createApp} = Vue;
+        const {createVuetify} = Vuetify;
+        const vuetify = createVuetify(config.vuetifyConfig);
+
+        const app = createApp({
+            mixins: [layoutMixin],
+            delimiters: config.delimiters,
+            data() {
+                return {sessions: [], loading: true, signingOut: false};
+            },
+            mounted() {
+                this.load();
+            },
+            methods: {
+                // Werkzeug no longer parses user agents, so read the raw string
+                describeDevice(ua = '') {
+                    const browser = [['Edg/', 'Edge'], ['Firefox/', 'Firefox'], ['Chrome/', 'Chrome'], ['Safari/', 'Safari']]
+                        .find(([token]) => ua.includes(token))?.[1] || 'Unknown browser';
+                    const os = [['iPhone', 'iOS'], ['iPad', 'iPadOS'], ['Android', 'Android'], ['Mac OS X', 'macOS'], ['Windows', 'Windows'], ['Linux', 'Linux']]
+                        .find(([token]) => ua.includes(token))?.[1] || 'unknown OS';
+                    return `${browser} on ${os}`;
+                },
+                async load() {
+                    this.loading = true;
+                    try {
+                        this.sessions = (await axios.get('/api/sessions')).data.items;
+                    } catch (err) {
+                        this.notify(err.response?.data?.message || 'Failed to load sessions');
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                async signOutOthers() {
+                    if (!await this.confirmAction('Sign out every other device signed in to your account?')) return;
+                    this.signingOut = true;
+                    try {
+                        this.notify((await axios.post('/api/sessions/sign-out-others')).data.message);
+                        this.load();
+                    } catch (err) {
+                        this.notify(err.response?.data?.message || 'Sign out failed');
+                    } finally {
+                        this.signingOut = false;
+                    }
+                }
+            }
+        });
+
+        registerEnfernoComponents(app);
+        app.use(vuetify).mount('#app');
+    </script>
+{% endblock %}

@@ -58,26 +58,33 @@ docker compose up --build              # Postgres, Redis, Celery, nginx (needs D
 | Path | Access |
 |------|--------|
 | `/` | Public |
-| `/dashboard/` | Logged in |
+| `/dashboard/`, `/sessions/` | Logged in |
 | `/users/`, `/roles/`, `/activities/` | Admin |
-| `GET /api/users`, `/api/roles`, `/api/activities` | Admin, `?page=&per_page=` |
+| `GET /api/users`, `/api/roles`, `/api/activities` | Admin, `?page=&per_page=&sort_by=&sort_desc=&q=` |
 | `POST /api/user/`, `/api/role/` | Admin, create |
 | `POST /api/user/<id>`, `/api/role/<id>` | Admin, update |
 | `DELETE /api/user/<id>`, `/api/role/<id>` | Admin |
+| `GET /api/sessions`, `POST /api/sessions/sign-out-others` | Logged in, own sessions |
 | `/login`, `/register`, `/tf-setup`, `/change`, `POST /logout` | Flask-Security |
 
-Lists return `{"items": [...], "total": n, "perPage": n}`. Create and update take `{"item": {...}}`.
+Lists return `{"items": [...], "total": n, "perPage": n}`. Create and update take `{"item": {...}}`. Errors under `/api/` return `{"message": ...}` JSON.
+
+`tests/test_app.py` checks every route against anonymous users and non-admins. A new route is protected and admin-only by default; making it public (`PUBLIC_BLUEPRINTS`) or member-visible (`MEMBER_ENDPOINTS`) is an explicit edit there.
 
 ## Conventions
 
 - Protect admin blueprints in `before_request` with `@auth_required("session")` and `@roles_required("admin")`.
 - Models use `BaseMixin` and implement `to_dict()` / `from_dict()`. Schema changes go through `flask db migrate`, reviewed by hand.
-- Log admin actions: `Activity.register(current_user.id, "User Update", {"old": old, "new": new})`.
+- Log admin actions: `Activity.register(current_user.id, "User Update", {"old": old, "new": new})`. It commits, so call it while the change is still pending (`flush()` for a new row's id): the change and its audit entry save together or not at all.
 - Pages extend `layout.html`, mount their own Vue app with `mixins: [layoutMixin]`, call `registerEnfernoComponents(app)`, and use `config.delimiters` (`${ }`). `{{ }}` is Jinja.
+- Data tables use `crudMixin` (`static/js/crud.js`) with `table_response()` (`enferno/utils/tables.py`). Use `notify()` and `await confirmAction()` from `layoutMixin`, never `window.confirm()`.
+- Admin invites and "Forgot password" turn on when `MAIL_SERVER` is set. Test mail with `mail.record_messages()` in pytest, or a local sink (`uv run --with aiosmtpd python -m aiosmtpd -n -l 127.0.0.1:1025` with `MAIL_SERVER=127.0.0.1 MAIL_PORT=1025 MAIL_USE_SSL=False`).
 - Pass server data to Vue with `<script type="application/json">{{ data|tojson|safe }}</script>`.
 - Config comes from `.env`; never hardcode secrets.
 
 ## Hard rules
+
+`tests/test_conventions.py` enforces the rules a scan can check.
 
 - **Icons**: Tabler only (`ti-*`). Vuetify's built-in icons are mapped to Tabler in `static/js/config.js`; `mdi-*` renders blank.
 - **Logout**: POST only. Use a form posting to `/logout`, never a link.

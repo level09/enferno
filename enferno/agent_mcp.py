@@ -34,9 +34,17 @@ def build_server(app):
 
     @server.tool(annotations=READ_ONLY)
     def schema() -> dict[str, Any]:
-        """Model tables with columns and row counts, plus the migration revision."""
+        """Model tables with columns and row counts, plus the migration revision.
+
+        missing_from_database lists model columns the database lacks, which means
+        a migration is pending: do not rely on those columns yet.
+        """
         with app.app_context():
-            existing = set(db.inspect(db.engine).get_table_names())
+            inspector = db.inspect(db.engine)
+            existing = {
+                name: {column["name"] for column in inspector.get_columns(name)}
+                for name in inspector.get_table_names()
+            }
             tables = {
                 name: {
                     "columns": [
@@ -53,6 +61,11 @@ def build_server(app):
                     )
                     if name in existing
                     else None,
+                    "missing_from_database": [
+                        column.name
+                        for column in table.columns
+                        if column.name not in existing.get(name, ())
+                    ],
                 }
                 for name, table in sorted(db.metadata.tables.items())
             }

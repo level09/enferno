@@ -25,6 +25,8 @@ class TestConfig(Config):
     WTF_CSRF_ENABLED = False
     # example.com refuses mail (null MX); skip the DNS deliverability lookup.
     SECURITY_EMAIL_VALIDATOR_ARGS = {"check_deliverability": False}
+    # Invites and password reset; Flask-Mail records instead of sending under TESTING
+    SECURITY_RECOVERABLE = True
     CELERY_BROKER_URL = None
     CELERY_RESULT_BACKEND = None
 

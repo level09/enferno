@@ -9,8 +9,7 @@ Detailed patterns for common Enferno development tasks.
 - [Form Handling](#form-handling)
 - [File Uploads](#file-uploads)
 - [Search and Filtering](#search-and-filtering)
-- [Vue Components](#vue-components)
-- [Dialog Patterns](#dialog-patterns)
+- [Data Tables and Dialogs](#data-tables-and-dialogs)
 - [Error Handling](#error-handling)
 
 ## Full Blueprint Example
@@ -70,6 +69,7 @@ from flask import Blueprint, request, render_template
 from flask_security import auth_required, current_user, roles_required
 from enferno.extensions import db
 from enferno.user.models import Activity
+from enferno.utils.tables import table_response
 from .models import Product, Category
 
 bp = Blueprint("products", __name__)
@@ -89,23 +89,12 @@ def products_page():
 # API routes
 @bp.get("/api/products")
 def list_products():
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 25, type=int)
-    search = request.args.get("search", "")
-    category_id = request.args.get("category_id", type=int)
-
-    query = db.select(Product)
-    if search:
-        query = query.where(Product.name.ilike(f"%{search}%"))
-    if category_id:
+    query = db.select(Product).order_by(Product.id)
+    if category_id := request.args.get("category_id", type=int):
         query = query.where(Product.category_id == category_id)
-
-    pagination = db.paginate(query, page=page, per_page=per_page)
-    return {
-        "items": [p.to_dict() for p in pagination.items],
-        "total": pagination.total,
-        "perPage": pagination.per_page,
-    }
+    return table_response(
+        query, sortable={"name": Product.name}, searchable=(Product.name,)
+    )
 
 @bp.get("/api/categories")
 def list_categories():
@@ -186,216 +175,38 @@ def upload_image(id):
 
 ## Search and Filtering
 
-Advanced filtering pattern:
+`table_response()` in `enferno/utils/tables.py` handles paging, `?sort_by=`/`?sort_desc=` for whitelisted columns and `?q=` across searchable columns. Apply any extra filters to the query first:
 
 ```python
 @bp.get("/api/products")
-@roles_required("admin")
 def list_products():
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 25, type=int)
-
-    query = db.select(Product)
-
-    # Text search
-    if search := request.args.get("search"):
-        query = query.where(
-            db.or_(
-                Product.name.ilike(f"%{search}%"),
-                Product.description.ilike(f"%{search}%")
-            )
-        )
-
-    # Filter by category
+    query = db.select(Product).order_by(Product.id)
     if category_id := request.args.get("category_id", type=int):
         query = query.where(Product.category_id == category_id)
-
-    # Filter by price range
-    if min_price := request.args.get("min_price", type=float):
-        query = query.where(Product.price >= min_price)
-    if max_price := request.args.get("max_price", type=float):
-        query = query.where(Product.price <= max_price)
-
-    # Filter by active status
-    if active := request.args.get("active"):
-        query = query.where(Product.active == (active.lower() == "true"))
-
-    # Sorting
-    sort_by = request.args.get("sort_by", "id")
-    sort_order = request.args.get("sort_order", "asc")
-    column = getattr(Product, sort_by, Product.id)
-    query = query.order_by(column.desc() if sort_order == "desc" else column.asc())
-
-    pagination = db.paginate(query, page=page, per_page=per_page)
-    return {"items": [p.to_dict() for p in pagination.items], "total": pagination.total, "perPage": per_page}
+    return table_response(
+        query,
+        sortable={"name": Product.name, "price": Product.price},
+        searchable=(Product.name, Product.description),
+    )
 ```
 
-## Vue Components
+On the page, extra filters are ordinary data that `refresh()` sends: override it or add them to the URL. `serialize=` takes the whole page of rows when `to_dict()` is not enough (see `api_activities` in `enferno/user/views.py`).
 
-### Data Table with Actions
-```html
-<v-data-table-server
-  :headers="headers"
-  :items="items"
-  :items-length="total"
-  :loading="loading"
-  @update:options="loadItems"
->
-  <template v-slot:item.actions="{ item }">
-    <v-btn icon size="small" @click="editItem(item)">
-      <v-icon>ti-pencil</v-icon>
-    </v-btn>
-    <v-btn icon size="small" color="error" @click="deleteItem(item)">
-      <v-icon>ti-trash</v-icon>
-    </v-btn>
-  </template>
-</v-data-table-server>
-```
+## Data Tables and Dialogs
 
-### Form Dialog
-```html
-<v-dialog v-model="dialog" max-width="600">
-  <v-card>
-    <v-card-title>${ editMode ? 'Edit' : 'Create' } Product</v-card-title>
-    <v-card-text>
-      <v-text-field v-model="form.name" label="Name" required></v-text-field>
-      <v-text-field v-model="form.price" label="Price" type="number"></v-text-field>
-      <v-select v-model="form.category_id" :items="categories" item-title="name" item-value="id" label="Category"></v-select>
-    </v-card-text>
-    <v-card-actions>
-      <v-spacer></v-spacer>
-      <v-btn @click="dialog = false">Cancel</v-btn>
-      <v-btn color="primary" @click="saveItem" :loading="saving">Save</v-btn>
-    </v-card-actions>
-  </v-card>
-</v-dialog>
-```
-
-### Confirmation Dialog
-```html
-<v-dialog v-model="confirmDialog" max-width="400">
-  <v-card>
-    <v-card-title>Confirm Delete</v-card-title>
-    <v-card-text>Are you sure you want to delete this item?</v-card-text>
-    <v-card-actions>
-      <v-spacer></v-spacer>
-      <v-btn @click="confirmDialog = false">Cancel</v-btn>
-      <v-btn color="error" @click="confirmDelete" :loading="deleting">Delete</v-btn>
-    </v-card-actions>
-  </v-card>
-</v-dialog>
-```
-
-## Dialog Patterns
-
-Complete Vue setup with CRUD dialogs (Composition API works alongside `layoutMixin`):
-
-```javascript
-const { createApp, ref } = Vue;
-const vuetify = Vuetify.createVuetify(config.vuetifyConfig);
-
-const app = createApp({
-  mixins: [layoutMixin],
-  delimiters: config.delimiters,
-  setup() {
-    const items = ref([]);
-    const total = ref(0);
-    const loading = ref(false);
-    const dialog = ref(false);
-    const confirmDialog = ref(false);
-    const editMode = ref(false);
-    const saving = ref(false);
-    const deleting = ref(false);
-    const selectedItem = ref(null);
-    const form = ref({ name: '', price: 0, category_id: null });
-
-    async function loadItems({ page, itemsPerPage }) {
-      loading.value = true;
-      const res = await axios.get('/api/products', { params: { page, per_page: itemsPerPage } });
-      items.value = res.data.items;
-      total.value = res.data.total;
-      loading.value = false;
-    }
-
-    function openCreate() {
-      editMode.value = false;
-      form.value = { name: '', price: 0, category_id: null };
-      dialog.value = true;
-    }
-
-    function editItem(item) {
-      editMode.value = true;
-      selectedItem.value = item;
-      form.value = { ...item };
-      dialog.value = true;
-    }
-
-    async function saveItem() {
-      saving.value = true;
-      const url = editMode.value ? `/api/product/${selectedItem.value.id}` : '/api/product/';
-      await axios.post(url, { item: form.value });
-      dialog.value = false;
-      saving.value = false;
-      loadItems({ page: 1, itemsPerPage: 25 });
-    }
-
-    function deleteItem(item) {
-      selectedItem.value = item;
-      confirmDialog.value = true;
-    }
-
-    async function confirmDelete() {
-      deleting.value = true;
-      await axios.delete(`/api/product/${selectedItem.value.id}`);
-      confirmDialog.value = false;
-      deleting.value = false;
-      loadItems({ page: 1, itemsPerPage: 25 });
-    }
-
-    return { items, total, loading, dialog, confirmDialog, editMode, saving, deleting, form, loadItems, openCreate, editItem, saveItem, deleteItem, confirmDelete };
-  }
-});
-
-registerEnfernoComponents(app);
-app.use(vuetify).mount('#app');
-```
+Use `crudMixin` from `static/js/crud.js`; the full example is in `SKILL.md` and `cms/roles.html`. It owns `items`, `loading`, `search`, `options`, `eitem`, `edialog` and `saving`, and `refresh`, `createItem`, `editItem`, `saveItem` and `deleteItem(row, label)`. Pass `newItem` for the defaults a new record starts with. Confirm destructive actions with `await this.confirmAction(message)` and report results with `this.notify(message)`, both from `layoutMixin`; never `window.confirm()`.
 
 ## Error Handling
 
-API error responses:
+The app-level handler in `enferno/app.py` turns every HTTP error under `/api/` into `{"message": ...}` JSON, including CSRF failures. Endpoints return the same shape for validation errors:
 
 ```python
-from flask import jsonify
-
-@bp.errorhandler(400)
-def bad_request(e):
-    return jsonify({"error": str(e)}), 400
-
-@bp.errorhandler(404)
-def not_found(e):
-    return jsonify({"error": "Resource not found"}), 404
-
-# In endpoints
 @bp.post("/api/product/")
-@roles_required("admin")
 def create_product():
     data = request.json.get("item", {})
     if not data.get("name"):
-        return {"error": "Name is required"}, 400
+        return {"message": "Name is required"}, 400
     # ... rest of logic
 ```
 
-Vue error handling:
-```javascript
-async function saveItem() {
-  try {
-    saving.value = true;
-    await axios.post(url, { item: form.value });
-    dialog.value = false;
-  } catch (error) {
-    snackbar.value = { show: true, text: error.response?.data?.error || 'Save failed', color: 'error' };
-  } finally {
-    saving.value = false;
-  }
-}
-```
+In Vue, show `err.response?.data?.message` with a fallback, as `saveItem()` in `static/js/crud.js` does.

@@ -1,11 +1,12 @@
 import inspect
 
 import click
-from flask import Flask, render_template
+from flask import Flask, json, render_template, request
 from flask_dance.consumer.storage.sqla import SQLAlchemyStorage
 from flask_dance.contrib.github import make_github_blueprint
 from flask_dance.contrib.google import make_google_blueprint
 from flask_security import Security, SQLAlchemyUserDatastore, current_user
+from werkzeug.exceptions import HTTPException
 
 import enferno.commands as commands
 from enferno.extensions import (
@@ -110,11 +111,18 @@ def register_blueprints(app):
 
 def register_errorhandlers(app):
     def render_error(error):
-        error_code = getattr(error, "code", 500)
-        return render_template(f"{error_code}.html"), error_code
+        # API callers, agents included, get JSON they can act on, not an HTML page
+        if request.path.startswith("/api/"):
+            # Keep the exception's headers (Allow, Retry-After), swap in a JSON body
+            response = error.get_response()
+            response.set_data(json.dumps({"message": error.description}))
+            response.content_type = "application/json"
+            return response
+        if error.code in (401, 404, 500):
+            return render_template(f"{error.code}.html"), error.code
+        return error.get_response()
 
-    for errcode in [401, 404, 500]:
-        app.errorhandler(errcode)(render_error)
+    app.register_error_handler(HTTPException, render_error)
     return None
 
 

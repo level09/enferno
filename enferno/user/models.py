@@ -3,6 +3,7 @@ import string
 from datetime import datetime
 from uuid import uuid4
 
+from flask import current_app, has_request_context, session
 from flask_dance.consumer.storage.sqla import OAuthConsumerMixin
 from flask_security import AsaList
 from flask_security.core import RoleMixin, UserMixin
@@ -94,16 +95,24 @@ class User(UserMixin, db.Model, BaseMixin):
             "name": self.name,
             "email": self.email,
             "roles": [role.to_dict() for role in self.roles],
+            "last_login": self.current_login_at.isoformat()
+            if self.current_login_at
+            else None,
         }
 
     def from_dict(self, json_dict):
         self.name = json_dict.get("name", self.name)
         self.username = json_dict.get("username", self.username)
         self.email = json_dict.get("email", self.email)
-        if (
-            "password" in json_dict
-        ):  # Only hash password if provided, to avoid hashing None
+        if json_dict.get("password"):  # An empty field keeps the current password
             self.password = hash_password(json_dict["password"])
+            self.password_set = True
+            if self.id:
+                # Signs the user out elsewhere and voids open invite/reset links,
+                # which Flask-Security checks against fs_uniquifier only
+                old, self.fs_uniquifier = self.fs_uniquifier, uuid4().hex
+                if has_request_context() and session.get("_user_id") == old:
+                    session["_user_id"] = self.fs_uniquifier
         # Update roles if specified, otherwise leave unchanged
         if "roles" in json_dict:
             role_ids = [r.get("id") for r in json_dict["roles"]]
@@ -135,11 +144,20 @@ class User(UserMixin, db.Model, BaseMixin):
         password = "".join(secrets.choice(alphabet) for i in range(length))
         return hash_password(password)
 
-    def logout_other_sessions(self, current_session_token=None):
-        """Logout all other sessions for this user."""
-        from enferno.user.models import Session
+    def logout_other_sessions(self, current_session_token=None, commit=True):
+        """Sign out every other session and remember cookie of this user.
 
-        Session.deactivate_user_sessions(self.id, exclude_token=current_session_token)
+        Sessions resolve users by fs_uniquifier, so rotating it is what revokes
+        them; the tracking rows only record it. If the current request is this
+        user's own session, it stays signed in.
+        """
+        old = self.fs_uniquifier
+        current_app.extensions["security"].datastore.set_uniquifier(self)
+        if session.get("_user_id") == old:
+            session["_user_id"] = self.fs_uniquifier
+        Session.deactivate_user_sessions(
+            self.id, exclude_token=current_session_token, commit=commit
+        )
 
     def get_active_sessions(self):
         """Get all active sessions for this user."""
@@ -283,10 +301,11 @@ class Session(db.Model, BaseMixin):
         return session_record
 
     @classmethod
-    def deactivate_user_sessions(cls, user_id, exclude_token=None):
+    def deactivate_user_sessions(cls, user_id, exclude_token=None, commit=True):
         """Deactivate all sessions for a user, optionally excluding current."""
         query = cls.query.filter_by(user_id=user_id, is_active=True)
         if exclude_token:
             query = query.filter(cls.session_token != exclude_token)
         query.update({"is_active": False})
-        db.session.commit()
+        if commit:
+            db.session.commit()

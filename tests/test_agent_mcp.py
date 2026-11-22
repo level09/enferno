@@ -8,6 +8,7 @@ import pytest
 mcp = pytest.importorskip("mcp")
 
 from enferno.agent_mcp import build_server  # noqa: E402
+from enferno.extensions import db  # noqa: E402
 from enferno.user.models import Activity  # noqa: E402
 
 ROOT = Path(__file__).parents[1]
@@ -65,3 +66,14 @@ def test_recent_activity_rejects_out_of_range_limit(app, limit):
             return await client.call_tool("recent_activity", {"limit": limit})
 
     assert asyncio.run(call()).is_error
+
+
+def test_schema_reports_columns_missing_from_the_database(app):
+    """An unapplied migration must not look applied to an agent."""
+    with app.app_context():
+        db.session.execute(db.text("ALTER TABLE role DROP COLUMN description"))
+        db.session.commit()
+
+    _, (schema,) = asyncio.run(_call(build_server(app), ("schema", {})))
+    assert schema["tables"]["role"]["missing_from_database"] == ["description"]
+    assert schema["tables"]["user"]["missing_from_database"] == []
