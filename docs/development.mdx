@@ -114,6 +114,20 @@ from enferno.user.models import Activity
 Activity.register(current_user.id, "Post Update", {"old": old, "new": post.to_dict()})
 ```
 
+`Activity.register` commits, so call it while the change is still pending (`db.session.flush()` first if you need a new row's id). The change and its audit entry save together or not at all.
+
+`table_response()` in `enferno/utils/tables.py` turns a query into that list shape, with paging, whitelisted sorting and `?q=` search:
+
+```python
+from enferno.utils.tables import table_response
+
+@bp.get("/api/posts")
+def list_posts():
+    return table_response(db.select(Post), sortable={"id": Post.id, "title": Post.title}, searchable=(Post.title,))
+```
+
+On the page, `crudMixin` from `static/js/crud.js` provides the matching list, create, edit and delete methods, so a data table page only declares its headers and dialog.
+
 ## Pages
 
 Pages extend `layout.html`, mount their own Vue app with `layoutMixin`, and use `${ }` for Vue expressions, since `{{ }}` is Jinja. The frontend is Vue 3 and Vuetify 4 with no build step:
@@ -122,6 +136,7 @@ Pages extend `layout.html`, mount their own Vue app with `layoutMixin`, and use 
 - Use Material Design 3 type classes such as `text-headline-small` and `text-body-medium`. Vuetify 3 names like `text-h5` and `text-caption` no longer exist.
 - Icon-only buttons need an `aria-label`.
 - Pass server data with `<script type="application/json">{{ data|tojson|safe }}</script>`.
+- Use `notify()` and `await confirmAction()` from `layoutMixin` instead of `alert()` and `window.confirm()`.
 
 ## Background Tasks (Optional)
 

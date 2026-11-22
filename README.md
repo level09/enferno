@@ -3,7 +3,7 @@
 [![Checks](https://github.com/level09/enferno/actions/workflows/checks.yml/badge.svg)](https://github.com/level09/enferno/actions/workflows/checks.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**[Docs](https://docs.enferno.io)** · **[Tutorials](https://github.com/level09/enferno/wiki)**
+**[Docs](https://docs.enferno.io)** · **[Tutorials](https://github.com/level09/enferno/wiki)** · **[Changelog](CHANGELOG.md)** · To hear about new versions, choose Watch, then Custom, then Releases.
 
 A Flask framework built for coding agents. You describe the app; your agent builds it on a stack it already understands, and a test suite tells it when it got something wrong.
 
@@ -61,6 +61,8 @@ Agents write code fast; they also forget migrations and leave routes unprotected
 - **Every protected route** rejects anonymous users, and every admin route rejects non-admins, including routes the agent just added.
 - **Models match migrations**: change a model without `flask db migrate` and the suite fails.
 - **CSRF** is enforced on the admin API, and a valid token still works.
+- **Audit entries** save in the same transaction as the change they record.
+- **Conventions** from `AGENTS.md` that a scan can check: Tabler icons, Vuetify 4 classes, POST-only logout.
 - **Auth flows**: login, wrong password, POST-only logout, audited admin CRUD.
 - **`setup.sh`** in every mode, without touching your `.env`.
 
@@ -72,9 +74,10 @@ The app tests run on in-memory SQLite in about two seconds; the `setup.sh` tests
 
 - **Frontend**: Vue 3, Vuetify 4 and axios, vendored and pinned by `vendor.sh`. No build step
 - **Auth**: login, registration, password recovery, TOTP 2FA, passkeys (WebAuthn), recovery codes, Google and GitHub OAuth
-- **Admin**: users, roles and an audit log of admin actions
+- **Admin**: users, roles, email invites, and an audit log with before/after diffs and logins
+- **Sessions**: users see their signed-in devices and sign out the others
 - **Database**: SQLAlchemy 2 with Alembic migrations. SQLite by default, PostgreSQL when you want it
-- **UI**: collapsible sidebar, dark mode, Tabler icons, data tables, dialogs and notifications
+- **UI**: collapsible sidebar, dark mode, Tabler icons, server-side data tables with search and sorting, skeleton loaders, dialogs and notifications
 - **Optional**: Redis sessions and Celery (`--extra full`), MCP (`--extra mcp`), uWSGI (`--extra wsgi`)
 
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/).

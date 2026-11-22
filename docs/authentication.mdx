@@ -89,11 +89,26 @@ uv run flask add-role -e <email> -r <role>      # Grant a role
 uv run flask reset -e <email> -p <password>     # Reset a password
 ```
 
-Admins can also manage users and roles at `/users/` and `/roles/`. Every change is recorded in the activity log at `/activities/`.
+Admins can also manage users and roles at `/users/` and `/roles/`. Every change, login and logout is recorded in the activity log at `/activities/`, and updates show which fields changed.
+
+## Invites
+
+When `MAIL_SERVER` is set, an admin can add a user with an empty password. Enferno emails them a link to set their own password, and "Forgot password" turns on for everyone. Without mail settings, a password is required.
+
+Test mail without a real provider by running a local sink:
+
+```bash
+uv run --with aiosmtpd python -m aiosmtpd -n -l 127.0.0.1:1025
+# .env: MAIL_SERVER=127.0.0.1  MAIL_PORT=1025  MAIL_USE_SSL=False
+```
+
+In tests, `mail.record_messages()` captures the email instead.
 
 ## Sessions
 
 Sessions are stored server-side, in the database by default or in Redis with `setup.sh --full`. They last one hour, and Flask-Security asks for the password again before sensitive changes if the login is older than 60 minutes.
+
+Users see their signed-in devices at `/sessions/` and can sign out every other one. When an admin sets a user's password, that user's sessions end and any open invite or reset link stops working.
 
 Cookie flags come from `.env`:
 
